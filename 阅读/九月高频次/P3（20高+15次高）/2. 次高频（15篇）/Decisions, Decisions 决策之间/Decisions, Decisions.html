@@ -1,0 +1,1352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Decisions, Decisions! - Reading Passage</title>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<style>
+  :root { 
+    --line:#e5e7eb; 
+    --bg:#f6f7fb; 
+    --panel:#fff; 
+    --accent:#3b82f6; 
+    --muted:#6b7280; 
+    --shadow:0 6px 20px rgba(0,0,0,.12); 
+    /* 字体大小变量 - 基础regular，逐级放大 */
+    --font-size-regular: 16px;   /* 基础大小 */
+    --font-size-moderate: 18px;  /* 比regular大1号 */
+    --font-size-large: 20px;     /* 比moderate大1号 */
+  }
+  /* 字体大小类 - 所有元素继承 */
+  .font-regular {
+    font-size: var(--font-size-regular) !important;
+  }
+  .font-moderate {
+    font-size: var(--font-size-moderate) !important;
+  }
+  .font-large {
+    font-size: var(--font-size-large) !important;
+  }
+  * { 
+    box-sizing: border-box; 
+    font-size: inherit; /* 所有元素继承父级字体大小 */
+  }
+  html,body { 
+    height:100%; 
+    font-size: var(--font-size-regular); /* 默认regular */
+  }
+  body { 
+    margin:0; 
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; 
+    background:var(--bg); 
+  }
+  #timer-container {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  #timer { 
+    position: static; 
+    display: inline-block; 
+    background:#fff; 
+    border:1px solid var(--line); 
+    border-radius:10px; 
+    padding:2px 8px; 
+    vertical-align: middle; 
+  }
+  #settingsBtn {
+    padding:2px 8px;
+    border:1px solid var(--line);
+    border-radius:10px;
+    background:#fff;
+    cursor:pointer;
+  }
+  #settingsModal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:16px;
+    box-shadow:var(--shadow);
+    z-index: 1000;
+    display: none;
+  }
+  #settingsModal h4 {
+    margin-top:0;
+    font-weight: 600;
+  }
+  #settingsModal .font-option {
+    margin:8px 0;
+    cursor:pointer;
+    padding:4px 8px;
+    border-radius:6px;
+  }
+  #settingsModal .font-option:hover {
+    background:#f1f5f9;
+  }
+  #settingsModal .close-modal {
+    margin-top:12px;
+    padding:6px 12px;
+    border:1px solid var(--line);
+    border-radius:8px;
+    background:var(--accent);
+    color:#fff;
+    cursor:pointer;
+  }
+  .shell { 
+    display:flex; 
+    height:100vh; 
+    width:100%; 
+  }
+  .pane { 
+    background:var(--panel); 
+    overflow:auto; 
+    padding:20px; 
+  }
+  #left { 
+    flex: 0 0 50%; 
+    min-width: 280px; 
+  }
+  #right { 
+    flex: 1 1 auto; 
+    min-width: 320px; 
+    background:#fbfbff; 
+    border-left:1px solid var(--line); 
+  }
+  #divider { 
+    flex: 0 0 8px; 
+    background: linear-gradient(90deg,#e5e7eb,#d1d5db); 
+    cursor: ew-resize; 
+    position:relative; 
+    z-index: 5; 
+    user-select:none; 
+  }
+  h2,h3,h4 { 
+    margin:0 0 10px; 
+    font-weight: 600; 
+  }
+  #left p { 
+    margin: 0 0 12px; 
+    line-height: 1.6; 
+    word-break: normal; 
+    overflow-wrap: normal; 
+    hyphens: none; 
+  }
+  #left .section-heading { 
+    font-weight: 600; 
+    margin-top: 20px; 
+    margin-bottom: 8px; 
+  }
+  .group { 
+    background:#fff; 
+    border:1px solid var(--line); 
+    border-radius:10px; 
+    padding:12px; 
+    margin-bottom:14px; 
+  }
+  table { 
+    border-collapse: collapse; 
+    width:100%; 
+    margin: 10px 0;
+  }
+  th, td { 
+    border:1px solid var(--line); 
+    padding:6px; 
+    text-align:left; 
+  }
+  th {
+    background-color: #f1f5f9;
+    font-weight: 600;
+  }
+  button { 
+    padding:8px 12px; 
+    border:1px solid var(--line); 
+    border-radius:10px; 
+    background:#fff; 
+    cursor:pointer; 
+  }
+  button.primary { 
+    background:var(--accent); 
+    color:#fff; 
+    border-color:#3b82f6; 
+  }
+  #results { 
+    background:#fff; 
+    border:1px solid var(--line); 
+    border-radius:10px; 
+    padding:10px; 
+    margin-bottom:14px;
+  }
+  .hl { 
+    background:#fff3a3; 
+    box-shadow: inset 0 -2px 0 rgba(0,0,0,.05); 
+    cursor: pointer; 
+  }
+  .hl:hover { 
+    filter: brightness(0.98); 
+  }
+  #selbar { 
+    position: absolute; 
+    display:none; 
+    z-index: 6000; 
+    background:#111; 
+    color:#fff; 
+    border-radius: 8px; 
+    padding: 6px; 
+    box-shadow: var(--shadow); 
+    font-size: 13px; 
+    gap:6px; 
+    align-items: center; 
+  }
+  #selbar button { 
+    background: transparent; 
+    color:#fff; 
+    border: 1px solid rgba(255,255,255,.25); 
+    padding: 4px 8px; 
+    border-radius: 6px; 
+    cursor:pointer; 
+  }
+  #selbar button:hover { 
+    border-color:#fff; 
+  }
+  #notes { 
+    position: fixed; 
+    right: 12px; 
+    bottom: 12px; 
+    width: 320px; 
+    height: 42vh; 
+    background:#fff; 
+    border:1px solid var(--line); 
+    border-radius: 12px; 
+    display:none; 
+    flex-direction: column; 
+    z-index:1500; 
+    box-shadow: var(--shadow); 
+  }
+  #notes header { 
+    display:flex; 
+    align-items:center; 
+    justify-content: space-between; 
+    padding:8px 10px; 
+    border-bottom:1px solid var(--line); 
+  }
+  #notes textarea { 
+    flex:1; 
+    border:0; 
+    padding:10px; 
+    resize:none; 
+    line-height:1.5; 
+  }
+  #toast { 
+    position: fixed; 
+    left:50%; 
+    transform: translateX(-50%); 
+    bottom: 24px; 
+    background:#111; 
+    color:#fff; 
+    padding:8px 12px; 
+    border-radius: 8px; 
+    display:none; 
+    z-index:2500; 
+  }
+  /* 题目选项样式 */
+  .mcq-option {
+    margin: 6px 0;
+    padding: 4px 0 4px 24px;
+    cursor: pointer;
+    position: relative;
+  }
+  .mcq-option input {
+    position: absolute;
+    left: 0;
+    margin: 3px 0 0;
+  }
+  .ynng-option {
+    margin: 6px 0;
+    padding: 4px 0 4px 24px;
+    cursor: pointer;
+    position: relative;
+  }
+  .ynng-option input {
+    position: absolute;
+    left: 0;
+    margin: 3px 0 0;
+  }
+  
+  /* 拖拽匹配样式 */
+  .summary-blank {
+    width: 140px;
+    min-height: 36px;
+    padding: 8px;
+    margin: 0 8px;
+    border: 2px dashed #ccc;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f9f9f9;
+    transition: all 0.2s ease;
+  }
+  
+  .summary-blank.highlight {
+    border-color: var(--accent);
+    background-color: #f0f7ff;
+  }
+  
+  .summary-blank.filled {
+    border-style: solid;
+    border-color: var(--accent);
+    background-color: #eef2ff;
+  }
+  
+  .summary-word-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 10px 0;
+  }
+  
+  .summary-word-item {
+    padding: 8px 12px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background-color: #f8fafc;
+    cursor: grab;
+    transition: all 0.2s ease;
+    user-select: none;
+  }
+  
+  .summary-word-item:hover {
+    background-color: #eef2ff;
+    border-color: var(--accent);
+  }
+  
+  .summary-word-item.dragging {
+    opacity: 0.7;
+    transform: scale(1.05);
+    cursor: grabbing;
+  }
+  
+  .summary-word-item.used {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: #f1f5f9;
+  }
+
+  .question-number {
+    font-weight: 600;
+  }
+  body { 
+    padding-bottom: 82px; 
+  }
+  .practice-nav { 
+    background:#fff; 
+    border-bottom:2px solid var(--line); 
+    padding:12px 20px; 
+    display:flex; 
+    align-items:center; 
+    gap:20px; 
+    box-shadow:0 2px 4px rgba(0,0,0,.05); 
+    flex-wrap:wrap; 
+    position:fixed; 
+    left:0; 
+    right:0; 
+    bottom:0; 
+    border-top:2px solid var(--line); 
+    border-bottom:0; 
+    z-index:4000; 
+  }
+  .practice-nav .title { 
+    font-weight:600; 
+    color:var(--muted); 
+  }
+  .practice-nav .questions { 
+    display:flex; 
+    gap:8px; 
+    align-items:center; 
+    flex-wrap:wrap; 
+  }
+  .practice-nav .q-item { 
+    padding:6px 10px; 
+    border:1px solid var(--line); 
+    border-radius:6px; 
+    background:#fff; 
+    cursor:pointer; 
+    transition:all 0.2s; 
+    min-width:36px; 
+    text-align:center; 
+  }
+  .practice-nav .q-item:hover { 
+    background:#f1f5f9; 
+    border-color:var(--accent); 
+  }
+  .practice-nav .q-item.answered { 
+    background:#e0e7ff; 
+    border-color:var(--accent); 
+    color:var(--accent); 
+    font-weight:500; 
+  }
+  .practice-nav .q-item.active { 
+    background:var(--accent); 
+    color:#fff; 
+    border-color:var(--accent); 
+  }
+  details.answerbox summary { 
+    cursor: pointer; 
+    user-select:none; 
+    list-style: none; 
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  details.answerbox summary::before {
+    content: "▼";
+    font-size: 12px;
+    transition: transform 0.2s;
+  }
+  details.answerbox[open] summary::before {
+    transform: rotate(180deg);
+  }
+  details.answerbox { 
+    border:1px dashed var(--line); 
+    border-radius:10px; 
+    padding:8px 10px; 
+    background:#fff; 
+    margin-bottom:14px;
+  }
+  .badge { 
+    display:inline-block; 
+    background:#eef2ff; 
+    color:#4338ca; 
+    padding:2px 8px; 
+    border-radius:999px; 
+    font-size:12px; 
+    margin-left:6px; 
+  }
+  .explanation-text {
+    margin-bottom: 4px;
+  }
+  .explanation-original {
+    font-style: italic;
+    color: #555;
+    font-size: 0.9em;
+    margin-top: 0;
+  }
+</style>
+</head>
+<body class="font-regular">
+<div class="practice-nav">
+  <div class="title">Questions</div>
+  <div class="questions">
+    <div class="q-item" id="q27-nav" onclick="scrollToElement('q27-anchor')">27</div>
+    <div class="q-item" id="q28-nav" onclick="scrollToElement('q28-anchor')">28</div>
+    <div class="q-item" id="q29-nav" onclick="scrollToElement('q29-anchor')">29</div>
+    <div class="q-item" id="q30-nav" onclick="scrollToElement('q30-anchor')">30</div>
+    <div class="q-item" id="q31-nav" onclick="scrollToElement('q31-anchor')">31</div>
+    <div class="q-item" id="q32-nav" onclick="scrollToElement('q32-anchor')">32</div>
+    <div class="q-item" id="q33-nav" onclick="scrollToElement('q33-anchor')">33</div>
+    <div class="q-item" id="q34-nav" onclick="scrollToElement('q34-anchor')">34</div>
+    <div class="q-item" id="q35-nav" onclick="scrollToElement('q35-anchor')">35</div>
+    <div class="q-item" id="q36-nav" onclick="scrollToElement('q36-anchor')">36</div>
+    <div class="q-item" id="q37-nav" onclick="scrollToElement('q37-anchor')">37</div>
+    <div class="q-item" id="q38-nav" onclick="scrollToElement('q38-anchor')">38</div>
+    <div class="q-item" id="q39-nav" onclick="scrollToElement('q39-anchor')">39</div>
+    <div class="q-item" id="q40-nav" onclick="scrollToElement('q40-anchor')">40</div>
+  </div>
+</div>
+<!-- 字体设置模态框 -->
+<div id="settingsModal">
+  <h4>Font Size Settings</h4>
+  <div class="font-option" data-size="regular">Regular (Default - 16px)</div>
+  <div class="font-option" data-size="moderate">Moderate (Larger - 18px)</div>
+  <div class="font-option" data-size="large">Large (Largest - 20px)</div>
+  <button class="close-modal" onclick="closeSettingsModal()">Close</button>
+</div>
+<div class="shell">
+  <section class="pane" id="left">
+    <h2>READING PASSAGE 3 
+      <div id="timer-container">
+        <span id="timer">00:00</span>
+        <button id="settingsBtn" onclick="openSettingsModal()">Settings</button>
+      </div>
+    </h2>
+    <p>You should spend about 20 minutes on Questions 27–40, which are based on Reading Passage 3 below.</p>
+    
+    <h3>Decisions, decisions!</h3>
+    <p>Research explores when we can make a vital decision quickly and when we need to proceed more deliberately</p>
+    
+    <p>A widely recognised legend tells us that in Gordium (in what is now Turkey) in the fourth century BC an oxcart was roped to a pole with a complex knot. It was said that the first person to untie it would become the king of Asia. Unfortunately, the knot proved impossible to untie. The story continues that when confronted with this problem, rather than deliberating on how to untie the Gordian knot, Alexander, the famous ruler of the Greeks in the ancient world, simply took out his sword and cut it in two – then went on to conquer Asia. Ever since, the notion of a “Gordian solution” has referred to the attractiveness of a simple answer to an otherwise intractable problem.</p>
+    
+    <p>Among researchers in the psychology of decision making, however, such solutions have traditionally held little appeal. In particular, the “conflict model” of decision making proposed by psychologists Irving Janis and Leon Mann in their 1977 book Decision Making argued that a complex decision-making process is essential for guarding individuals and groups from the peril of “group-think”. Decisions made without thoroughly canvassing, surveying, weighing, examining and re-examining relevant information and options would be sub-optimal and often disastrous. One foreign-affairs decision made by a well-known US political leader in the 1960s is typically held up as an example of the perils of inadequate thought, whereas his successful handling of a later crisis is cited as an example of the advantages of careful deliberation. However, examination of these historical events by Peter Suedfield, a psychologist at the University of British Columbia, and Roderick Kramer, a psychologist at the Stanford Graduate School of Business, found little difference in the two decision-making processes; both crises required and received complex consideration by the political administration, but later only the second one was deemed to be effective.</p>
+    
+    <p>In general, however, organisational and political science offer little evidence that complex decisions fare better than simpler ones. In fact, a growing body of work suggests that in many situations simple “snap” decisions will be routinely superior to more complex ones – an idea that gained widespread public appeal with Malcolm Gladwell’s best-selling book Blink (2005).</p>
+    
+    <p>An article by Ap Dijksterhuis of the University of Amsterdam and his colleagues, “On Making the Right Choice: the Deliberation-without-attention Effect”, runs very much in the spirit of Gladwell’s influential text. Its core argument is that to be effective, conscious (deliberative) decision making requires cognitive resources. Because increasingly complex decisions place increasing strain on those resources, the quality of our decisions declines as their complexity increases. In short, complex decisions overrun our cognitive powers. On the other hand, unconscious decision making (what the authors refer to as “deliberation without attention”) requires no cognitive resources, so task complexity does not degrade effectiveness. The seemingly counter-intuitive conclusion is that although conscious thought enhances simple decisions, the opposite holds true for more complex decisions.</p>
+    
+    <p>Dijksterhuis reports four simple but elegant studies supporting this argument. In one, participants assessed the quality of four hypothetical cars by considering either four attributes (a simple task) or twelve attributes (a complex task). Among participants who considered four attributes, those who were allowed to engage in undistracted deliberative thought did better at discriminating between the best and worst cars. Those who were distracted and thus unable to deliberate had to rely on their unconscious thinking and did less well. The opposite pattern emerged when people considered twelve criteria. In this case, conscious deliberation led to inferior discrimination and poor decisions.</p>
+    
+    <p>In another study, Dijksterhuis surveyed people shopping for clothes (“simple” products) and furniture (“complex” products). Compared with those who said they had deliberated long and hard, shoppers who bought with little conscious deliberation felt less happy with their simple clothing purchases but happier with the complex furniture purchases. Deliberation without attention actually produced better results as the decisions became more complex.</p>
+    
+    <p>From there, however, the researchers take a big leap. They write:</p>
+    
+    <p>There is no reason to assume that the deliberation-without-attention effect does not generalise to other types of choices – political, managerial or otherwise. In such cases, it should benefit the individual to think consciously about simple matters and to delegate thinking about more complicated matters to the unconscious.</p>
+    
+    <p>This radical inference contradicts standard political and managerial theory but doubtless comforts those in politics and management who always find the simple solution to the complex problem an attractive proposition. Indeed, one suspects many of our political leaders already embrace this wisdom.</p>
+    
+    <p>Still it is here, in the realms of society and its governance, that the more problematic implications of deliberation without attention begin to surface. Variables that can be neatly circumscribed in decisions about shopping lose clarity in a world of group dynamics, social interaction, history and politics. Two pertinent questions arise. First, what counts as a complex decision? And second, what counts as a good outcome?</p>
+    
+    <p>As social psychologist Kurt Lewin (1890-1947) noted, a “good” decision that nobody respects is actually bad. His classic studies of decision making showed that participating in deliberative processes makes people more likely to abide by the results. The issue here is that when political decision makers make mistakes, it is their politics, or the relation between their politics and our own, rather than psychology which is at fault.</p>
+    
+    <p>Gladwell’s book and Dijksterhuis’s paper are invaluable in pointing out the limitations of the conventional wisdom that decision quality rises with decision-making complexity. But this work still tempts us to believe that decision making is simply a matter of psychology, rather than also a question of politics, ideology and group membership. Avoiding social considerations in a search for general appeal can take us away from enlightenment rather than toward it.</p>
+    
+    <!-- 多加空白行防止加载不完全 -->
+    <p>&nbsp;</p>
+    <p>&nbsp;</p>
+    <p>&nbsp;</p>
+    <p>&nbsp;</p>
+  </section>
+  <div id="divider" title="Drag to resize"></div>
+  <section class="pane" id="right">
+    <h3>Questions</h3>
+    
+    <!-- Questions 27–31: Multiple Choice -->
+    <div class="group">
+      <h4>Questions 27–31</h4>
+      <p>Choose the correct letter, A, B, C or D.</p>
+      <p>Write the correct letter in boxes 27–31 on your answer sheet.</p>
+      
+      <a id="q27-anchor"></a>
+      <div id="q27-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+        <p class="question-number">27.</p>
+        <p>The legend of the Gordian knot is used to illustrate the idea that</p>
+        <div class="mcq-options">
+          <div class="mcq-option"><label><input name="q27" type="radio" value="A"> A. anyone can solve a difficult problem.</label></div>
+          <div class="mcq-option"><label><input name="q27" type="radio" value="B"> B. difficult problems can have easy solutions.</label></div>
+          <div class="mcq-option"><label><input name="q27" type="radio" value="C"> C. the solution to any problem requires a lot of thought.</label></div>
+          <div class="mcq-option"><label><input name="q27" type="radio" value="D"> D. people who can solve complex problems make good leaders.</label></div>
+        </div>
+      </div>
+      
+      <a id="q28-anchor"></a>
+      <div id="q28-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+        <p class="question-number">28.</p>
+        <p>The ‘conflict model’ of decision making proposed by Janis and Mann requires that</p>
+        <div class="mcq-options">
+          <div class="mcq-option"><label><input name="q28" type="radio" value="A"> A. opposing political parties be involved.</label></div>
+          <div class="mcq-option"><label><input name="q28" type="radio" value="B"> B. all important facts be considered.</label></div>
+          <div class="mcq-option"><label><input name="q28" type="radio" value="C"> C. people be encouraged to have different ideas.</label></div>
+          <div class="mcq-option"><label><input name="q28" type="radio" value="D"> D. previous similar situations be thoroughly examined.</label></div>
+        </div>
+      </div>
+      
+      <a id="q29-anchor"></a>
+      <div id="q29-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+        <p class="question-number">29.</p>
+        <p>According to recent thinking reinforced by Malcolm Gladwell, the best decisions</p>
+        <div class="mcq-options">
+          <div class="mcq-option"><label><input name="q29" type="radio" value="A"> A. involve consultation.</label></div>
+          <div class="mcq-option"><label><input name="q29" type="radio" value="B"> B. involve complex thought.</label></div>
+          <div class="mcq-option"><label><input name="q29" type="radio" value="C"> C. are made very quickly.</label></div>
+          <div class="mcq-option"><label><input name="q29" type="radio" value="D"> D. are the most attractive option.</label></div>
+        </div>
+      </div>
+      
+      <a id="q30-anchor"></a>
+      <div id="q30-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+        <p class="question-number">30.</p>
+        <p>Dijksterhuis and his colleagues claim in their article that</p>
+        <div class="mcq-options">
+          <div class="mcq-option"><label><input name="q30" type="radio" value="A"> A. our cognitive resources improve as tasks become more complex.</label></div>
+          <div class="mcq-option"><label><input name="q30" type="radio" value="B"> B. conscious decision making is negatively affected by task complexity.</label></div>
+          <div class="mcq-option"><label><input name="q30" type="radio" value="C"> C. unconscious decision making is a popular approach.</label></div>
+          <div class="mcq-option"><label><input name="q30" type="radio" value="D"> D. deliberation without attention defines the way we make decisions.</label></div>
+        </div>
+      </div>
+      
+      <a id="q31-anchor"></a>
+      <div id="q31-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+        <p class="question-number">31.</p>
+        <p>Dijksterhuis’s car study found that, in simple tasks, participants</p>
+        <div class="mcq-options">
+          <div class="mcq-option"><label><input name="q31" type="radio" value="A"> A. were involved in lengthy discussions.</label></div>
+          <div class="mcq-option"><label><input name="q31" type="radio" value="B"> B. found it impossible to make decisions quickly.</label></div>
+          <div class="mcq-option"><label><input name="q31" type="radio" value="C"> C. were unable to differentiate between the options.</label></div>
+          <div class="mcq-option"><label><input name="q31" type="radio" value="D"> D. could make a better choice when allowed to concentrate.</label></div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Questions 32–35: Drag and Drop Matching -->
+    <div class="group">
+      <h4>Questions 32–35</h4>
+      <p>Complete the summary below by dragging words from the list, A–I, to the corresponding spaces.</p>
+      
+      <p>Dijksterhuis’s shopping study and its conclusions</p>
+      <p>Using clothing and furniture as examples of different types of purchases, Dijksterhuis questioned shoppers on their satisfaction with what they had bought. People who spent <span class="question-number">32.</span><a id="q32-anchor"></a> 
+        <div class="summary-blank" data-question="q32"></div> 
+      time buying simple clothing items were more satisfied than those who had not. However, when buying furniture, shoppers made 
+        <span class="question-number">33.</span><a id="q33-anchor"></a> 
+        <div class="summary-blank" data-question="q33"></div> 
+      purchasing decisions if they didn’t think too hard. From this, the researchers concluded that in other choices, perhaps more important than shopping, 
+        <span class="question-number">34.</span><a id="q34-anchor"></a> 
+        <div class="summary-blank" data-question="q34"></div> 
+      decisions are best made by the unconscious. The writer comments that Dijksterhuis’s finding is apparently 
+        <span class="question-number">35.</span><a id="q35-anchor"></a> 
+        <div class="summary-blank" data-question="q35"></div> 
+      but nonetheless true.</p>
+      
+      <h5>Drag words from the list below:</h5>
+      <div class="summary-word-list">
+        <div class="summary-word-item" draggable="true" data-value="A">A. more</div>
+        <div class="summary-word-item" draggable="true" data-value="B">B. counterintuitive</div>
+        <div class="summary-word-item" draggable="true" data-value="C">C. simple</div>
+        <div class="summary-word-item" draggable="true" data-value="D">D. better</div>
+        <div class="summary-word-item" draggable="true" data-value="E">E. conscious</div>
+        <div class="summary-word-item" draggable="true" data-value="F">F. obvious</div>
+        <div class="summary-word-item" draggable="true" data-value="G">G. complex</div>
+        <div class="summary-word-item" draggable="true" data-value="H">H. less</div>
+        <div class="summary-word-item" draggable="true" data-value="I">I. worse</div>
+      </div>
+    </div>
+    
+    <!-- Questions 36–40: YES/NO/NOT GIVEN -->
+    <div class="group">
+      <h4>Questions 36–40</h4>
+      <p>Do the following statements agree with the views of the writer in Reading Passage 3?</p>
+      <p>In boxes 36–40 on your answer sheet, write</p>
+      <ul>
+        <li>YES if the statement agrees with the views of the writer</li>
+        <li>NO if the statement contradicts the views of the writer</li>
+        <li>NOT GIVEN if it is impossible to say what the writer thinks about this</li>
+      </ul>
+      
+      <a id="q36-anchor"></a>
+      <div id="q36-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+        <p class="question-number">36.</p>
+        <p>Dijksterhuis’s findings agree with existing political and management theories.</p>
+        <div class="ynng-options">
+          <div class="ynng-option"><label><input name="q36" type="radio" value="YES"> YES</label></div>
+          <div class="ynng-option"><label><input name="q36" type="radio" value="NO"> NO</label></div>
+          <div class="ynng-option"><label><input name="q36" type="radio" value="NOT GIVEN"> NOT GIVEN</label></div>
+        </div>
+      </div>
+      
+      <a id="q37-anchor"></a>
+      <div id="q37-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+        <p class="question-number">37.</p>
+        <p>Some political leaders seem to use deliberation without attention when making complex decisions.</p>
+        <div class="ynng-options">
+          <div class="ynng-option"><label><input name="q37" type="radio" value="YES"> YES</label></div>
+          <div class="ynng-option"><label><input name="q37" type="radio" value="NO"> NO</label></div>
+          <div class="ynng-option"><label><input name="q37" type="radio" value="NOT GIVEN"> NOT GIVEN</label></div>
+        </div>
+      </div>
+      
+      <a id="q38-anchor"></a>
+      <div id="q38-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+        <p class="question-number">38.</p>
+        <p>All political decisions are complex ones.</p>
+        <div class="ynng-options">
+          <div class="ynng-option"><label><input name="q38" type="radio" value="YES"> YES</label></div>
+          <div class="ynng-option"><label><input name="q38" type="radio" value="NO"> NO</label></div>
+          <div class="ynng-option"><label><input name="q38" type="radio" value="NOT GIVEN"> NOT GIVEN</label></div>
+        </div>
+      </div>
+      
+      <a id="q39-anchor"></a>
+      <div id="q39-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+        <p class="question-number">39.</p>
+        <p>We judge political errors according to our own political beliefs.</p>
+        <div class="ynng-options">
+          <div class="ynng-option"><label><input name="q39" type="radio" value="YES"> YES</label></div>
+          <div class="ynng-option"><label><input name="q39" type="radio" value="NO"> NO</label></div>
+          <div class="ynng-option"><label><input name="q39" type="radio" value="NOT GIVEN"> NOT GIVEN</label></div>
+        </div>
+      </div>
+      
+      <a id="q40-anchor"></a>
+      <div id="q40-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+        <p class="question-number">40.</p>
+        <p>Social considerations must be taken into account for any examination of decision making to prove useful.</p>
+        <div class="ynng-options">
+          <div class="ynng-option"><label><input name="q40" type="radio" value="YES"> YES</label></div>
+          <div class="ynng-option"><label><input name="q40" type="radio" value="NO"> NO</label></div>
+          <div class="ynng-option"><label><input name="q40" type="radio" value="NOT GIVEN"> NOT GIVEN</label></div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Submit & Reset Buttons -->
+    <div style="display:flex;gap:8px;margin-bottom:10px;">
+      <button class="primary" onclick="grade()">Submit</button>
+      <button onclick="resetForm()">Reset</button>
+      <button onclick="toggleNotes()">Notes</button>
+    </div>
+    
+    <!-- Results & Answer Key -->
+    <div id="results"></div>
+    <details class="answerbox" id="answerBox">
+      <summary>Show Answers (Click to Toggle) <span class="badge">Hidden</span></summary>
+      <div id="answerContent">
+        <h4>正确答案及解析</h4>
+        <table>
+          <tr>
+            <th>题号</th>
+            <th>答案</th>
+            <th>精确定位句(第X段)</th>
+            <th>解析</th>
+          </tr>
+          <!-- 27-31 选择题 -->
+          <tr>
+            <td>27</td>
+            <td>B</td>
+            <td>第1段:"Ever since, the notion of a 'Gordian solution' has referred to the attractiveness of a simple answer to an otherwise intractable problem."</td>
+            <td>戈尔迪之结的传说用于说明"棘手的问题（intractable problem）可拥有简单解法（simple answer）"，对应选项B。排除：A（任何人可解无提及）；C（需大量思考与原文相反）；D（善解复杂问题者为好领袖无提及）。</td>
+          </tr>
+          <tr>
+            <td>28</td>
+            <td>B</td>
+            <td>第2段:"Decisions made without thoroughly canvassing, surveying, weighing, examining and re-examining relevant information and options would be sub-optimal and often disastrous."</td>
+            <td>"冲突模型"要求"彻底审视所有相关信息和选项"，即"考虑所有重要事实（all important facts）"，对应选项B。排除：A（反对政党参与无提及）；C（鼓励不同观点无提及）；D（审查过往类似情况无提及）。</td>
+          </tr>
+          <tr>
+            <td>29</td>
+            <td>C</td>
+            <td>第3段:"a growing body of work suggests that in many situations simple 'snap' decisions will be routinely superior to more complex ones – an idea that gained widespread public appeal with Malcolm Gladwell’s best-selling book Blink (2005)."</td>
+            <td>Gladwell强化的观点是"快速决策（snap decisions）优于复杂决策"，"snap"即"very quickly"，对应选项C。排除：A（咨询无提及）；B（复杂思考与原文相反）；D（最具吸引力选项无提及）。</td>
+          </tr>
+          <tr>
+            <td>30</td>
+            <td>B</td>
+            <td>第4段:"Its core argument is that to be effective, conscious (deliberative) decision making requires cognitive resources. Because increasingly complex decisions place increasing strain on those resources, the quality of our decisions declines as their complexity increases."</td>
+            <td>研究团队主张"有意识决策需认知资源，任务越复杂，认知负担越重，决策质量下降"，即"有意识决策受任务复杂性负面影响"，对应选项B。排除：A（认知资源提升与原文相反）；C（无意识决策流行无提及）；D（无注意深思定义决策方式无提及）。</td>
+          </tr>
+          <tr>
+            <td>31</td>
+            <td>D</td>
+            <td>第5段:"Among participants who considered four attributes, those who were allowed to engage in undistracted deliberative thought did better at discriminating between the best and worst cars."</td>
+            <td>汽车实验中，简单任务（4个属性）下，"不受干扰、能专注思考的参与者决策更好"，即"专注时能做出更好选择"，对应选项D。排除：A（冗长讨论无提及）；B（无法快速决策无提及）；C（无法区分选项与原文相反）。</td>
+          </tr>
+          <!-- 32-35 摘要填空 -->
+          <tr>
+            <td>32</td>
+            <td>A (more)</td>
+            <td>第6段:"Compared with those who said they had deliberated long and hard, shoppers who bought with little conscious deliberation felt less happy with their simple clothing purchases..."</td>
+            <td>题干"花______时间买简单衣物更满意"，原文"深思熟虑（deliberated long and hard）的购物者对简单衣物更满意"，即"花更多时间"，填A。</td>
+          </tr>
+          <tr>
+            <td>33</td>
+            <td>D (better)</td>
+            <td>第6段:"...but happier with the complex furniture purchases. Deliberation without attention actually produced better results as the decisions became more complex."</td>
+            <td>题干"买家具时，不深思熟虑会做出______决策"，原文"无注意深思产生更好结果"，填D。</td>
+          </tr>
+          <tr>
+            <td>34</td>
+            <td>G (complex)</td>
+            <td>第7段:"it should benefit the individual to think consciously about simple matters and to delegate thinking about more complicated matters to the unconscious."</td>
+            <td>题干"______决策最好由无意识完成"，原文"更复杂的事情（more complicated matters）交给无意识"，"complicated"对应"complex"，填G。</td>
+          </tr>
+          <tr>
+            <td>35</td>
+            <td>B (counterintuitive)</td>
+            <td>第4段:"The seemingly counter-intuitive conclusion is that although conscious thought enhances simple decisions, the opposite holds true for more complex decisions."</td>
+            <td>题干"研究发现明显______但真实"，原文称结论"看似违反直觉（counter-intuitive）"，填B。</td>
+          </tr>
+          <!-- 36-40 YES/NO/NOT GIVEN -->
+          <tr>
+            <td>36</td>
+            <td>NO</td>
+            <td>第8段:"This radical inference contradicts standard political and managerial theory..."</td>
+            <td>原文明确"研究结论与现有政治和管理理论相矛盾（contradicts）"，与题干"一致（agree with）"完全相反，故为NO。</td>
+          </tr>
+          <tr>
+            <td>37</td>
+            <td>YES</td>
+            <td>第8段:"Indeed, one suspects many of our political leaders already embrace this wisdom."</td>
+            <td>"this wisdom"指代前文"复杂决策交给无意识（deliberation without attention）"，即"部分政治领袖似乎在使用该方式"，与题干一致，故为YES。</td>
+          </tr>
+          <tr>
+            <td>38</td>
+            <td>NOT GIVEN</td>
+            <td>第9段:"First, what counts as a complex decision?"</td>
+            <td>原文仅提出"何为复杂决策"的疑问，未断言"所有政治决策都是复杂的"，无法判断作者态度，故为NOT GIVEN。</td>
+          </tr>
+          <tr>
+            <td>39</td>
+            <td>YES</td>
+            <td>第10段:"when political decision makers make mistakes, it is their politics, or the relation between their politics and our own, rather than psychology which is at fault."</td>
+            <td>原文"政治决策者犯错时，问题在于其政治立场或与我们立场的关系"，即"我们根据自身政治信念判断政治错误"，与题干一致，故为YES。</td>
+          </tr>
+          <tr>
+            <td>40</td>
+            <td>YES</td>
+            <td>第11段:"Avoiding social considerations in a search for general appeal can take us away from enlightenment rather than toward it."</td>
+            <td>原文"忽视社会因素会偏离认知，而非接近"，即"研究决策需纳入社会因素才能有用"，与题干"必须考虑社会因素"一致，故为YES。</td>
+          </tr>
+        </table>
+      </div>
+    </details>
+  </section>
+</div>
+<!-- 文本选择工具栏 -->
+<div aria-label="Selection tools" id="selbar" role="toolbar">
+  <button id="btnHL">Highlight</button>
+  <button id="btnUH">Remove Highlight</button>
+  <button id="btnNote">Add to Notes</button>
+</div>
+<!-- 笔记面板 -->
+<div id="notes">
+  <header>
+    <strong>Notes</strong>
+    <div>
+      <button id="btnCopy">Copy</button>
+      <button id="btnClose">Close</button>
+    </div>
+  </header>
+  <textarea id="noteArea" placeholder="Type your notes here..."></textarea>
+</div>
+<!-- 提示框 -->
+<div id="toast"></div>
+<script>
+// 计时器核心功能
+let _t = 0; 
+const _timerEl = document.getElementById('timer');
+let timerInterval; // 计时器间隔ID，用于后续停止
+// 启动计时器
+function startTimer() {
+  timerInterval = setInterval(() => { 
+    _t++; 
+    const m = String(Math.floor(_t/60)).padStart(2, '0'); 
+    const s = String(_t%60).padStart(2, '0'); 
+    _timerEl.textContent = `${m}:${s}`; 
+  }, 1000);
+}
+// 页面加载时启动计时器
+window.onload = function() {
+  startTimer();
+  initDragAndDrop();
+};
+
+// 拖拽匹配功能初始化
+function initDragAndDrop() {
+  const draggableItems = document.querySelectorAll('.summary-word-item');
+  const dropZones = document.querySelectorAll('.summary-blank');
+  
+  // 为每个可拖拽元素添加事件监听
+  draggableItems.forEach(item => {
+    item.addEventListener('dragstart', handleDragStart);
+    item.addEventListener('dragend', handleDragEnd);
+  });
+  
+  // 为每个放置区域添加事件监听
+  dropZones.forEach(zone => {
+    zone.addEventListener('dragover', handleDragOver);
+    zone.addEventListener('dragenter', handleDragEnter);
+    zone.addEventListener('dragleave', handleDragLeave);
+    zone.addEventListener('drop', handleDrop);
+    zone.addEventListener('click', handleZoneClick); // 点击移除已放置的元素
+  });
+}
+
+// 拖拽开始处理函数
+function handleDragStart(e) {
+  // 存储被拖拽元素的值
+  e.dataTransfer.setData('text/plain', this.dataset.value);
+  e.dataTransfer.setData('text/html', this.innerHTML);
+  
+  // 添加拖拽状态样式
+  setTimeout(() => {
+    this.classList.add('dragging');
+  }, 0);
+}
+
+// 拖拽结束处理函数
+function handleDragEnd() {
+  // 移除拖拽状态样式
+  this.classList.remove('dragging');
+  
+  // 重置所有放置区域的高亮状态
+  document.querySelectorAll('.summary-blank').forEach(zone => {
+    zone.classList.remove('highlight');
+  });
+}
+
+// 拖拽经过处理函数
+function handleDragOver(e) {
+  e.preventDefault(); // 允许放置
+}
+
+// 拖拽进入处理函数
+function handleDragEnter(e) {
+  e.preventDefault();
+  // 如果区域为空，添加高亮样式
+  if (!this.hasChildNodes()) {
+    this.classList.add('highlight');
+  }
+}
+
+// 拖拽离开处理函数
+function handleDragLeave() {
+  // 移除高亮样式
+  this.classList.remove('highlight');
+}
+
+// 放置处理函数
+function handleDrop(e) {
+  e.preventDefault();
+  this.classList.remove('highlight');
+  
+  // 获取拖拽的数据
+  const value = e.dataTransfer.getData('text/plain');
+  const html = e.dataTransfer.getData('text/html');
+  
+  // 如果区域已有内容，先将原有内容放回选项列表
+  if (this.hasChildNodes()) {
+    const existingValue = this.dataset.value;
+    const existingElement = document.querySelector(`.summary-word-item[data-value="${existingValue}"]`);
+    if (existingElement) {
+      existingElement.classList.remove('used');
+    }
+    this.removeAttribute('data-value');
+    this.innerHTML = '';
+    this.classList.remove('filled');
+  }
+  
+  // 将拖拽的元素放入放置区域
+  this.innerHTML = html;
+  this.dataset.value = value;
+  this.classList.add('filled');
+  
+  // 标记原选项为已使用
+  const draggedItem = document.querySelector(`.summary-word-item[data-value="${value}"]`);
+  if (draggedItem) {
+    draggedItem.classList.add('used');
+  }
+  
+  // 更新导航状态
+  const questionId = this.dataset.question;
+  document.getElementById(`${questionId}-nav`).classList.add('answered');
+}
+
+// 点击放置区域移除内容
+function handleZoneClick() {
+  if (this.hasChildNodes()) {
+    const value = this.dataset.value;
+    
+    // 将选项放回可用列表
+    const item = document.querySelector(`.summary-word-item[data-value="${value}"]`);
+    if (item) {
+      item.classList.remove('used');
+    }
+    
+    // 清空放置区域
+    this.innerHTML = '';
+    this.removeAttribute('data-value');
+    this.classList.remove('filled');
+    
+    // 更新导航状态
+    const questionId = this.dataset.question;
+    document.getElementById(`${questionId}-nav`).classList.remove('answered');
+  }
+}
+
+// 拖拽分隔线调整左右面板宽度
+const divider = document.getElementById('divider');
+const leftPane = document.getElementById('left');
+const rightPane = document.getElementById('right');
+let isDragging = false;
+divider.addEventListener('mousedown', (e) => {
+  isDragging = true;
+  document.body.style.cursor = 'ew-resize';
+  e.preventDefault();
+});
+window.addEventListener('mousemove', (e) => {
+  if (!isDragging) return;
+  const containerRect = document.querySelector('.shell').getBoundingClientRect();
+  let x = e.clientX - containerRect.left;
+  // 限制最小宽度，防止面板过窄
+  x = Math.max(280, Math.min(containerRect.width - 320, x));
+  leftPane.style.flex = `0 0 ${x}px`;
+  rightPane.style.flex = '1 1 auto';
+});
+window.addEventListener('mouseup', () => {
+  if (isDragging) {
+    isDragging = false;
+    document.body.style.cursor = '';
+  }
+});
+// 触摸设备支持
+divider.addEventListener('touchstart', (e) => {
+  isDragging = true;
+  e.preventDefault();
+}, { passive: false });
+window.addEventListener('touchmove', (e) => {
+  if (!isDragging) return;
+  const containerRect = document.querySelector('.shell').getBoundingClientRect();
+  let x = e.touches[0].clientX - containerRect.left;
+  x = Math.max(280, Math.min(containerRect.width - 320, x));
+  leftPane.style.flex = `0 0 ${x}px`;
+  rightPane.style.flex = '1 1 auto';
+}, { passive: false });
+window.addEventListener('touchend', () => {
+  isDragging = false;
+});
+// 文本高亮功能
+const selbar = document.getElementById('selbar');
+const btnHL = document.getElementById('btnHL');
+const btnUH = document.getElementById('btnUH');
+const btnNote = document.getElementById('btnNote');
+let lastRange = null;
+let currentHlNode = null;
+let keepToolbar = false;
+// 定位选择工具栏
+function positionSelbar(rect) {
+  selbar.style.display = 'flex';
+  requestAnimationFrame(() => {
+    const top = window.scrollY + rect.top - selbar.offsetHeight - 8;
+    const leftPos = window.scrollX + rect.left + rect.width/2 - selbar.offsetWidth/2;
+    // 确保工具栏不超出视口
+    selbar.style.top = (top > 0 ? top : window.scrollY + rect.bottom + 8) + 'px';
+    selbar.style.left = Math.max(8, leftPos) + 'px';
+  });
+}
+// 更新工具栏状态
+function updateSelbar() {
+  const selection = window.getSelection();
+  if (!selection || selection.rangeCount === 0 || selection.isCollapsed) {
+    selbar.style.display = 'none';
+    currentHlNode = null;
+    return;
+  }
+  const range = selection.getRangeAt(0);
+  lastRange = range.cloneRange();
+  currentHlNode = null;
+  positionSelbar(range.getBoundingClientRect());
+}
+// 监听文本选择事件（左右面板均支持高亮）
+document.getElementById('left').addEventListener('mouseup', updateSelbar);
+document.getElementById('right').addEventListener('mouseup', updateSelbar);
+document.addEventListener('selectionchange', () => {
+  const selection = window.getSelection();
+  if (!selection || selection.rangeCount === 0 || selection.isCollapsed) {
+    if (!keepToolbar && !currentHlNode) selbar.style.display = 'none';
+  }
+});
+// 滚动时重新定位工具栏
+document.addEventListener('scroll', () => {
+  if (selbar.style.display === 'flex') updateSelbar();
+});
+// 点击高亮文本时显示工具栏
+document.addEventListener('mousedown', (e) => {
+  keepToolbar = e.target.classList?.contains('hl') || false;
+}, true);
+document.addEventListener('click', (e) => {
+  if (e.target.classList?.contains('hl')) {
+    currentHlNode = e.target;
+    lastRange = null;
+    positionSelbar(e.target.getBoundingClientRect());
+    const selection = window.getSelection();
+    if (selection) selection.removeAllRanges();
+    setTimeout(() => keepToolbar = false, 0);
+  }
+}, true);
+// 执行高亮（支持所有文本）
+function doHighlight() {
+  if (currentHlNode || !lastRange || lastRange.collapsed) return;
+  const highlightSpan = document.createElement('span');
+  highlightSpan.className = 'hl';
+  try {
+    lastRange.surroundContents(highlightSpan);
+  } catch (e) {
+    // 处理跨元素选择的情况
+    const wrapSpan = document.createElement('span');
+    wrapSpan.className = 'hl';
+    wrapSpan.appendChild(lastRange.cloneContents());
+    lastRange.deleteContents();
+    lastRange.insertNode(wrapSpan);
+  }
+  selbar.style.display = 'none';
+  showToast('Text highlighted');
+}
+// 移除高亮
+function removeHighlight() {
+  if (currentHlNode) {
+    // 移除单个高亮元素
+    const parent = currentHlNode.parentNode;
+    while (currentHlNode.firstChild) {
+      parent.insertBefore(currentHlNode.firstChild, currentHlNode);
+    }
+    parent.removeChild(currentHlNode);
+    parent.normalize(); // 合并相邻文本节点
+    currentHlNode = null;
+    selbar.style.display = 'none';
+    showToast('Highlight removed');
+    return;
+  }
+  if (!lastRange) return;
+  // 移除选择范围内的所有高亮
+  const selRect = lastRange.getBoundingClientRect();
+  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_ELEMENT);
+  const toRemove = [];
+  let node;
+  while ((node = walker.nextNode())) {
+    if (node.classList?.contains('hl')) {
+      const nodeRect = node.getBoundingClientRect();
+      // 判断节点是否在选择范围内
+      if (!(nodeRect.right < selRect.left || nodeRect.left > selRect.right || 
+            nodeRect.bottom < selRect.top || nodeRect.top > selRect.bottom)) {
+        toRemove.push(node);
+      }
+    }
+  }
+  toRemove.forEach(el => {
+    const parent = el.parentNode;
+    while (el.firstChild) parent.insertBefore(el.firstChild, el);
+    parent.removeChild(el);
+    parent.normalize();
+  });
+  selbar.style.display = 'none';
+  showToast('Highlights removed');
+}
+// 绑定高亮按钮事件
+btnHL.addEventListener('click', doHighlight);
+btnUH.addEventListener('click', removeHighlight);
+// 笔记功能
+const notesPanel = document.getElementById('notes');
+const noteArea = document.getElementById('noteArea');
+const btnCopy = document.getElementById('btnCopy');
+const btnCloseNotes = document.getElementById('btnClose');
+// 切换笔记面板显示
+function toggleNotes() {
+  notesPanel.style.display = notesPanel.style.display === 'flex' ? 'none' : 'flex';
+}
+// 关闭笔记面板
+btnCloseNotes.addEventListener('click', toggleNotes);
+// 复制笔记
+btnCopy.addEventListener('click', async () => {
+  await navigator.clipboard.writeText(noteArea.value || '');
+  showToast('Notes copied to clipboard');
+});
+// 选中文本添加到笔记
+btnNote.addEventListener('click', () => {
+  let selectedText = '';
+  if (currentHlNode) {
+    selectedText = currentHlNode.textContent.trim();
+  } else if (lastRange) {
+    const frag = lastRange.cloneContents();
+    selectedText = frag.textContent.trim();
+  }
+  toggleNotes();
+  if (selectedText) {
+    noteArea.value = noteArea.value ? `${noteArea.value}\n> ${selectedText}\n` : `> ${selectedText}\n`;
+    // 滚动到笔记底部
+    noteArea.scrollTop = noteArea.scrollHeight;
+  }
+  selbar.style.display = 'none';
+});
+// 提示框功能
+const toastEl = document.getElementById('toast');
+function showToast(message) {
+  toastEl.textContent = message;
+  toastEl.style.display = 'block';
+  setTimeout(() => toastEl.style.display = 'none', 1500);
+}
+// 字体设置功能（应用于所有字体）
+const settingsModal = document.getElementById('settingsModal');
+const body = document.body;
+// 打开字体设置模态框
+function openSettingsModal() {
+  settingsModal.style.display = 'block';
+}
+// 关闭字体设置模态框
+function closeSettingsModal() {
+  settingsModal.style.display = 'none';
+}
+// 点击模态框外部关闭
+window.addEventListener('click', (e) => {
+  if (e.target === settingsModal) closeSettingsModal();
+});
+// 切换字体大小（影响网页所有元素）
+document.querySelectorAll('.font-option').forEach(option => {
+  option.addEventListener('click', () => {
+    const size = option.dataset.size;
+    // 移除所有字体类，添加选中的类（body类控制所有元素继承）
+    body.classList.remove('font-regular', 'font-moderate', 'font-large');
+    body.classList.add(`font-${size}`);
+    // 显示提示
+    const sizeName = size === 'regular' ? 'Regular (16px)' : 
+                     size === 'moderate' ? 'Moderate (18px)' : 'Large (20px)';
+    showToast(`Font size set to ${sizeName}`);
+    closeSettingsModal();
+  });
+});
+// 答案与评分功能（Submit后停止计时器）
+const answers = {
+  q27: 'B',
+  q28: 'B',
+  q29: 'C',
+  q30: 'B',
+  q31: 'D',
+  q32: 'A',
+  q33: 'D',
+  q34: 'G',
+  q35: 'B',
+  q36: 'NO',
+  q37: 'YES',
+  q38: 'NOT GIVEN',
+  q39: 'YES',
+  q40: 'YES'
+};
+// 评分函数（Submit后执行，包含停止计时器）
+function grade() {
+  // 1. 停止计时器
+  clearInterval(timerInterval);
+  
+  // 2. 计算得分
+  let total = 14;
+  let correct = 0;
+  const resultLines = [];
+  
+  // 检查27-31题（选择题）
+  for (let i = 27; i <= 31; i++) {
+    const qName = `q${i}`;
+    const selected = document.querySelector(`input[name="${qName}"]:checked`);
+    const userAns = selected ? selected.value : 'No answer';
+    const correctAns = answers[qName];
+    const isCorrect = userAns === correctAns;
+    if (isCorrect) correct++;
+    resultLines.push(`${qName.toUpperCase()}: ${userAns} ${isCorrect ? '✅ Correct' : `❌ Incorrect (Correct: ${correctAns})`}`);
+  }
+  
+  // 检查32-35题（拖拽匹配题）
+  for (let i = 32; i <= 35; i++) {
+    const qName = `q${i}`;
+    const dropZone = document.querySelector(`.summary-blank[data-question="${qName}"]`);
+    const userAns = dropZone ? dropZone.dataset.value || 'No answer' : 'No answer';
+    const correctAns = answers[qName];
+    const isCorrect = userAns === correctAns;
+    if (isCorrect) correct++;
+    resultLines.push(`${qName.toUpperCase()}: ${userAns || 'No answer'} ${isCorrect ? '✅ Correct' : `❌ Incorrect (Correct: ${correctAns})`}`);
+  }
+  
+  // 检查36-40题（YES/NO/NOT GIVEN）
+  for (let i = 36; i <= 40; i++) {
+    const qName = `q${i}`;
+    const selected = document.querySelector(`input[name="${qName}"]:checked`);
+    const userAns = selected ? selected.value : 'No answer';
+    const correctAns = answers[qName];
+    const isCorrect = userAns === correctAns;
+    if (isCorrect) correct++;
+    resultLines.push(`${qName.toUpperCase()}: ${userAns} ${isCorrect ? '✅ Correct' : `❌ Incorrect (Correct: ${correctAns})`}`);
+  }
+  
+  // 3. 显示结果
+  const accuracy = Math.round((correct / total) * 100);
+  const resultsHTML = `
+    <p><strong>Score:</strong> ${correct}/${total} (Accuracy: ${accuracy}%)</p>
+    <pre>${resultLines.join('\n')}</pre>
+  `;
+  document.getElementById('results').innerHTML = resultsHTML;
+  
+  // 4. 展开答案面板
+  const answerBox = document.getElementById('answerBox');
+  answerBox.open = true;
+  document.querySelector('#answerBox .badge').textContent = 'Visible';
+  
+  // 5. 标记所有题目为已回答
+  document.querySelectorAll('.q-item').forEach(item => {
+    item.classList.add('answered');
+  });
+}
+// 重置功能（重置计时器、选项、高亮等）
+function resetForm() {
+  // 1. 重置计时器
+  clearInterval(timerInterval);
+  _t = 0;
+  _timerEl.textContent = '00:00';
+  startTimer();
+  
+  // 2. 重置所有单选按钮
+  document.querySelectorAll('input[type="radio"]').forEach(radio => {
+    radio.checked = false;
+  });
+  
+  // 3. 重置拖拽匹配题
+  const dropZones = document.querySelectorAll('.summary-blank');
+  dropZones.forEach(zone => {
+    if (zone.hasChildNodes()) {
+      const value = zone.dataset.value;
+      const item = document.querySelector(`.summary-word-item[data-value="${value}"]`);
+      if (item) {
+        item.classList.remove('used');
+      }
+      zone.innerHTML = '';
+      zone.removeAttribute('data-value');
+      zone.classList.remove('filled');
+    }
+  });
+  
+  // 4. 重置结果和答案面板
+  document.getElementById('results').innerHTML = '';
+  const answerBox = document.getElementById('answerBox');
+  answerBox.open = false;
+  document.querySelector('#answerBox .badge').textContent = 'Hidden';
+  
+  // 5. 重置导航栏已回答状态
+  document.querySelectorAll('.q-item').forEach(item => {
+    item.classList.remove('answered');
+  });
+  
+  // 6. 重置笔记
+  noteArea.value = '';
+  notesPanel.style.display = 'none';
+  
+  // 7. 移除所有高亮
+  document.querySelectorAll('.hl').forEach(hl => {
+    const parent = hl.parentNode;
+    while (hl.firstChild) parent.insertBefore(hl.firstChild, hl);
+    parent.removeChild(hl);
+    parent.normalize();
+  });
+}
+// 滚动到指定题目
+function scrollToElement(id) {
+  const element = document.getElementById(id);
+  if (element) {
+    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  // 高亮导航项
+  document.querySelectorAll('.q-item').forEach(item => {
+    item.classList.remove('active');
+  });
+  const navItem = document.getElementById(id.replace('-anchor', '-nav'));
+  if (navItem) {
+    navItem.classList.add('active');
+    setTimeout(() => navItem.classList.remove('active'), 800);
+  }
+}
+// 监听输入，标记题目为已回答
+(function() {
+  // 监听27-31、36-40题单选按钮
+  for (let i = 27; i <= 31; i++) {
+    document.querySelectorAll(`input[name="q${i}"]`).forEach(radio => {
+      radio.addEventListener('change', () => {
+        document.getElementById(`q${i}-nav`).classList.add('answered');
+      });
+    });
+  }
+  for (let i = 36; i <= 40; i++) {
+    document.querySelectorAll(`input[name="q${i}"]`).forEach(radio => {
+      radio.addEventListener('change', () => {
+        document.getElementById(`q${i}-nav`).classList.add('answered');
+      });
+    });
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>The Pirahã people of Brazil - Reading Passage</title>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<style>
+  :root { 
+    --line:#e5e7eb; 
+    --bg:#f6f7fb; 
+    --panel:#fff; 
+    --accent:#3b82f6; 
+    --muted:#6b7280; 
+    --shadow:0 6px 20px rgba(0,0,0,.12); 
+    /* 字体大小变量 - 基础regular，逐级放大 */
+    --font-size-regular: 16px;   /* 基础大小 */
+    --font-size-moderate: 18px;  /* 比regular大1号 */
+    --font-size-large: 20px;     /* 比moderate大1号 */
+  }
+  /* 字体大小类 - 所有元素继承 */
+  .font-regular {
+    font-size: var(--font-size-regular) !important;
+  }
+  .font-moderate {
+    font-size: var(--font-size-moderate) !important;
+  }
+  .font-large {
+    font-size: var(--font-size-large) !important;
+  }
+  * { 
+    box-sizing: border-box; 
+    font-size: inherit; /* 所有元素继承父级字体大小 */
+  }
+  html,body { 
+    height:100%; 
+    font-size: var(--font-size-regular); /* 默认regular */
+  }
+  body { 
+    margin:0; 
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; 
+    background:var(--bg); 
+  }
+  #timer-container {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  #timer { 
+    position: static; 
+    display: inline-block; 
+    background:#fff; 
+    border:1px solid var(--line); 
+    border-radius:10px; 
+    padding:2px 8px; 
+    vertical-align: middle; 
+  }
+  #settingsBtn {
+    padding:2px 8px;
+    border:1px solid var(--line);
+    border-radius:10px;
+    background:#fff;
+    cursor:pointer;
+  }
+  #settingsModal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:16px;
+    box-shadow:var(--shadow);
+    z-index: 1000;
+    display: none;
+  }
+  #settingsModal h4 {
+    margin-top:0;
+    font-weight: 600;
+  }
+  #settingsModal .font-option {
+    margin:8px 0;
+    cursor:pointer;
+    padding:4px 8px;
+    border-radius:6px;
+  }
+  #settingsModal .font-option:hover {
+    background:#f1f5f9;
+  }
+  #settingsModal .close-modal {
+    margin-top:12px;
+    padding:6px 12px;
+    border:1px solid var(--line);
+    border-radius:8px;
+    background:var(--accent);
+    color:#fff;
+    cursor:pointer;
+  }
+  .shell { 
+    display:flex; 
+    height:100vh; 
+    width:100%; 
+  }
+  .pane { 
+    background:var(--panel); 
+    overflow:auto; 
+    padding:20px; 
+  }
+  #left { 
+    flex: 0 0 50%; 
+    min-width: 280px; 
+  }
+  #right { 
+    flex: 1 1 auto; 
+    min-width: 320px; 
+    background:#fbfbff; 
+    border-left:1px solid var(--line); 
+  }
+  #divider { 
+    flex: 0 0 8px; 
+    background: linear-gradient(90deg,#e5e7eb,#d1d5db); 
+    cursor: ew-resize; 
+    position:relative; 
+    z-index: 5; 
+    user-select:none; 
+  }
+  h2,h3,h4 { 
+    margin:0 0 10px; 
+    font-weight: 600; 
+  }
+  #left p { 
+    margin: 0 0 12px; 
+    line-height: 1.6; 
+    word-break: normal; 
+    overflow-wrap: normal; 
+    hyphens: none; 
+  }
+  #left .section-heading { 
+    font-weight: 600; 
+    margin-top: 20px; 
+    margin-bottom: 8px; 
+  }
+  .group { 
+    background:#fff; 
+    border:1px solid var(--line); 
+    border-radius:10px; 
+    padding:12px; 
+    margin-bottom:14px; 
+  }
+  table { 
+    border-collapse: collapse; 
+    width:100%; 
+    margin: 10px 0;
+  }
+  th, td { 
+    border:1px solid var(--line); 
+    padding:6px; 
+    text-align:left; 
+  }
+  th {
+    background-color: #f1f5f9;
+    font-weight: 600;
+  }
+  button { 
+    padding:8px 12px; 
+    border:1px solid var(--line); 
+    border-radius:10px; 
+    background:#fff; 
+    cursor:pointer; 
+  }
+  button.primary { 
+    background:var(--accent); 
+    color:#fff; 
+    border-color:#3b82f6; 
+  }
+  #results { 
+    background:#fff; 
+    border:1px solid var(--line); 
+    border-radius:10px; 
+    padding:10px; 
+    margin-bottom:14px;
+  }
+  .hl { 
+    background:#fff3a3; 
+    box-shadow: inset 0 -2px 0 rgba(0,0,0,.05); 
+    cursor: pointer; 
+  }
+  .hl:hover { 
+    filter: brightness(0.98); 
+  }
+  #selbar { 
+    position: absolute; 
+    display:none; 
+    z-index: 6000; 
+    background:#111; 
+    color:#fff; 
+    border-radius: 8px; 
+    padding: 6px; 
+    box-shadow: var(--shadow); 
+    font-size: 13px; 
+    gap:6px; 
+    align-items: center; 
+  }
+  #selbar button { 
+    background: transparent; 
+    color:#fff; 
+    border: 1px solid rgba(255,255,255,.25); 
+    padding: 4px 8px; 
+    border-radius: 6px; 
+    cursor:pointer; 
+  }
+  #selbar button:hover { 
+    border-color:#fff; 
+  }
+  #notes { 
+    position: fixed; 
+    right: 12px; 
+    bottom: 12px; 
+    width: 320px; 
+    height: 42vh; 
+    background:#fff; 
+    border:1px solid var(--line); 
+    border-radius: 12px; 
+    display:none; 
+    flex-direction: column; 
+    z-index:1500; 
+    box-shadow: var(--shadow); 
+  }
+  #notes header { 
+    display:flex; 
+    align-items:center; 
+    justify-content: space-between; 
+    padding:8px 10px; 
+    border-bottom:1px solid var(--line); 
+  }
+  #notes textarea { 
+    flex:1; 
+    border:0; 
+    padding:10px; 
+    resize:none; 
+    line-height:1.5; 
+  }
+  #toast { 
+    position: fixed; 
+    left:50%; 
+    transform: translateX(-50%); 
+    bottom: 24px; 
+    background:#111; 
+    color:#fff; 
+    padding:8px 12px; 
+    border-radius: 8px; 
+    display:none; 
+    z-index:2500; 
+  }
+  .answer-option {
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin:4px 0 8px;
+  }
+  .answer-option label {
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    gap:4px;
+  }
+  .mcq-option {
+    margin: 6px 0;
+    padding: 4px;
+    cursor: pointer;
+  }
+  .mcq-option input {
+    margin-right: 8px;
+  }
+  .summary-option {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 10px 0;
+  }
+  .summary-option label {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 6px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+  }
+  .tf-option {
+    display: flex;
+    gap: 12px;
+    margin: 8px 0;
+  }
+  .tf-option label {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  input.blank {
+    width: 30%; /* 缩小填空长度 */
+    padding: 8px;
+    margin: 0 8px;
+    border:1px solid var(--line);
+    border-radius:6px;
+  }
+  .question-number {
+    font-weight: 600;
+  }
+  body { 
+    padding-bottom: 82px; 
+  }
+  .practice-nav { 
+    background:#fff; 
+    border-bottom:2px solid var(--line); 
+    padding:12px 20px; 
+    display:flex; 
+    align-items:center; 
+    gap:20px; 
+    box-shadow:0 2px 4px rgba(0,0,0,.05); 
+    flex-wrap:wrap; 
+    position:fixed; 
+    left:0; 
+    right:0; 
+    bottom:0; 
+    border-top:2px solid var(--line); 
+    border-bottom:0; 
+    z-index:4000; 
+  }
+  .practice-nav .title { 
+    font-weight:600; 
+    color:var(--muted); 
+  }
+  .practice-nav .questions { 
+    display:flex; 
+    gap:8px; 
+    align-items:center; 
+    flex-wrap:wrap; 
+  }
+  .practice-nav .q-item { 
+    padding:6px 10px; 
+    border:1px solid var(--line); 
+    border-radius:6px; 
+    background:#fff; 
+    cursor:pointer; 
+    transition:all 0.2s; 
+    min-width:36px; 
+    text-align:center; 
+  }
+  .practice-nav .q-item:hover { 
+    background:#f1f5f9; 
+    border-color:var(--accent); 
+  }
+  .practice-nav .q-item.answered { 
+    background:#e0e7ff; 
+    border-color:var(--accent); 
+    color:var(--accent); 
+    font-weight:500; 
+  }
+  .practice-nav .q-item.active { 
+    background:var(--accent); 
+    color:#fff; 
+    border-color:var(--accent); 
+  }
+  details.answerbox summary { 
+    cursor: pointer; 
+    user-select:none; 
+    list-style: none; 
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  details.answerbox summary::before {
+    content: "▼";
+    font-size: 12px;
+    transition: transform 0.2s;
+  }
+  details.answerbox[open] summary::before {
+    transform: rotate(180deg);
+  }
+  details.answerbox { 
+    border:1px dashed var(--line); 
+    border-radius:10px; 
+    padding:8px 10px; 
+    background:#fff; 
+    margin-bottom:14px;
+  }
+  .badge { 
+    display:inline-block; 
+    background:#eef2ff; 
+    color:#4338ca; 
+    padding:2px 8px; 
+    border-radius:999px; 
+    font-size:12px; 
+    margin-left:6px; 
+  }
+  .explanation-text {
+    margin-bottom: 4px;
+  }
+  .explanation-original {
+    font-style: italic;
+    color: #555;
+    font-size: 0.9em;
+    margin-top: 0;
+  }
+
+  /* 拖拽填空相关样式 */
+  .drag-drop-container {
+    margin: 15px 0;
+  }
+  
+  .summary-text {
+    line-height: 1.8;
+    margin-bottom: 20px;
+  }
+  
+  .drop-target {
+    display: inline-block;
+    width: 120px;
+    min-height: 36px;
+    margin: 0 8px;
+    padding: 6px 8px;
+    border: 2px dashed #cbd5e1;
+    border-radius: 6px;
+    background-color: #f8fafc;
+    text-align: center;
+    vertical-align: middle;
+    transition: all 0.2s ease;
+  }
+  
+  .drop-target.highlight {
+    border-color: var(--accent);
+    background-color: #eff6ff;
+  }
+  
+  .drop-target.filled {
+    border-style: solid;
+    border-color: #94a3b8;
+    background-color: #f1f5f9;
+  }
+  
+  .drag-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 20px 0;
+    padding: 15px;
+    background-color: #f8fafc;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+  }
+  
+  .drag-option {
+    padding: 8px 12px;
+    background-color: white;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    cursor: grab;
+    transition: all 0.2s ease;
+    user-select: none;
+  }
+  
+  .drag-option:hover {
+    background-color: #f1f5f9;
+    border-color: #94a3b8;
+  }
+  
+  .drag-option.dragging {
+    opacity: 0.7;
+    transform: scale(0.95);
+    cursor: grabbing;
+  }
+  
+  .drag-option.used {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  .clear-btn {
+    margin-top: 10px;
+    padding: 6px 12px;
+    background-color: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9em;
+  }
+  
+  .clear-btn:hover {
+    background-color: #e2e8f0;
+  }
+</style>
+</head>
+<body class="font-regular">
+<div class="practice-nav">
+  <div class="title">Questions</div>
+  <div class="questions">
+    <div class="q-item" id="q27-nav" onclick="scrollToElement('q27-anchor')">27</div>
+    <div class="q-item" id="q28-nav" onclick="scrollToElement('q28-anchor')">28</div>
+    <div class="q-item" id="q29-nav" onclick="scrollToElement('q29-anchor')">29</div>
+    <div class="q-item" id="q30-nav" onclick="scrollToElement('q30-anchor')">30</div>
+    <div class="q-item" id="q31-nav" onclick="scrollToElement('q31-anchor')">31</div>
+    <div class="q-item" id="q32-nav" onclick="scrollToElement('q32-anchor')">32</div>
+    <div class="q-item" id="q33-nav" onclick="scrollToElement('q33-anchor')">33</div>
+    <div class="q-item" id="q34-nav" onclick="scrollToElement('q34-anchor')">34</div>
+    <div class="q-item" id="q35-nav" onclick="scrollToElement('q35-anchor')">35</div>
+    <div class="q-item" id="q36-nav" onclick="scrollToElement('q36-anchor')">36</div>
+    <div class="q-item" id="q37-nav" onclick="scrollToElement('q37-anchor')">37</div>
+    <div class="q-item" id="q38-nav" onclick="scrollToElement('q38-anchor')">38</div>
+    <div class="q-item" id="q39-nav" onclick="scrollToElement('q39-anchor')">39</div>
+    <div class="q-item" id="q40-nav" onclick="scrollToElement('q40-anchor')">40</div>
+  </div>
+</div>
+<!-- 字体设置模态框 -->
+<div id="settingsModal">
+  <h4>Font Size Settings</h4>
+  <div class="font-option" data-size="regular">Regular (Default - 16px)</div>
+  <div class="font-option" data-size="moderate">Moderate (Larger - 18px)</div>
+  <div class="font-option" data-size="large">Large (Largest - 20px)</div>
+  <button class="close-modal" onclick="closeSettingsModal()">Close</button>
+</div>
+<div class="shell">
+  <section class="pane" id="left">
+    <h2>READING PASSAGE 3 
+      <div id="timer-container">
+        <span id="timer">00:00</span>
+        <button id="settingsBtn" onclick="openSettingsModal()">Settings</button>
+      </div>
+    </h2>
+    <p>You should spend about 20 minutes on Questions 27–40, which are based on Reading Passage 3 below.</p>
+    
+    <h3>The Pirahã people of Brazil</h3>
+    <p>The Pirahã language has stirred up debate among experts</p>
+    <p>The Pirahã tribe live deep in Brazil’s Amazon forest, and their language is hotly debated by linguists. Since 1977, the ethnologist Daniel Everett has spent a total of seven years living with the Pirahã and has committed his career to studying their puzzling speech. Indeed, he was uncertain for so long about what he was actually hearing while living among the Pirahã that he waited nearly three decades before publishing his findings.</p>
+    
+    <p>The debate over the Pirahã language goes right to the core of the riddle regarding how Homo sapiens managed to develop vocal communication. Although bees dance, birds sing and whales even sing with syntax, human language is unique, if only for the reason that it enables humans to piece together never-before-constructed thoughts, and be infinitely imaginative - think of Shakespeare’s plays or Einstein’s theory of relativity.</p>
+    
+    <p>Linguistics generally focuses on what features all human languages have in common, but the Pirahã language departs from what some academics have long maintained are essential and inalienable features of all human languages. Most of all, it may be unique for not employing subordinate clauses. Instead of saying, ‘When I have finished eating, I will speak to you,’ the Pirahã say, ‘I finish eating, I speak with you.’ Equally perplexing, the Pirahã appear not to use numbers. During the time he spent with them, Everett never heard words like ‘all’, ‘every’ and ‘more’. There is one word, ‘hoi’, that comes close to the numeral 1, but it can also mean ‘small’. And they were never observed to count without language, on their fingers for example, in order to determine important tasks in village life like how many pieces of meat to grill.</p>
+    
+    <p>Everett’s findings among the Pirahã have brought new life to a controversial theory by the linguist Benjamin Whorf, who suggested that people are only capable of constructing thoughts for which they possess actual words. Or to put it another way, because they have no words for numbers, they cannot even begin to understand the concept of numbers or arithmetic.</p>
+    
+    <p>The Warlpiri language - spoken by a group of Australian Aborigines - like that of the Pirahã, features only the most rudimentary system of counting. However, the Warlpiri people had no difficulty counting farther than three in a foreign language, in this case English, but when Everett attempted to teach the Pirahã how to count in Portuguese, like other Brazilians, not a single person could count to 10.</p>
+    
+    <p>Everett is at pains to point out that the Pirahã are not unintelligent, for their thinking is not any slower than that of the average university student. And although they reside in a remote part of the forest, they do not live in complete genetic isolation, but mix with people from the surrounding populations and share similar intellectual capacities with their neighbours whose languages do contain numbers.</p>
+    
+    <p>Eventually, after some 30 years of research, Everett has come up with a surprising explanation for the peculiarities of the Pirahã language. Language, he believes, is created by a people’s way of life, their belief system and values. In this way, variety in human language is almost limitless, a function of the human capacity to live in different ways, such as in the forest. What Everett’s research has revealed is that the central tenet of the Pirahã culture is to live in the here and now. The only thing of importance that is worth communicating to others is what is being experienced at that very moment, though this can often be described with great care and detail. In consequence, the language has no means to conjugate verbs in order to describe ‘yesterday’ or ‘last week’ or ‘when I was a child’. Their very literal view of the world curtails abstract thought, and many features taken for granted among other peoples are absent among the Pirahã, such as a creation myth, storytelling and painting. One manifestation of their beliefs is that by tradition the names they give their children are not particularly imaginative. Often they are named after other members of the tribe with whom they share similar character traits. Standing out or being different is not encouraged by the Pirahã, and this is reflected in their perhaps colourless choice of names.</p>
+    
+    <p>Everett anticipated that these findings would be controversial and the reaction came as expected. Until this point, many linguists had defended the theories of Noam Chomsky, according to which all human languages have a universal grammar. What exactly makes up this universal grammar is the subject of debate, but at its heart is the concept of ‘recursion’, which is defined as replication of a structure within its single parts. Without it, humans would not be able to view separate thoughts as subordinate parts of a complex whole. And, most pertinent to Everett’s work, there would not be subordinate clauses, which are responsible for translating the concept of recursion into grammar. But if the Pirahã do not form subordinate clauses, then recursion cannot explain the uniqueness of human language, and this would negate Chomsky’s theories.</p>
+    
+    <p>The logical way forward now would be to try to prove that the Pirahã can think in a recursive fashion. The only problem is, nobody can confirm or deny Everett’s observations since no other researcher can speak Pirahã as well as he does. Despite this, several researchers - including two of Chomsky’s colleagues - will soon travel to Brazil to check his claims. My concern is that soon the Pirahã will simply become one more scientific oddity with every aspect of their lives being exploited and analysed.</p>
+    
+    <!-- 多加空白行防止加载不完全 -->
+    <p>&nbsp;</p>
+    <p>&nbsp;</p>
+    <p>&nbsp;</p>
+    <p>&nbsp;</p>
+  </section>
+  <div id="divider" title="Drag to resize"></div>
+  <section class="pane" id="right">
+    <h3>Questions</h3>
+    
+    <!-- Questions 27–32: Multiple Choice -->
+    <div class="group">
+      <h4>Questions 27–32</h4>
+      <p>Choose the correct letter, A, B, C or D.</p>
+      <p>Write the correct letter in boxes 27–32 on your answer sheet.</p>
+      
+      <a id="q27-anchor"></a>
+      <div id="q27-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+        <p>27. What are we told about Daniel Everett in the first paragraph?</p>
+        <div class="mcq-options">
+          <div class="mcq-option"><label><input name="q27" type="radio" value="A"> A. He has lived among the Pirahã since 1977.</label></div>
+          <div class="mcq-option"><label><input name="q27" type="radio" value="B"> B. It took him seven years to learn the Pirahã language.</label></div>
+          <div class="mcq-option"><label><input name="q27" type="radio" value="C"> C. No one would publish his research for three decades.</label></div>
+          <div class="mcq-option"><label><input name="q27" type="radio" value="D"> D. Studying the Pirahã language is the focus of his work.</label></div>
+        </div>
+      </div>
+      
+      <a id="q28-anchor"></a>
+      <div id="q28-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+        <p>28. Which of the following is the best summary of the second paragraph?</p>
+        <div class="mcq-options">
+          <div class="mcq-option"><label><input name="q28" type="radio" value="A"> A. Humans are the only species to be linguistically creative.</label></div>
+          <div class="mcq-option"><label><input name="q28" type="radio" value="B"> B. Humans, bees, birds and whales share a characteristic.</label></div>
+          <div class="mcq-option"><label><input name="q28" type="radio" value="C"> C. Human language is not fully understood by scientists.</label></div>
+          <div class="mcq-option"><label><input name="q28" type="radio" value="D"> D. Humans are the only species to use syntax.</label></div>
+        </div>
+      </div>
+      
+      <a id="q29-anchor"></a>
+      <div id="q29-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+        <p>29. Why does the writer refer to subordinate clauses?</p>
+        <div class="mcq-options">
+          <div class="mcq-option"><label><input name="q29" type="radio" value="A"> A. To criticise the general approach of linguistics.</label></div>
+          <div class="mcq-option"><label><input name="q29" type="radio" value="B"> B. To compare two features of the Pirahã language.</label></div>
+          <div class="mcq-option"><label><input name="q29" type="radio" value="C"> C. To explain why the Pirahã language is difficult to learn.</label></div>
+          <div class="mcq-option"><label><input name="q29" type="radio" value="D"> D. To exemplify an unusual feature of the Pirahã language.</label></div>
+        </div>
+      </div>
+      
+      <a id="q30-anchor"></a>
+      <div id="q30-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+        <p>30. What point does the writer make about the work of Whorf?</p>
+        <div class="mcq-options">
+          <div class="mcq-option"><label><input name="q30" type="radio" value="A"> A. He thought that numbers were common to all human languages.</label></div>
+          <div class="mcq-option"><label><input name="q30" type="radio" value="B"> B. His theory might be supported by Everett’s research.</label></div>
+          <div class="mcq-option"><label><input name="q30" type="radio" value="C"> C. His research enabled him to find a new life among the Pirahã.</label></div>
+          <div class="mcq-option"><label><input name="q30" type="radio" value="D"> D. He predicted that people like the Pirahã would never be found.</label></div>
+        </div>
+      </div>
+      
+      <a id="q31-anchor"></a>
+      <div id="q31-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+        <p>31. The writer refers to the Warlpiri people in order to</p>
+        <div class="mcq-options">
+          <div class="mcq-option"><label><input name="q31" type="radio" value="A"> A. Suggest that the Pirahã be taught to count in English.</label></div>
+          <div class="mcq-option"><label><input name="q31" type="radio" value="B"> B. Show how tribal peoples learn a foreign language.</label></div>
+          <div class="mcq-option"><label><input name="q31" type="radio" value="C"> C. Compare counting in English and Portuguese.</label></div>
+          <div class="mcq-option"><label><input name="q31" type="radio" value="D"> D. Illustrate the uniqueness of the Pirahã.</label></div>
+        </div>
+      </div>
+      
+      <a id="q32-anchor"></a>
+      <div id="q32-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+        <p>32. What is Everett’s point about the Pirahã’s intellectual capacities?</p>
+        <div class="mcq-options">
+          <div class="mcq-option"><label><input name="q32" type="radio" value="A"> A. Pirahã students have not graduated from universities.</label></div>
+          <div class="mcq-option"><label><input name="q32" type="radio" value="B"> B. He does not want people to criticise their intelligence.</label></div>
+          <div class="mcq-option"><label><input name="q32" type="radio" value="C"> C. Their isolation makes it difficult to evaluate their intelligence.</label></div>
+          <div class="mcq-option"><label><input name="q32" type="radio" value="D"> D. He believes their language is more complex than their neighbours’.</label></div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Questions 33–36: Drag and Drop Summary Completion -->
+    <div class="group">
+      <h4>Questions 33–36</h4>
+      <p>Complete the summary by dragging words from the box below to the correct spaces (33–36).</p>
+      <p>There are more words than spaces, so you will not use them all.</p>
+      
+      <div class="drag-drop-container">
+        <div class="summary-text">
+          Everett believes that a group’s language is a product of their 
+          <a id="q33-anchor"></a><div class="drop-target" data-question="q33"></div>
+          and thus language is infinitely varied. During the time he spent living among them, he observed that the Pirahã only place value on the 
+          <a id="q34-anchor"></a><div class="drop-target" data-question="q34"></div>
+          and have no 
+          <a id="q35-anchor"></a><div class="drop-target" data-question="q35"></div>
+          to describe completed events. Similarly, the types of names they use reflect the fact that they do not celebrate 
+          <a id="q36-anchor"></a><div class="drop-target" data-question="q36"></div>
+          .
+        </div>
+        
+        <div class="drag-options">
+          <div class="drag-option" draggable="true" data-value="A">present</div>
+          <div class="drag-option" draggable="true" data-value="B">past</div>
+          <div class="drag-option" draggable="true" data-value="C">time</div>
+          <div class="drag-option" draggable="true" data-value="D">future</div>
+          <div class="drag-option" draggable="true" data-value="E">culture</div>
+          <div class="drag-option" draggable="true" data-value="F">grammar</div>
+          <div class="drag-option" draggable="true" data-value="G">art</div>
+          <div class="drag-option" draggable="true" data-value="H">individuality</div>
+          <div class="drag-option" draggable="true" data-value="I">children</div>
+        </div>
+        
+        <button class="clear-btn" onclick="clearDragDropAnswers()">Clear all answers</button>
+      </div>
+    </div>
+    
+    <!-- Questions 37–40: True/False/Not Given -->
+    <div class="group">
+      <h4>Questions 37–40</h4>
+      <p>Do the following statements agree with the views of the writer in Reading Passage 3?</p>
+      <p>In boxes 37–40 on your answer sheet, write</p>
+      <ul>
+        <li>YES if the statement agrees with the views of the writer</li>
+        <li>NO if the statement contradicts the views of the writer</li>
+        <li>NOT GIVEN if it is impossible to say what the writer thinks about this</li>
+      </ul>
+      
+      <a id="q37-anchor"></a>
+      <div id="q37-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+        <p>37. Everett was surprised by the way his research was greeted.</p>
+        <div class="tf-option">
+          <label><input name="q37" type="radio" value="YES"> YES</label>
+          <label><input name="q37" type="radio" value="NO"> NO</label>
+          <label><input name="q37" type="radio" value="NOT GIVEN"> NOT GIVEN</label>
+        </div>
+      </div>
+      
+      <a id="q38-anchor"></a>
+      <div id="q38-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+        <p>38. Chomsky has been critical of Everett’s research methodology.</p>
+        <div class="tf-option">
+          <label><input name="q38" type="radio" value="YES"> YES</label>
+          <label><input name="q38" type="radio" value="NO"> NO</label>
+          <label><input name="q38" type="radio" value="NOT GIVEN"> NOT GIVEN</label>
+        </div>
+      </div>
+      
+      <a id="q39-anchor"></a>
+      <div id="q39-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+        <p>39. If ‘recursion’ as a universal concept is disproved, Chomsky’s ideas about language would be wrong.</p>
+        <div class="tf-option">
+          <label><input name="q39" type="radio" value="YES"> YES</label>
+          <label><input name="q39" type="radio" value="NO"> NO</label>
+          <label><input name="q39" type="radio" value="NOT GIVEN"> NOT GIVEN</label>
+        </div>
+      </div>
+      
+      <a id="q40-anchor"></a>
+      <div id="q40-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+        <p>40. The Pirahã will benefit from their new-found status among academics.</p>
+        <div class="tf-option">
+          <label><input name="q40" type="radio" value="YES"> YES</label>
+          <label><input name="q40" type="radio" value="NO"> NO</label>
+          <label><input name="q40" type="radio" value="NOT GIVEN"> NOT GIVEN</label>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Submit & Reset Buttons -->
+    <div style="display:flex;gap:8px;margin-bottom:10px;">
+      <button class="primary" onclick="grade()">Submit</button>
+      <button onclick="resetForm()">Reset</button>
+      <button onclick="toggleNotes()">Notes</button>
+    </div>
+    
+    <!-- Results & Answer Key -->
+    <div id="results"></div>
+    <details class="answerbox" id="answerBox">
+      <summary>Show Answers (Click to Toggle) <span class="badge">Hidden</span></summary>
+      <div id="answerContent">
+        <h4>正确答案及解析</h4>
+        <table>
+          <tr>
+            <th>题号</th>
+            <th>答案</th>
+            <th>解析与原文依据</th>
+          </tr>
+          <!-- 27-32 选择题 -->
+          <tr>
+            <td>27</td>
+            <td>D</td>
+            <td>
+              <p class="explanation-text">第1段明确 Everett“has committed his career to studying their puzzling speech”，即“研究皮拉罕语是其工作核心”。A错误（是“累计七年”而非“自1977年一直居住”）；B错误（文中未提“七年学会语言”）；C错误（是他“自己等待近30年发表”而非“没人愿意发表”）。</p>
+              <p class="explanation-original">原文：Since 1977, the ethnologist Daniel Everett has spent a total of seven years living with the Pirahã and has committed his career to studying their puzzling speech. (Paragraph 1)</p>
+            </td>
+          </tr>
+          <tr>
+            <td>28</td>
+            <td>A</td>
+            <td>
+              <p class="explanation-text">第2段核心是“人类语言独特性在于能构建全新思想、具备无限想象力”，即“人类是唯一具有语言创造性的物种”。D错误（文中提到鲸类也“sing with syntax”）；B仅为段落铺垫；C并非段落主旨。</p>
+              <p class="explanation-original">原文：human language is unique, if only for the reason that it enables humans to piece together never-before-constructed thoughts, and be infinitely imaginative. (Paragraph 2)</p>
+            </td>
+          </tr>
+          <tr>
+            <td>29</td>
+            <td>D</td>
+            <td>
+              <p class="explanation-text">第3段提到“皮拉罕语不使用从句”，并举例对比常规表达与皮拉罕语表达，目的是“举例说明皮拉罕语的特殊特征”。A（批评语言学方法）、B（比较两种特征）、C（解释难学原因）均不符合原文意图。</p>
+              <p class="explanation-original">Most of all, it may be unique for not employing subordinate clauses. Instead of saying, ‘When I have finished eating, I will speak to you,’ the Pirahã say, ‘I finish eating, I speak with you.’ (Paragraph 3)</p>
+            </td>
+          </tr>
+          <tr>
+            <td>30</td>
+            <td>B</td>
+            <td>
+              <p class="explanation-text">第4段指出 Everett 的发现“brought new life to a controversial theory by Benjamin Whorf”，即 Everett 的研究可能支持沃尔夫的理论（语言决定思维）。A、C、D均与原文内容不符。</p>
+              <p class="explanation-original">Everett’s findings among the Pirahã have brought new life to a controversial theory by the linguist Benjamin Whorf, who suggested that people are only capable of constructing thoughts for which they possess actual words. (Paragraph 4)</p>
+            </td>
+          </tr>
+          <tr>
+            <td>31</td>
+            <td>D</td>
+            <td>
+              <p class="explanation-text">第5段对比沃尔皮里人（能在外语中数数）与皮拉罕人（学不会外语数数），目的是“凸显皮拉罕人的独特性”。A（建议用英语教学）、B（展示部落学外语方式）、C（比较英葡语数数）均非作者意图。</p>
+              <p class="explanation-original">The Warlpiri people had no difficulty counting farther than three in a foreign language... but when Everett attempted to teach the Pirahã how to count in Portuguese... not a single person could count to 10. (Paragraph 5)</p>
+            </td>
+          </tr>
+          <tr>
+            <td>32</td>
+            <td>B</td>
+            <td>
+              <p class="explanation-text">第6段提到 Everett“is at pains to point out that the Pirahã are not unintelligent”，即“他极力辩解皮拉罕人并非不聪明，不希望他人批评其智力”。C错误（文中说他们“并非完全隔离”）；A、D与原文不符。</p>
+              <p class="explanation-original">Everett is at pains to point out that the Pirahã are not unintelligent... they do not live in complete genetic isolation... share similar intellectual capacities with their neighbours. (Paragraph 6)</p>
+            </td>
+          </tr>
+          <!-- 33-36 摘要填空 -->
+          <tr>
+            <td>33</td>
+            <td>E (culture)</td>
+            <td>
+              <p class="explanation-text">第7段指出 Everett 认为语言由“a people's way of life, their belief system and values”（生活方式、信仰体系、价值观）决定，这些均属于“culture（文化）”范畴。</p>
+              <p class="explanation-original">Language, he believes, is created by a people’s way of life, their belief system and values. (Paragraph 7)</p>
+            </td>
+          </tr>
+          <tr>
+            <td>34</td>
+            <td>A (present)</td>
+            <td>
+              <p class="explanation-text">第7段明确皮拉罕文化的核心是“live in the here and now”（活在当下），“only place value on what is being experienced at that very moment”（只重视当下经历），对应“present（当下）”。</p>
+              <p class="explanation-original">the central tenet of the Pirahã culture is to live in the here and now. The only thing of importance that is worth communicating to others is what is being experienced at that very moment. (Paragraph 7)</p>
+            </td>
+          </tr>
+          <tr>
+            <td>35</td>
+            <td>F (grammar)</td>
+            <td>
+              <p class="explanation-text">第7段提到“the language has no means to conjugate verbs in order to describe ‘yesterday’...”（语言无动词变位手段描述过去），“动词变位”属于语法范畴，即“无描述完成事件的语法”。</p>
+              <p class="explanation-original">In consequence, the language has no means to conjugate verbs in order to describe ‘yesterday’ or ‘last week’ or ‘when I was a child’. (Paragraph 7)</p>
+            </td>
+          </tr>
+          <tr>
+            <td>36</td>
+            <td>H (individuality)</td>
+            <td>
+              <p class="explanation-text">第7段指出皮拉罕人“不鼓励突出或与众不同（Standing out or being different is not encouraged）”，名字选择也反映这一点，即“不庆祝个体性”。</p>
+              <p class="explanation-original">Standing out or being different is not encouraged by the Pirahã, and this is reflected in their perhaps colourless choice of names. (Paragraph 7)</p>
+            </td>
+          </tr>
+          <!-- 37-40 判断题 -->
+          <tr>
+            <td>37</td>
+            <td>NO</td>
+            <td>
+              <p class="explanation-text">第8段明确“Everett anticipated that these findings would be controversial and the reaction came as expected”（Everett 预料到研究结果会引发争议，反响如预期），题干说“他对反响感到惊讶”，与原文矛盾。</p>
+              <p class="explanation-original">Everett anticipated that these findings would be controversial and the reaction came as expected. (Paragraph 8)</p>
+            </td>
+          </tr>
+          <tr>
+            <td>38</td>
+            <td>NOT GIVEN</td>
+            <td>
+              <p class="explanation-text">文中仅提到“许多语言学家维护乔姆斯基理论”“乔姆斯基的同事将赴巴西核查 Everett 的主张”，未提及“乔姆斯基批评 Everett 的研究方法”，无法判断。</p>
+            </td>
+          </tr>
+          <tr>
+            <td>39</td>
+            <td>YES</td>
+            <td>
+              <p class="explanation-text">第8段提到“recursion 是乔姆斯基普遍语法的核心”，且“若皮拉罕语无从句，则 recursion 无法解释人类语言独特性，这将否定乔姆斯基的理论”，即“若 recursion 作为普遍概念被推翻，乔姆斯基的语言理论将错误”，与题干一致。</p>
+              <p class="explanation-original">at its heart is the concept of ‘recursion’... if the Pirahã do not form subordinate clauses, then recursion cannot explain the uniqueness of human language, and this would negate Chomsky’s theories. (Paragraph 8)</p>
+            </td>
+          </tr>
+          <tr>
+            <td>40</td>
+            <td>NO</td>
+            <td>
+              <p class="explanation-text">第9段作者明确表示担忧：“My concern is that soon the Pirahã will simply become one more scientific oddity with every aspect of their lives being exploited and analysed”（担忧皮拉罕人成为科学奇观，生活被利用和分析），题干说“他们将从学术新地位中受益”，与作者观点矛盾。</p>
+              <p class="explanation-original">My concern is that soon the Pirahã will simply become one more scientific oddity with every aspect of their lives being exploited and analysed. (Paragraph 9)</p>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </details>
+  </section>
+</div>
+<!-- 文本选择工具栏 -->
+<div aria-label="Selection tools" id="selbar" role="toolbar">
+  <button id="btnHL">Highlight</button>
+  <button id="btnUH">Remove Highlight</button>
+  <button id="btnNote">Add to Notes</button>
+</div>
+<!-- 笔记面板 -->
+<div id="notes">
+  <header>
+    <strong>Notes</strong>
+    <div>
+      <button id="btnCopy">Copy</button>
+      <button id="btnClose">Close</button>
+    </div>
+  </header>
+  <textarea id="noteArea" placeholder="Type your notes here..."></textarea>
+</div>
+<!-- 提示框 -->
+<div id="toast"></div>
+<script>
+// 计时器核心功能
+let _t = 0; 
+const _timerEl = document.getElementById('timer');
+let timerInterval; // 计时器间隔ID，用于后续停止
+// 启动计时器
+function startTimer() {
+  timerInterval = setInterval(() => { 
+    _t++; 
+    const m = String(Math.floor(_t/60)).padStart(2, '0'); 
+    const s = String(_t%60).padStart(2, '0'); 
+    _timerEl.textContent = `${m}:${s}`; 
+  }, 1000);
+}
+// 页面加载时启动计时器
+window.onload = function() {
+  startTimer();
+  initDragAndDrop();
+};
+
+// 拖拽分隔线调整左右面板宽度
+const divider = document.getElementById('divider');
+const leftPane = document.getElementById('left');
+const rightPane = document.getElementById('right');
+let isDragging = false;
+divider.addEventListener('mousedown', (e) => {
+  isDragging = true;
+  document.body.style.cursor = 'ew-resize';
+  e.preventDefault();
+});
+window.addEventListener('mousemove', (e) => {
+  if (!isDragging) return;
+  const containerRect = document.querySelector('.shell').getBoundingClientRect();
+  let x = e.clientX - containerRect.left;
+  // 限制最小宽度，防止面板过窄
+  x = Math.max(280, Math.min(containerRect.width - 320, x));
+  leftPane.style.flex = `0 0 ${x}px`;
+  rightPane.style.flex = '1 1 auto';
+});
+window.addEventListener('mouseup', () => {
+  if (isDragging) {
+    isDragging = false;
+    document.body.style.cursor = '';
+  }
+});
+// 触摸设备支持
+divider.addEventListener('touchstart', (e) => {
+  isDragging = true;
+  e.preventDefault();
+}, { passive: false });
+window.addEventListener('touchmove', (e) => {
+  if (!isDragging) return;
+  const containerRect = document.querySelector('.shell').getBoundingClientRect();
+  let x = e.touches[0].clientX - containerRect.left;
+  x = Math.max(280, Math.min(containerRect.width - 320, x));
+  leftPane.style.flex = `0 0 ${x}px`;
+  rightPane.style.flex = '1 1 auto';
+}, { passive: false });
+window.addEventListener('touchend', () => {
+  isDragging = false;
+});
+
+// 文本高亮功能（支持所有文本）
+const selbar = document.getElementById('selbar');
+const btnHL = document.getElementById('btnHL');
+const btnUH = document.getElementById('btnUH');
+const btnNote = document.getElementById('btnNote');
+let lastRange = null;
+let currentHlNode = null;
+let keepToolbar = false;
+// 定位选择工具栏
+function positionSelbar(rect) {
+  selbar.style.display = 'flex';
+  requestAnimationFrame(() => {
+    const top = window.scrollY + rect.top - selbar.offsetHeight - 8;
+    const leftPos = window.scrollX + rect.left + rect.width/2 - selbar.offsetWidth/2;
+    // 确保工具栏不超出视口
+    selbar.style.top = (top > 0 ? top : window.scrollY + rect.bottom + 8) + 'px';
+    selbar.style.left = Math.max(8, leftPos) + 'px';
+  });
+}
+// 更新工具栏状态
+function updateSelbar() {
+  const selection = window.getSelection();
+  if (!selection || selection.rangeCount === 0 || selection.isCollapsed) {
+    selbar.style.display = 'none';
+    currentHlNode = null;
+    return;
+  }
+  const range = selection.getRangeAt(0);
+  lastRange = range.cloneRange();
+  currentHlNode = null;
+  positionSelbar(range.getBoundingClientRect());
+}
+// 监听文本选择事件（左右面板均支持）
+document.getElementById('left').addEventListener('mouseup', updateSelbar);
+document.getElementById('right').addEventListener('mouseup', updateSelbar);
+document.addEventListener('selectionchange', () => {
+  const selection = window.getSelection();
+  if (!selection || selection.rangeCount === 0 || selection.isCollapsed) {
+    if (!keepToolbar && !currentHlNode) selbar.style.display = 'none';
+  }
+});
+// 滚动时重新定位工具栏
+document.addEventListener('scroll', () => {
+  if (selbar.style.display === 'flex') updateSelbar();
+});
+// 点击高亮文本时显示工具栏
+document.addEventListener('mousedown', (e) => {
+  keepToolbar = e.target.classList?.contains('hl') || false;
+}, true);
+document.addEventListener('click', (e) => {
+  if (e.target.classList?.contains('hl')) {
+    currentHlNode = e.target;
+    lastRange = null;
+    positionSelbar(e.target.getBoundingClientRect());
+    const selection = window.getSelection();
+    if (selection) selection.removeAllRanges();
+    setTimeout(() => keepToolbar = false, 0);
+  }
+}, true);
+// 执行高亮
+function doHighlight() {
+  if (currentHlNode || !lastRange || lastRange.collapsed) return;
+  const highlightSpan = document.createElement('span');
+  highlightSpan.className = 'hl';
+  try {
+    lastRange.surroundContents(highlightSpan);
+  } catch (e) {
+    // 处理跨元素选择的情况
+    const wrapSpan = document.createElement('span');
+    wrapSpan.className = 'hl';
+    wrapSpan.appendChild(lastRange.cloneContents());
+    lastRange.deleteContents();
+    lastRange.insertNode(wrapSpan);
+  }
+  selbar.style.display = 'none';
+  showToast('Text highlighted');
+}
+// 移除高亮
+function removeHighlight() {
+  if (currentHlNode) {
+    // 移除单个高亮元素
+    const parent = currentHlNode.parentNode;
+    while (currentHlNode.firstChild) {
+      parent.insertBefore(currentHlNode.firstChild, currentHlNode);
+    }
+    parent.removeChild(currentHlNode);
+    parent.normalize(); // 合并相邻文本节点
+    currentHlNode = null;
+    selbar.style.display = 'none';
+    showToast('Highlight removed');
+    return;
+  }
+  if (!lastRange) return;
+  // 移除选择范围内的所有高亮
+  const selRect = lastRange.getBoundingClientRect();
+  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_ELEMENT);
+  const toRemove = [];
+  let node;
+  while ((node = walker.nextNode())) {
+    if (node.classList?.contains('hl')) {
+      const nodeRect = node.getBoundingClientRect();
+      // 判断节点是否在选择范围内
+      if (!(nodeRect.right < selRect.left || nodeRect.left > selRect.right || 
+            nodeRect.bottom < selRect.top || nodeRect.top > selRect.bottom)) {
+        toRemove.push(node);
+      }
+    }
+  }
+  toRemove.forEach(el => {
+    const parent = el.parentNode;
+    while (el.firstChild) parent.insertBefore(el.firstChild, el);
+    parent.removeChild(el);
+    parent.normalize();
+  });
+  selbar.style.display = 'none';
+  showToast('Highlights removed');
+}
+// 绑定高亮按钮事件
+btnHL.addEventListener('click', doHighlight);
+btnUH.addEventListener('click', removeHighlight);
+
+// 笔记功能
+const notesPanel = document.getElementById('notes');
+const noteArea = document.getElementById('noteArea');
+const btnCopy = document.getElementById('btnCopy');
+const btnCloseNotes = document.getElementById('btnClose');
+// 切换笔记面板显示
+function toggleNotes() {
+  notesPanel.style.display = notesPanel.style.display === 'flex' ? 'none' : 'flex';
+}
+// 关闭笔记面板
+btnCloseNotes.addEventListener('click', toggleNotes);
+// 复制笔记
+btnCopy.addEventListener('click', async () => {
+  await navigator.clipboard.writeText(noteArea.value || '');
+  showToast('Notes copied to clipboard');
+});
+// 选中文本添加到笔记
+btnNote.addEventListener('click', () => {
+  let selectedText = '';
+  if (currentHlNode) {
+    selectedText = currentHlNode.textContent.trim();
+  } else if (lastRange) {
+    const frag = lastRange.cloneContents();
+    selectedText = frag.textContent.trim();
+  }
+  toggleNotes();
+  if (selectedText) {
+    noteArea.value = noteArea.value ? `${noteArea.value}\n> ${selectedText}\n` : `> ${selectedText}\n`;
+    // 滚动到笔记底部
+    noteArea.scrollTop = noteArea.scrollHeight;
+  }
+  selbar.style.display = 'none';
+});
+
+// 提示框功能
+const toastEl = document.getElementById('toast');
+function showToast(message) {
+  toastEl.textContent = message;
+  toastEl.style.display = 'block';
+  setTimeout(() => toastEl.style.display = 'none', 1500);
+}
+
+// 字体设置功能（应用于所有元素）
+const settingsModal = document.getElementById('settingsModal');
+const body = document.body;
+// 打开字体设置模态框
+function openSettingsModal() {
+  settingsModal.style.display = 'block';
+}
+// 关闭字体设置模态框
+function closeSettingsModal() {
+  settingsModal.style.display = 'none';
+}
+// 点击模态框外部关闭
+window.addEventListener('click', (e) => {
+  if (e.target === settingsModal) closeSettingsModal();
+});
+// 切换字体大小（影响网页所有元素）
+document.querySelectorAll('.font-option').forEach(option => {
+  option.addEventListener('click', () => {
+    const size = option.dataset.size;
+    // 移除所有字体类，添加选中的类（body类控制所有元素继承）
+    body.classList.remove('font-regular', 'font-moderate', 'font-large');
+    body.classList.add(`font-${size}`);
+    // 显示提示
+    const sizeName = size === 'regular' ? 'Regular (16px)' : 
+                     size === 'moderate' ? 'Moderate (18px)' : 'Large (20px)';
+    showToast(`Font size set to ${sizeName}`);
+    closeSettingsModal();
+  });
+});
+
+// 拖拽填空功能实现
+function initDragAndDrop() {
+  const draggableOptions = document.querySelectorAll('.drag-option');
+  const dropTargets = document.querySelectorAll('.drop-target');
+  
+  // 为每个可拖拽选项添加事件监听
+  draggableOptions.forEach(option => {
+    option.addEventListener('dragstart', (e) => {
+      option.classList.add('dragging');
+      e.dataTransfer.setData('text/plain', option.dataset.value);
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    
+    option.addEventListener('dragend', () => {
+      option.classList.remove('dragging');
+    });
+  });
+  
+  // 为每个放置目标添加事件监听
+  dropTargets.forEach(target => {
+    target.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      target.classList.add('highlight');
+      e.dataTransfer.dropEffect = 'move';
+    });
+    
+    target.addEventListener('dragleave', () => {
+      target.classList.remove('highlight');
+    });
+    
+    target.addEventListener('drop', (e) => {
+      e.preventDefault();
+      target.classList.remove('highlight');
+      
+      const value = e.dataTransfer.getData('text/plain');
+      const draggedOption = document.querySelector(`.drag-option[data-value="${value}"]`);
+      
+      // 如果目标已有内容，将原有内容放回选项池
+      if (target.hasChildNodes() && target.firstChild.classList.contains('dragged-item')) {
+        const existingValue = target.firstChild.dataset.value;
+        const existingOption = document.querySelector(`.drag-option[data-value="${existingValue}"]`);
+        if (existingOption) {
+          existingOption.classList.remove('used');
+        }
+        target.innerHTML = '';
+      }
+      
+      // 将拖拽的选项放入目标位置
+      if (draggedOption) {
+        // 创建一个显示在目标位置的元素
+        const draggedItem = document.createElement('div');
+        draggedItem.className = 'dragged-item';
+        draggedItem.textContent = draggedOption.textContent;
+        draggedItem.dataset.value = value;
+        target.appendChild(draggedItem);
+        target.classList.add('filled');
+        
+        // 标记原选项为已使用
+        draggedOption.classList.add('used');
+        
+        // 更新导航栏状态
+        updateNavigationStatus();
+      }
+    });
+  });
+  
+  // 点击已放置的选项可以将其移除
+  document.addEventListener('click', (e) => {
+    if (e.target.classList.contains('dragged-item')) {
+      const draggedItem = e.target;
+      const target = draggedItem.parentElement;
+      const value = draggedItem.dataset.value;
+      
+      // 将选项放回选项池
+      const option = document.querySelector(`.drag-option[data-value="${value}"]`);
+      if (option) {
+        option.classList.remove('used');
+      }
+      
+      // 清空目标位置
+      target.removeChild(draggedItem);
+      if (!target.hasChildNodes()) {
+        target.classList.remove('filled');
+      }
+      
+      // 更新导航栏状态
+      updateNavigationStatus();
+    }
+  });
+}
+
+// 清除所有拖拽答案
+function clearDragDropAnswers() {
+  const dropTargets = document.querySelectorAll('.drop-target');
+  const usedOptions = document.querySelectorAll('.drag-option.used');
+  
+  // 清空所有目标位置
+  dropTargets.forEach(target => {
+    target.innerHTML = '';
+    target.classList.remove('filled');
+  });
+  
+  // 重置所有选项状态
+  usedOptions.forEach(option => {
+    option.classList.remove('used');
+  });
+  
+  // 更新导航栏状态
+  updateNavigationStatus();
+  
+  showToast('All drag-and-drop answers cleared');
+}
+
+// 答案与评分功能（Submit后停止计时器）
+const answers = {
+  q27: 'D',
+  q28: 'A',
+  q29: 'D',
+  q30: 'B',
+  q31: 'D',
+  q32: 'B',
+  q33: 'E',
+  q34: 'A',
+  q35: 'F',
+  q36: 'H',
+  q37: 'NO',
+  q38: 'NOT GIVEN',
+  q39: 'YES',
+  q40: 'NO'
+};
+
+// 评分函数（Submit后执行，包含停止计时器）
+function grade() {
+  // 1. 停止计时器
+  clearInterval(timerInterval);
+  
+  // 2. 计算得分
+  let total = 14;
+  let correct = 0;
+  const resultLines = [];
+  
+  // 检查27-32题（选择题）
+  for (let i = 27; i <= 32; i++) {
+    const qName = `q${i}`;
+    const selected = document.querySelector(`input[name="${qName}"]:checked`);
+    const userAns = selected ? selected.value : 'No answer';
+    const correctAns = answers[qName];
+    const isCorrect = userAns === correctAns;
+    if (isCorrect) correct++;
+    resultLines.push(`${qName.toUpperCase()}: ${userAns} ${isCorrect ? '✅ Correct' : `❌ Incorrect (Correct: ${correctAns})`}`);
+  }
+  
+  // 检查33-36题（拖拽填空题）
+  for (let i = 33; i <= 36; i++) {
+    const qName = `q${i}`;
+    const target = document.querySelector(`.drop-target[data-question="${qName}"]`);
+    let userAns = 'No answer';
+    
+    if (target.hasChildNodes() && target.firstChild.classList.contains('dragged-item')) {
+      userAns = target.firstChild.dataset.value;
+    }
+    
+    const correctAns = answers[qName];
+    const isCorrect = userAns === correctAns;
+    if (isCorrect) correct++;
+    resultLines.push(`${qName.toUpperCase()}: ${userAns} ${isCorrect ? '✅ Correct' : `❌ Incorrect (Correct: ${correctAns})`}`);
+  }
+  
+  // 检查37-40题（判断题）
+  for (let i = 37; i <= 40; i++) {
+    const qName = `q${i}`;
+    const selected = document.querySelector(`input[name="${qName}"]:checked`);
+    const userAns = selected ? selected.value : 'No answer';
+    const correctAns = answers[qName];
+    const isCorrect = userAns === correctAns;
+    if (isCorrect) correct++;
+    resultLines.push(`${qName.toUpperCase()}: ${userAns} ${isCorrect ? '✅ Correct' : `❌ Incorrect (Correct: ${correctAns})`}`);
+  }
+  
+  // 3. 显示结果
+  const accuracy = Math.round((correct / total) * 100);
+  const resultsHTML = `
+    <p><strong>Score:</strong> ${correct}/${total} (Accuracy: ${accuracy}%)</p>
+    <pre>${resultLines.join('\n')}</pre>
+  `;
+  document.getElementById('results').innerHTML = resultsHTML;
+  
+  // 4. 展开答案面板
+  const answerBox = document.getElementById('answerBox');
+  answerBox.open = true;
+  document.querySelector('#answerBox .badge').textContent = 'Visible';
+  
+  // 5. 标记所有题目为已回答
+  updateNavigationStatus(true);
+}
+
+// 重置功能（重置计时器、选项、高亮等）
+function resetForm() {
+  // 1. 重置计时器
+  clearInterval(timerInterval);
+  _t = 0;
+  _timerEl.textContent = '00:00';
+  startTimer();
+  
+  // 2. 重置所有单选按钮
+  document.querySelectorAll('input[type="radio"]').forEach(radio => {
+    radio.checked = false;
+  });
+  
+  // 3. 重置拖拽填空题
+  clearDragDropAnswers();
+  
+  // 4. 重置结果和答案面板
+  document.getElementById('results').innerHTML = '';
+  const answerBox = document.getElementById('answerBox');
+  answerBox.open = false;
+  document.querySelector('#answerBox .badge').textContent = 'Hidden';
+  
+  // 5. 重置导航栏已回答状态
+  document.querySelectorAll('.q-item').forEach(item => {
+    item.classList.remove('answered');
+  });
+  
+  // 6. 重置笔记
+  noteArea.value = '';
+  notesPanel.style.display = 'none';
+  
+  // 7. 移除所有高亮
+  document.querySelectorAll('.hl').forEach(hl => {
+    const parent = hl.parentNode;
+    while (hl.firstChild) parent.insertBefore(hl.firstChild, hl);
+    parent.removeChild(hl);
+    parent.normalize();
+  });
+}
+
+// 更新导航栏状态（标记已答题）
+function updateNavigationStatus(forceAllAnswered = false) {
+  // 更新选择题和判断题状态
+  for (let i = 27; i <= 40; i++) {
+    const qName = `q${i}`;
+    const navItem = document.getElementById(`${qName}-nav`);
+    let isAnswered = false;
+    
+    if (forceAllAnswered) {
+      isAnswered = true;
+    } else if (i >= 27 && i <= 32 || i >= 37 && i <= 40) {
+      // 选择题和判断题
+      isAnswered = !!document.querySelector(`input[name="${qName}"]:checked`);
+    } else if (i >= 33 && i <= 36) {
+      // 拖拽填空题
+      const target = document.querySelector(`.drop-target[data-question="${qName}"]`);
+      isAnswered = target.hasChildNodes() && target.firstChild.classList.contains('dragged-item');
+    }
+    
+    if (isAnswered) {
+      navItem.classList.add('answered');
+    } else {
+      navItem.classList.remove('answered');
+    }
+  }
+}
+
+// 滚动到指定元素
+function scrollToElement(elementId) {
+  const element = document.getElementById(elementId);
+  if (element) {
+    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    
+    // 高亮显示当前题目导航
+    document.querySelectorAll('.q-item').forEach(item => {
+      item.classList.remove('active');
+    });
+    const navItem = document.getElementById(`${elementId.split('-')[0]}-nav`);
+    if (navItem) {
+      navItem.classList.add('active');
+      
+      // 3秒后移除高亮
+      setTimeout(() => {
+        navItem.classList.remove('active');
+      }, 3000);
+    }
+  }
+}
+</script>
+</body>
+</html>

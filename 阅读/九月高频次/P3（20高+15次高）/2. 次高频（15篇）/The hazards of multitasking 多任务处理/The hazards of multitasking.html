@@ -1,0 +1,1196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>The hazards of multitasking - Reading Passage</title>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<style>
+  :root { 
+    --line:#e5e7eb; 
+    --bg:#f6f7fb; 
+    --panel:#fff; 
+    --accent:#3b82f6; 
+    --muted:#6b7280; 
+    --shadow:0 6px 20px rgba(0,0,0,.12); 
+    /* 字体大小变量 - 基础regular，逐级放大 */
+    --font-size-regular: 16px;   /* 基础大小 */
+    --font-size-moderate: 18px;  /* 比regular大1号 */
+    --font-size-large: 20px;     /* 比moderate大1号 */
+  }
+  /* 字体大小类 - 所有元素继承 */
+  .font-regular {
+    font-size: var(--font-size-regular) !important;
+  }
+  .font-moderate {
+    font-size: var(--font-size-moderate) !important;
+  }
+  .font-large {
+    font-size: var(--font-size-large) !important;
+  }
+  * { 
+    box-sizing: border-box; 
+    font-size: inherit; /* 所有元素继承父级字体大小 */
+  }
+  html,body { 
+    height:100%; 
+    font-size: var(--font-size-regular); /* 默认regular */
+  }
+  body { 
+    margin:0; 
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; 
+    background:var(--bg); 
+  }
+  #timer-container {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  #timer { 
+    position: static; 
+    display: inline-block; 
+    background:#fff; 
+    border:1px solid var(--line); 
+    border-radius:10px; 
+    padding:2px 8px; 
+    vertical-align: middle; 
+  }
+  #settingsBtn {
+    padding:2px 8px;
+    border:1px solid var(--line);
+    border-radius:10px;
+    background:#fff;
+    cursor:pointer;
+  }
+  #settingsModal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:16px;
+    box-shadow:var(--shadow);
+    z-index: 1000;
+    display: none;
+  }
+  #settingsModal h4 {
+    margin-top:0;
+    font-weight: 600;
+  }
+  #settingsModal .font-option {
+    margin:8px 0;
+    cursor:pointer;
+    padding:4px 8px;
+    border-radius:6px;
+  }
+  #settingsModal .font-option:hover {
+    background:#f1f5f9;
+  }
+  #settingsModal .close-modal {
+    margin-top:12px;
+    padding:6px 12px;
+    border:1px solid var(--line);
+    border-radius:8px;
+    background:var(--accent);
+    color:#fff;
+    cursor:pointer;
+  }
+  .shell { 
+    display:flex; 
+    height:100vh; 
+    width:100%; 
+  }
+  .pane { 
+    background:var(--panel); 
+    overflow:auto; 
+    padding:20px; 
+  }
+  #left { 
+    flex: 0 0 50%; 
+    min-width: 280px; 
+  }
+  #right { 
+    flex: 1 1 auto; 
+    min-width: 320px; 
+    background:#fbfbff; 
+    border-left:1px solid var(--line); 
+  }
+  #divider { 
+    flex: 0 0 8px; 
+    background: linear-gradient(90deg,#e5e7eb,#d1d5db); 
+    cursor: ew-resize; 
+    position:relative; 
+    z-index: 5; 
+    user-select:none; 
+  }
+  h2,h3,h4 { 
+    margin:0 0 10px; 
+    font-weight: 600; 
+  }
+  #left p { 
+    margin: 0 0 12px; 
+    line-height: 1.6; 
+    word-break: normal; 
+    overflow-wrap: normal; 
+    hyphens: none; 
+  }
+  #left .section-heading { 
+    font-weight: 600; 
+    margin-top: 20px; 
+    margin-bottom: 8px; 
+  }
+  .group { 
+    background:#fff; 
+    border:1px solid var(--line); 
+    border-radius:10px; 
+    padding:12px; 
+    margin-bottom:14px; 
+  }
+  table { 
+    border-collapse: collapse; 
+    width:100%; 
+    margin: 10px 0;
+  }
+  th, td { 
+    border:1px solid var(--line); 
+    padding:6px; 
+    text-align:left; 
+  }
+  th {
+    background-color: #f1f5f9;
+    font-weight: 600;
+  }
+  button { 
+    padding:8px 12px; 
+    border:1px solid var(--line); 
+    border-radius:10px; 
+    background:#fff; 
+    cursor:pointer; 
+  }
+  button.primary { 
+    background:var(--accent); 
+    color:#fff; 
+    border-color:#3b82f6; 
+  }
+  #results { 
+    background:#fff; 
+    border:1px solid var(--line); 
+    border-radius:10px; 
+    padding:10px; 
+    margin-bottom:14px;
+  }
+  .hl { 
+    background:#fff3a3; 
+    box-shadow: inset 0 -2px 0 rgba(0,0,0,.05); 
+    cursor: pointer; 
+  }
+  .hl:hover { 
+    filter: brightness(0.98); 
+  }
+  #selbar { 
+    position: absolute; 
+    display:none; 
+    z-index: 6000; 
+    background:#111; 
+    color:#fff; 
+    border-radius: 8px; 
+    padding: 6px; 
+    box-shadow: var(--shadow); 
+    font-size: 13px; 
+    gap:6px; 
+    align-items: center; 
+  }
+  #selbar button { 
+    background: transparent; 
+    color:#fff; 
+    border: 1px solid rgba(255,255,255,.25); 
+    padding: 4px 8px; 
+    border-radius: 6px; 
+    cursor:pointer; 
+  }
+  #selbar button:hover { 
+    border-color:#fff; 
+  }
+  #notes { 
+    position: fixed; 
+    right: 12px; 
+    bottom: 12px; 
+    width: 320px; 
+    height: 42vh; 
+    background:#fff; 
+    border:1px solid var(--line); 
+    border-radius: 12px; 
+    display:none; 
+    flex-direction: column; 
+    z-index:1500; 
+    box-shadow: var(--shadow); 
+  }
+  #notes header { 
+    display:flex; 
+    align-items:center; 
+    justify-content: space-between; 
+    padding:8px 10px; 
+    border-bottom:1px solid var(--line); 
+  }
+  #notes textarea { 
+    flex:1; 
+    border:0; 
+    padding:10px; 
+    resize:none; 
+    line-height:1.5; 
+  }
+  #toast { 
+    position: fixed; 
+    left:50%; 
+    transform: translateX(-50%); 
+    bottom: 24px; 
+    background:#111; 
+    color:#fff; 
+    padding:8px 12px; 
+    border-radius: 8px; 
+    display:none; 
+    z-index:2500; 
+  }
+  .answer-option {
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin:4px 0 8px;
+  }
+  .answer-option label {
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    gap:4px;
+  }
+  .mcq-option {
+    margin: 6px 0;
+    padding: 4px;
+    cursor: pointer;
+  }
+  .mcq-option input {
+    margin-right: 8px;
+  }
+  .match-option {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 10px 0;
+  }
+  .match-option label {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+  }
+  .tf-option {
+    display: flex;
+    gap: 12px;
+    margin: 8px 0;
+  }
+  .tf-option label {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  input.blank {
+    width: 180px; /* 适配2词以内填空 */
+    padding: 8px;
+    margin: 0 8px;
+    border:1px solid var(--line);
+    border-radius:6px;
+  }
+  .question-number {
+    font-weight: 600;
+  }
+  body { 
+    padding-bottom: 82px; 
+  }
+  .practice-nav { 
+    background:#fff; 
+    border-bottom:2px solid var(--line); 
+    padding:12px 20px; 
+    display:flex; 
+    align-items:center; 
+    gap:20px; 
+    box-shadow:0 2px 4px rgba(0,0,0,.05); 
+    flex-wrap:wrap; 
+    position:fixed; 
+    left:0; 
+    right:0; 
+    bottom:0; 
+    border-top:2px solid var(--line); 
+    border-bottom:0; 
+    z-index:4000; 
+  }
+  .practice-nav .title { 
+    font-weight:600; 
+    color:var(--muted); 
+  }
+  .practice-nav .questions { 
+    display:flex; 
+    gap:8px; 
+    align-items:center; 
+    flex-wrap:wrap; 
+  }
+  .practice-nav .q-item { 
+    padding:6px 10px; 
+    border:1px solid var(--line); 
+    border-radius:6px; 
+    background:#fff; 
+    cursor:pointer; 
+    transition:all 0.2s; 
+    min-width:36px; 
+    text-align:center; 
+  }
+  .practice-nav .q-item:hover { 
+    background:#f1f5f9; 
+    border-color:var(--accent); 
+  }
+  .practice-nav .q-item.answered { 
+    background:#e0e7ff; 
+    border-color:var(--accent); 
+    color:var(--accent); 
+    font-weight:500; 
+  }
+  .practice-nav .q-item.active { 
+    background:var(--accent); 
+    color:#fff; 
+    border-color:var(--accent); 
+  }
+  details.answerbox summary { 
+    cursor: pointer; 
+    user-select:none; 
+    list-style: none; 
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  details.answerbox summary::before {
+    content: "▼";
+    font-size: 12px;
+    transition: transform 0.2s;
+  }
+  details.answerbox[open] summary::before {
+    transform: rotate(180deg);
+  }
+  details.answerbox { 
+    border:1px dashed var(--line); 
+    border-radius:10px; 
+    padding:8px 10px; 
+    background:#fff; 
+    margin-bottom:14px;
+  }
+  .badge { 
+    display:inline-block; 
+    background:#eef2ff; 
+    color:#4338ca; 
+    padding:2px 8px; 
+    border-radius:999px; 
+    font-size:12px; 
+    margin-left:6px; 
+  }
+  .explanation-text {
+    margin-bottom: 4px;
+  }
+  .explanation-original {
+    font-style: italic;
+    color: #555;
+    font-size: 0.9em;
+    margin-top: 0;
+  }
+  .people-list {
+    margin: 12px 0;
+    padding-left: 20px;
+  }
+  .people-list li {
+    margin: 6px 0;
+  }
+</style>
+</head>
+<body class="font-regular">
+<div class="practice-nav">
+  <div class="title">Questions</div>
+  <div class="questions">
+    <div class="q-item" id="q27-nav" onclick="scrollToElement('q27-anchor')">27</div>
+    <div class="q-item" id="q28-nav" onclick="scrollToElement('q28-anchor')">28</div>
+    <div class="q-item" id="q29-nav" onclick="scrollToElement('q29-anchor')">29</div>
+    <div class="q-item" id="q30-nav" onclick="scrollToElement('q30-anchor')">30</div>
+    <div class="q-item" id="q31-nav" onclick="scrollToElement('q31-anchor')">31</div>
+    <div class="q-item" id="q32-nav" onclick="scrollToElement('q32-anchor')">32</div>
+    <div class="q-item" id="q33-nav" onclick="scrollToElement('q33-anchor')">33</div>
+    <div class="q-item" id="q34-nav" onclick="scrollToElement('q34-anchor')">34</div>
+    <div class="q-item" id="q35-nav" onclick="scrollToElement('q35-anchor')">35</div>
+    <div class="q-item" id="q36-nav" onclick="scrollToElement('q36-anchor')">36</div>
+    <div class="q-item" id="q37-nav" onclick="scrollToElement('q37-anchor')">37</div>
+    <div class="q-item" id="q38-nav" onclick="scrollToElement('q38-anchor')">38</div>
+    <div class="q-item" id="q39-nav" onclick="scrollToElement('q39-anchor')">39</div>
+    <div class="q-item" id="q40-nav" onclick="scrollToElement('q40-anchor')">40</div>
+  </div>
+</div>
+<!-- 字体设置模态框 -->
+<div id="settingsModal">
+  <h4>Font Size Settings</h4>
+  <div class="font-option" data-size="regular">Regular (Default - 16px)</div>
+  <div class="font-option" data-size="moderate">Moderate (Larger - 18px)</div>
+  <div class="font-option" data-size="large">Large (Largest - 20px)</div>
+  <button class="close-modal" onclick="closeSettingsModal()">Close</button>
+</div>
+<div class="shell">
+  <section class="pane" id="left">
+    <h2>READING PASSAGE 3 
+      <div id="timer-container">
+        <span id="timer">00:00</span>
+        <button id="settingsBtn" onclick="openSettingsModal()">Settings</button>
+      </div>
+    </h2>
+    <p>You should spend about 20 minutes on Questions 27–40, which are based on Reading Passage 3 below.</p>
+    
+    <h3>The hazards of multitasking</h3>
+    <p>Doing more than one thing at once – is it always a good idea?</p>
+    <p>You arrive at the office, review your to-do list and start to feel a headache coming on. You resolve to tackle the items as quickly as possible. While you return calls, you sort e-mail and other letters. You begin keying in slides for tomorrow’s presentation. Then your manager comes in wanting an immediate update on sales figures. You have just opened the spreadsheet when a very important customer calls. With the receiver held between your shoulder and your ear, you continue adding up the sales totals until, 15 minutes later, you finally manage, politely, to get rid of the client. You’ve been multitasking again.</p>
+    
+    <p>You may believe that anyone who wants to get ahead today should master the art of multitasking. However, a recent study by the Families and Work Institute in New York City has found that 45 per cent of US workers believe that they are asked or expected to work on too many tasks at once. Managers may be surprised to learn that they are actually wasting their workers’ time. As it turns out, the human brain cannot really master the computer’s art of crunching data in the background while moving between process windows. Instead, a growing number of studies show that trying to juggle jobs rather than completing them sequentially can take longer and leave workers with a reduced ability to perform each task. In addition, the stress associated with multitasking may contribute to short-term memory difficulties. The combination results in inefficiency, careless thinking and mistakes – not to mention the possible dangers of divided attention for drivers, air-traffic controllers and others who handle machinery.</p>
+    
+    <p>How can a time-management strategy that has become part of the common wisdom actually be so wrong? Exploring that question requires a closer look at an area of consciousness research that examines how the brain focuses attention. One of the modern foundations of current knowledge of multitasking was laid in 1935, when the American psychologist John Ridley Stroop reported that processing information from one task could cause interference with another. Stroop noticed that when study participants were asked to name the colour of a word – such as ‘green’ – printed in a different colour – red, for example – they experienced difficulty saying the name of the colour. This phenomenon is thought to occur when two tasks get tangled: the brain must suppress one that has been learned so well that it has become automatic (reading) to attend to a second task that requires concentration (naming the colour).</p>
+    
+    <p>During the past couple of decades, psychologists have probed more deeply into the nature and limitations of multitasking. Psychologist and brain-researcher Ernst Pöppel, of the Ludwig-Maximilian University in Munich, believes that it is impossible to carry out two or three different tasks simultaneously with the same degree of concentration. He says that seemingly simultaneous awareness and processing of information actually take place in ‘three-second windows’.</p>
+    
+    <p>In these three-second segments, the brain takes in, as a block, all the data about the environment streaming in from the sensory systems; subsequent events are processed in the next window. So a person can concentrate on a conversation for three seconds, then for three seconds on a crying child, and three seconds on a computer screen. While one subject at a time occupies the foreground of consciousness, the others stay in the background until they, in turn, are given access to the central processor.</p>
+    
+    <p>Another experiment by psychologist David E. Meyer, of the University of Michigan, quantified just how much time we can lose when we shuttle between tasks. The researchers asked test participants to write a report and check their e-mail at the same time. Those individuals who constantly jumped back and forth between the two tasks took about one and a half times as long to finish as those who completed one job before turning to the other. Each switchover from one task to another meant re-thinking and thus involved additional neural resources. In effect, the brain needs time to shut off the rules for one task and to turn on the rules for another. ‘Multitasking saves time only when it is a matter of relaxed, routine tasks,’ Meyer says. It also takes the brain longer to adapt when switching rapidly back to an interrupted task rather than waiting longer before switching back.</p>
+    
+    <p>By its nature multitasking is stressful, and the area in the brain most involved with multitasking is also most affected by the resulting stress. Located behind the forehead, the prefrontal cortex – which neuroscientists call the ‘executive’ part of the brain – helps us to assess tasks, prioritise them and assign mental resources. It also ‘marks’ the spot at which a task has been interrupted, so that we can return to it later. This stress can also affect brain cells in another region, the hippocampus, which is important for forming new memories; damage in that area also makes it difficult for a person to acquire new skills.</p>
+    
+    <p>Psychiatrists Edward Hallowell and John Ratey, of Harvard University, say that multitasking can bring about a brain condition that causes sufferers to constantly seek new information while having difficulties concentrating on its content. All in all, it may be wise to let the email wait while you work on your presentation. You will save time and perform each task better.</p>
+    
+    <!-- 多加空白行防止加载不完全 -->
+    <p>&nbsp;</p>
+    <p>&nbsp;</p>
+    <p>&nbsp;</p>
+    <p>&nbsp;</p>
+  </section>
+  <div id="divider" title="Drag to resize"></div>
+  <section class="pane" id="right">
+    <h3>Questions</h3>
+    
+    <!-- Questions 27–31: Matching Theories with People -->
+    <div class="group">
+      <h4>Questions 27–31</h4>
+      <p>Look at the following theories (Questions 27–31) and the list of people below.</p>
+      <p>Match each theory with the correct person or people, A, B, C or D.</p>
+      <p>Write the correct letter, A, B, C or D, in boxes 27–31 on your answer sheet.</p>
+      <p>NB You may use any letter more than once.</p>
+      
+      <h5>List of People</h5>
+      <ul class="people-list">
+        <li>A. John Ridley Stroop</li>
+        <li>B. Ernst Pöppel</li>
+        <li>C. David E. Meyer</li>
+        <li>D. Edward Hallowell & John Ratey</li>
+      </ul>
+      
+      <a id="q27-anchor"></a>
+      <div id="q27-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+        <p>27. Less attention will be paid to each task when more than one task is attempted at the same time.</p>
+        <div class="match-option">
+          <label><input name="q27" type="radio" value="A"> A</label>
+          <label><input name="q27" type="radio" value="B"> B</label>
+          <label><input name="q27" type="radio" value="C"> C</label>
+          <label><input name="q27" type="radio" value="D"> D</label>
+        </div>
+      </div>
+      
+      <a id="q28-anchor"></a>
+      <div id="q28-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+        <p>28. Repeated changes of task mean that the brain will take a while to adjust.</p>
+        <div class="match-option">
+          <label><input name="q28" type="radio" value="A"> A</label>
+          <label><input name="q28" type="radio" value="B"> B</label>
+          <label><input name="q28" type="radio" value="C"> C</label>
+          <label><input name="q28" type="radio" value="D"> D</label>
+        </div>
+      </div>
+      
+      <a id="q29-anchor"></a>
+      <div id="q29-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+        <p>29. Using the skills required for one task may make performing another one more difficult.</p>
+        <div class="match-option">
+          <label><input name="q29" type="radio" value="A"> A</label>
+          <label><input name="q29" type="radio" value="B"> B</label>
+          <label><input name="q29" type="radio" value="C"> C</label>
+          <label><input name="q29" type="radio" value="D"> D</label>
+        </div>
+      </div>
+      
+      <a id="q30-anchor"></a>
+      <div id="q30-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+        <p>30. When multitasking, the brain can only focus on single tasks for very short periods.</p>
+        <div class="match-option">
+          <label><input name="q30" type="radio" value="A"> A</label>
+          <label><input name="q30" type="radio" value="B"> B</label>
+          <label><input name="q30" type="radio" value="C"> C</label>
+          <label><input name="q30" type="radio" value="D"> D</label>
+        </div>
+      </div>
+      
+      <a id="q31-anchor"></a>
+      <div id="q31-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+        <p>31. Multitasking can lead to a medical problem.</p>
+        <div class="match-option">
+          <label><input name="q31" type="radio" value="A"> A</label>
+          <label><input name="q31" type="radio" value="B"> B</label>
+          <label><input name="q31" type="radio" value="C"> C</label>
+          <label><input name="q31" type="radio" value="D"> D</label>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Questions 32–34: Multiple Choice -->
+    <div class="group">
+      <h4>Questions 32–34</h4>
+      <p>Choose the correct letter, A, B, C or D.</p>
+      <p>Write the correct letter in boxes 32–34 on your answer sheet.</p>
+      
+      <a id="q32-anchor"></a>
+      <div id="q32-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+        <p>32. What is suggested about the worker in the opening paragraph?</p>
+        <div class="mcq-options">
+          <div class="mcq-option"><label><input name="q32" type="radio" value="A"> A. Anxiety deprived him of sleep the previous night.</label></div>
+          <div class="mcq-option"><label><input name="q32" type="radio" value="B"> B. He feels overwhelmed by his workload.</label></div>
+          <div class="mcq-option"><label><input name="q32" type="radio" value="C"> C. His manager has expressed disapproval.</label></div>
+          <div class="mcq-option"><label><input name="q32" type="radio" value="D"> D. He finds his work dull and uninteresting.</label></div>
+        </div>
+      </div>
+      
+      <a id="q33-anchor"></a>
+      <div id="q33-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+        <p>33. Drivers and air-traffic controllers are mentioned in the passage because they</p>
+        <div class="mcq-options">
+          <div class="mcq-option"><label><input name="q33" type="radio" value="A"> A. need to perform several tasks at once.</label></div>
+          <div class="mcq-option"><label><input name="q33" type="radio" value="B"> B. are unable to maintain concentration.</label></div>
+          <div class="mcq-option"><label><input name="q33" type="radio" value="C"> C. use their time efficiently.</label></div>
+          <div class="mcq-option"><label><input name="q33" type="radio" value="D"> D. cannot afford to make mistakes.</label></div>
+        </div>
+      </div>
+      
+      <a id="q34-anchor"></a>
+      <div id="q34-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+        <p>34. In John Ridley Stroop’s experiment, participants found it difficult to</p>
+        <div class="mcq-options">
+          <div class="mcq-option"><label><input name="q34" type="radio" value="A"> A. tell one colour from another.</label></div>
+          <div class="mcq-option"><label><input name="q34" type="radio" value="B"> B. match up pairs of similar colours.</label></div>
+          <div class="mcq-option"><label><input name="q34" type="radio" value="C"> C. read out the name of one colour printed in another colour.</label></div>
+          <div class="mcq-option"><label><input name="q34" type="radio" value="D"> D. decide what colour looks appropriate for a particular word.</label></div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Questions 35–39: Summary Completion -->
+    <div class="group">
+      <h4>Questions 35–39</h4>
+      <p>Complete the summary below.</p>
+      <p>Choose <strong>NO MORE THAN TWO WORDS</strong> from the passage for each answer.</p>
+      <p>Write your answers in boxes 35–39 on your answer sheet.</p>
+      
+      <h5>Multitasking and its effects on the brain</h5>
+      <p>The stressful nature of multitasking has been shown to affect parts of the brain. The area most affected is the prefrontal cortex, which is found to the rear of the <span class="question-number">35.</span><a id="q35-anchor"></a><input type="text" class="blank" id="q35" placeholder="">. It is the part of the brain which judges tasks, then puts them in order of importance and allocates <span class="question-number">36.</span><a id="q36-anchor"></a><input type="text" class="blank" id="q36" placeholder="">; it also enables a worker to resume a task which has been put to one side.</p>
+      <p>A second area, the hippocampus, may also be affected by the stress of multitasking. If any <span class="question-number">37.</span><a id="q37-anchor"></a><input type="text" class="blank" id="q37" placeholder=""> in the hippocampus are affected, people may have problems with storing <span class="question-number">38.</span><a id="q38-anchor"></a><input type="text" class="blank" id="q38" placeholder="">, as well as learning <span class="question-number">39.</span><a id="q39-anchor"></a><input type="text" class="blank" id="q39" placeholder>.</p>
+    </div>
+    
+    <!-- Question 40: Multiple Choice (Main Aim) -->
+    <div class="group">
+      <h4>Question 40</h4>
+      <p>Choose the correct letter, A, B, C or D.</p>
+      <p>Write the correct letter in box 40 on your answer sheet.</p>
+      
+      <a id="q40-anchor"></a>
+      <div id="q40-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+        <p>40. The main aim of this passage is to</p>
+        <div class="mcq-options">
+          <div class="mcq-option"><label><input name="q40" type="radio" value="A"> A. describe areas where multitasking is useful.</label></div>
+          <div class="mcq-option"><label><input name="q40" type="radio" value="B"> B. challenge widely held opinions on multitasking.</label></div>
+          <div class="mcq-option"><label><input name="q40" type="radio" value="C"> C. show the physical damage that multitasking can cause.</label></div>
+          <div class="mcq-option"><label><input name="q40" type="radio" value="D"> D. call for better psychological experiments on multitasking.</label></div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Submit & Reset Buttons -->
+    <div style="display:flex;gap:8px;margin-bottom:10px;">
+      <button class="primary" onclick="grade()">Submit</button>
+      <button onclick="resetForm()">Reset</button>
+      <button onclick="toggleNotes()">Notes</button>
+    </div>
+    
+    <!-- Results & Answer Key -->
+    <div id="results"></div>
+    <details class="answerbox" id="answerBox">
+      <summary>Show Answers (Click to Toggle) <span class="badge">Hidden</span></summary>
+      <div id="answerContent">
+        <h4>正确答案及解析</h4>
+        <table>
+          <tr>
+            <th>题号</th>
+            <th>答案</th>
+            <th>解析与原文依据</th>
+          </tr>
+          <!-- 27-31 人物匹配题 -->
+          <tr>
+            <td>27</td>
+            <td>B (Ernst Pöppel)</td>
+            <td>
+              <p class="explanation-text">Ernst Pöppel 认为“无法同时以相同专注度完成2-3项任务”，即“同时处理多任务时，每项任务获得的注意力会减少”，与题干理论一致。</p>
+              <p class="explanation-original">原文：Ernst Pöppel... believes that it is impossible to carry out two or three different tasks simultaneously with the same degree of concentration. (Paragraph 4)</p>
+            </td>
+          </tr>
+          <tr>
+            <td>28</td>
+            <td>C (David E. Meyer)</td>
+            <td>
+              <p class="explanation-text">David E. Meyer 发现“任务切换需要重新思考，大脑需时间关闭前一任务规则、启动新任务规则”，且“快速切换回中断任务时，大脑适应时间更长”，即“反复切换任务需大脑适应时间”。</p>
+              <p class="explanation-original">原文：Each switchover from one task to another meant re-thinking... the brain needs time to shut off the rules for one task and to turn on the rules for another... It also takes the brain longer to adapt when switching rapidly back to an interrupted task. (Paragraph 6)</p>
+            </td>
+          </tr>
+          <tr>
+            <td>29</td>
+            <td>A (John Ridley Stroop)</td>
+            <td>
+              <p class="explanation-text">John Ridley Stroop 的实验显示“当单词颜色与词义不同时，受试者难以说出颜色”，即“一项任务的技能（阅读单词）干扰另一项任务（识别颜色）”，与题干理论一致。</p>
+              <p class="explanation-original">原文：Stroop noticed that when study participants were asked to name the colour of a word – such as ‘green’ – printed in a different colour – red, for example – they experienced difficulty saying the name of the colour. (Paragraph 3)</p>
+            </td>
+          </tr>
+          <tr>
+            <td>30</td>
+            <td>B (Ernst Pöppel)</td>
+            <td>
+              <p class="explanation-text">Ernst Pöppel 提出“多任务时，大脑对信息的感知和处理实际发生在‘3秒窗口’内”，即“大脑只能在极短时间内专注于单一任务”，与题干理论一致。</p>
+              <p class="explanation-original">原文：He says that seemingly simultaneous awareness and processing of information actually take place in ‘three-second windows’. (Paragraph 4)</p>
+            </td>
+          </tr>
+          <tr>
+            <td>31</td>
+            <td>D (Edward Hallowell & John Ratey)</td>
+            <td>
+              <p class="explanation-text">Edward Hallowell 和 John Ratey 指出“多任务会导致一种脑部状况，患者持续寻求新信息却难以专注于内容”，即“多任务可能引发医学问题”，与题干理论一致。</p>
+              <p class="explanation-original">原文：Edward Hallowell and John Ratey... say that multitasking can bring about a brain condition that causes sufferers to constantly seek new information while having difficulties concentrating on its content. (Paragraph 8)</p>
+            </td>
+          </tr>
+          <!-- 32-34 选择题 -->
+          <tr>
+            <td>32</td>
+            <td>B</td>
+            <td>
+              <p class="explanation-text">开篇段落提到工人“看到待办清单就头痛”“同时处理回电话、分类邮件、做幻灯片、应对经理和客户”，体现“工作负荷过重，感到压力大”，对应选项B。A（失眠）、C（经理不满）、D（工作枯燥）均无原文依据。</p>
+              <p class="explanation-original">原文：You arrive at the office, review your to-do list and start to feel a headache coming on... While you return calls, you sort e-mail and other letters... Then your manager comes in... when a very important customer calls. (Paragraph 1)</p>
+            </td>
+          </tr>
+          <tr>
+            <td>33</td>
+            <td>D</td>
+            <td>
+              <p class="explanation-text">第2段提到“注意力分散对司机、空中交通管制员等操作机械者有潜在危险”，隐含原因是“他们的工作不允许犯错（一旦犯错后果严重）”，对应选项D。A（需同时处理多任务）非核心原因；B（无法集中注意力）与原文矛盾；C（高效利用时间）无依据。</p>
+              <p class="explanation-original">原文：the possible dangers of divided attention for drivers, air-traffic controllers and others who handle machinery. (Paragraph 2)</p>
+            </td>
+          </tr>
+          <tr>
+            <td>34</td>
+            <td>C</td>
+            <td>
+              <p class="explanation-text">Stroop 实验的难点是“说出用其他颜色印刷的颜色单词的颜色（如‘green’用红色印刷时，说出‘红色’）”，即“读出用另一种颜色印刷的颜色名称”，对应选项C。A（区分颜色）、B（匹配相似颜色）、D（选择合适颜色）均不符合实验内容。</p>
+              <p class="explanation-original">原文：when study participants were asked to name the colour of a word – such as ‘green’ – printed in a different colour – red, for example – they experienced difficulty saying the name of the colour. (Paragraph 3)</p>
+            </td>
+          </tr>
+          <!-- 35-39 摘要填空 -->
+          <tr>
+            <td>35</td>
+            <td>forehead</td>
+            <td>
+              <p class="explanation-text">第7段明确“前额叶皮层位于前额后方（Located behind the forehead）”，直接对应填空“to the rear of the forehead”。</p>
+              <p class="explanation-original">原文：Located behind the forehead, the prefrontal cortex... (Paragraph 7)</p>
+            </td>
+          </tr>
+          <tr>
+            <td>36</td>
+            <td>mental resources</td>
+            <td>
+              <p class="explanation-text">第7段提到前额叶皮层“评估任务、确定优先级并分配心理资源（assess tasks, prioritise them and assign mental resources）”，“assign”对应题干“allocates”，故填“mental resources”。</p>
+              <p class="explanation-original">原文：helps us to assess tasks, prioritise them and assign mental resources. (Paragraph 7)</p>
+            </td>
+          </tr>
+          <tr>
+            <td>37</td>
+            <td>cells</td>
+            <td>
+              <p class="explanation-text">第7段指出“多任务压力也会影响海马体中的脑细胞（this stress can also affect brain cells in another region, the hippocampus）”，即“海马体中的细胞受影响”，故填“cells”。</p>
+              <p class="explanation-original">原文：This stress can also affect brain cells in another region, the hippocampus... (Paragraph 7)</p>
+            </td>
+          </tr>
+          <tr>
+            <td>38</td>
+            <td>new memories</td>
+            <td>
+              <p class="explanation-text">第7段提到海马体“对形成新记忆很重要（important for forming new memories）”，即“海马体受损会导致储存新记忆的问题”，故填“new memories”。</p>
+              <p class="explanation-original">原文：the hippocampus, which is important for forming new memories... (Paragraph 7)</p>
+            </td>
+          </tr>
+          <tr>
+            <td>39</td>
+            <td>new skills</td>
+            <td>
+              <p class="explanation-text">第7段提到“海马体受损也会使人难以习得新技能（damage in that area also makes it difficult for a person to acquire new skills）”，“acquire”对应题干“learning”，故填“new skills”。</p>
+              <p class="explanation-original">原文：damage in that area also makes it difficult for a person to acquire new skills. (Paragraph 7)</p>
+            </td>
+          </tr>
+          <!-- 40 主旨题 -->
+          <tr>
+            <td>40</td>
+            <td>B</td>
+            <td>
+              <p class="explanation-text">全文结构：先提出“大众认为多任务是必备技能”的普遍观点，再通过多项研究（Stroop、Pöppel、Meyer等）反驳该观点，指出多任务的危害（效率低、注意力分散、影响大脑功能），核心是“挑战关于多任务的普遍看法”，对应选项B。A（描述多任务有用的领域）与原文相悖；C（展示多任务的身体损伤）仅为部分内容；D（呼吁更好的心理学实验）无依据。</p>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </details>
+  </section>
+</div>
+<!-- 文本选择工具栏 -->
+<div aria-label="Selection tools" id="selbar" role="toolbar">
+  <button id="btnHL">Highlight</button>
+  <button id="btnUH">Remove Highlight</button>
+  <button id="btnNote">Add to Notes</button>
+</div>
+<!-- 笔记面板 -->
+<div id="notes">
+  <header>
+    <strong>Notes</strong>
+    <div>
+      <button id="btnCopy">Copy</button>
+      <button id="btnClose">Close</button>
+    </div>
+  </header>
+  <textarea id="noteArea" placeholder="Type your notes here..."></textarea>
+</div>
+<!-- 提示框 -->
+<div id="toast"></div>
+<script>
+// 计时器核心功能
+let _t = 0; 
+const _timerEl = document.getElementById('timer');
+let timerInterval; // 计时器间隔ID，用于后续停止
+// 启动计时器
+function startTimer() {
+  timerInterval = setInterval(() => { 
+    _t++; 
+    const m = String(Math.floor(_t/60)).padStart(2, '0'); 
+    const s = String(_t%60).padStart(2, '0'); 
+    _timerEl.textContent = `${m}:${s}`; 
+  }, 1000);
+}
+// 页面加载时启动计时器
+window.onload = startTimer;
+
+// 拖拽分隔线调整左右面板宽度
+const divider = document.getElementById('divider');
+const leftPane = document.getElementById('left');
+const rightPane = document.getElementById('right');
+let isDragging = false;
+divider.addEventListener('mousedown', (e) => {
+  isDragging = true;
+  document.body.style.cursor = 'ew-resize';
+  e.preventDefault();
+});
+window.addEventListener('mousemove', (e) => {
+  if (!isDragging) return;
+  const containerRect = document.querySelector('.shell').getBoundingClientRect();
+  let x = e.clientX - containerRect.left;
+  // 限制最小宽度，防止面板过窄
+  x = Math.max(280, Math.min(containerRect.width - 320, x));
+  leftPane.style.flex = `0 0 ${x}px`;
+  rightPane.style.flex = '1 1 auto';
+});
+window.addEventListener('mouseup', () => {
+  if (isDragging) {
+    isDragging = false;
+    document.body.style.cursor = '';
+  }
+});
+// 触摸设备支持
+divider.addEventListener('touchstart', (e) => {
+  isDragging = true;
+  e.preventDefault();
+}, { passive: false });
+window.addEventListener('touchmove', (e) => {
+  if (!isDragging) return;
+  const containerRect = document.querySelector('.shell').getBoundingClientRect();
+  let x = e.touches[0].clientX - containerRect.left;
+  x = Math.max(280, Math.min(containerRect.width - 320, x));
+  leftPane.style.flex = `0 0 ${x}px`;
+  rightPane.style.flex = '1 1 auto';
+}, { passive: false });
+window.addEventListener('touchend', () => {
+  isDragging = false;
+});
+
+// 文本高亮功能（支持所有文本）
+const selbar = document.getElementById('selbar');
+const btnHL = document.getElementById('btnHL');
+const btnUH = document.getElementById('btnUH');
+const btnNote = document.getElementById('btnNote');
+let lastRange = null;
+let currentHlNode = null;
+let keepToolbar = false;
+// 定位选择工具栏
+function positionSelbar(rect) {
+  selbar.style.display = 'flex';
+  requestAnimationFrame(() => {
+    const top = window.scrollY + rect.top - selbar.offsetHeight - 8;
+    const leftPos = window.scrollX + rect.left + rect.width/2 - selbar.offsetWidth/2;
+    // 确保工具栏不超出视口
+    selbar.style.top = (top > 0 ? top : window.scrollY + rect.bottom + 8) + 'px';
+    selbar.style.left = Math.max(8, leftPos) + 'px';
+  });
+}
+// 更新工具栏状态
+function updateSelbar() {
+  const selection = window.getSelection();
+  if (!selection || selection.rangeCount === 0 || selection.isCollapsed) {
+    selbar.style.display = 'none';
+    currentHlNode = null;
+    return;
+  }
+  const range = selection.getRangeAt(0);
+  lastRange = range.cloneRange();
+  currentHlNode = null;
+  positionSelbar(range.getBoundingClientRect());
+}
+// 监听文本选择事件（左右面板均支持）
+document.getElementById('left').addEventListener('mouseup', updateSelbar);
+document.getElementById('right').addEventListener('mouseup', updateSelbar);
+document.addEventListener('selectionchange', () => {
+  const selection = window.getSelection();
+  if (!selection || selection.rangeCount === 0 || selection.isCollapsed) {
+    if (!keepToolbar && !currentHlNode) selbar.style.display = 'none';
+  }
+});
+// 滚动时重新定位工具栏
+document.addEventListener('scroll', () => {
+  if (selbar.style.display === 'flex') updateSelbar();
+});
+// 点击高亮文本时显示工具栏
+document.addEventListener('mousedown', (e) => {
+  keepToolbar = e.target.classList?.contains('hl') || false;
+}, true);
+document.addEventListener('click', (e) => {
+  if (e.target.classList?.contains('hl')) {
+    currentHlNode = e.target;
+    lastRange = null;
+    positionSelbar(e.target.getBoundingClientRect());
+    const selection = window.getSelection();
+    if (selection) selection.removeAllRanges();
+    setTimeout(() => keepToolbar = false, 0);
+  }
+}, true);
+// 执行高亮
+function doHighlight() {
+  if (currentHlNode || !lastRange || lastRange.collapsed) return;
+  const highlightSpan = document.createElement('span');
+  highlightSpan.className = 'hl';
+  try {
+    lastRange.surroundContents(highlightSpan);
+  } catch (e) {
+    // 处理跨元素选择的情况
+    const wrapSpan = document.createElement('span');
+    wrapSpan.className = 'hl';
+    wrapSpan.appendChild(lastRange.cloneContents());
+    lastRange.deleteContents();
+    lastRange.insertNode(wrapSpan);
+  }
+  selbar.style.display = 'none';
+  showToast('Text highlighted');
+}
+// 移除高亮
+function removeHighlight() {
+  if (currentHlNode) {
+    // 移除单个高亮元素
+    const parent = currentHlNode.parentNode;
+    while (currentHlNode.firstChild) {
+      parent.insertBefore(currentHlNode.firstChild, currentHlNode);
+    }
+    parent.removeChild(currentHlNode);
+    parent.normalize(); // 合并相邻文本节点
+    currentHlNode = null;
+    selbar.style.display = 'none';
+    showToast('Highlight removed');
+    return;
+  }
+  if (!lastRange) return;
+  // 移除选择范围内的所有高亮
+  const selRect = lastRange.getBoundingClientRect();
+  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_ELEMENT);
+  const toRemove = [];
+  let node;
+  while ((node = walker.nextNode())) {
+    if (node.classList?.contains('hl')) {
+      const nodeRect = node.getBoundingClientRect();
+      // 判断节点是否在选择范围内
+      if (!(nodeRect.right < selRect.left || nodeRect.left > selRect.right || 
+            nodeRect.bottom < selRect.top || nodeRect.top > selRect.bottom)) {
+        toRemove.push(node);
+      }
+    }
+  }
+  toRemove.forEach(el => {
+    const parent = el.parentNode;
+    while (el.firstChild) parent.insertBefore(el.firstChild, el);
+    parent.removeChild(el);
+    parent.normalize();
+  });
+  selbar.style.display = 'none';
+  showToast('Highlights removed');
+}
+// 绑定高亮按钮事件
+btnHL.addEventListener('click', doHighlight);
+btnUH.addEventListener('click', removeHighlight);
+
+// 笔记功能
+const notesPanel = document.getElementById('notes');
+const noteArea = document.getElementById('noteArea');
+const btnCopy = document.getElementById('btnCopy');
+const btnCloseNotes = document.getElementById('btnClose');
+// 切换笔记面板显示
+function toggleNotes() {
+  notesPanel.style.display = notesPanel.style.display === 'flex' ? 'none' : 'flex';
+}
+// 关闭笔记面板
+btnCloseNotes.addEventListener('click', toggleNotes);
+// 复制笔记
+btnCopy.addEventListener('click', async () => {
+  await navigator.clipboard.writeText(noteArea.value || '');
+  showToast('Notes copied to clipboard');
+});
+// 选中文本添加到笔记
+btnNote.addEventListener('click', () => {
+  let selectedText = '';
+  if (currentHlNode) {
+    selectedText = currentHlNode.textContent.trim();
+  } else if (lastRange) {
+    const frag = lastRange.cloneContents();
+    selectedText = frag.textContent.trim();
+  }
+  toggleNotes();
+  if (selectedText) {
+    noteArea.value = noteArea.value ? `${noteArea.value}\n> ${selectedText}\n` : `> ${selectedText}\n`;
+    // 滚动到笔记底部
+    noteArea.scrollTop = noteArea.scrollHeight;
+  }
+  selbar.style.display = 'none';
+});
+
+// 提示框功能
+const toastEl = document.getElementById('toast');
+function showToast(message) {
+  toastEl.textContent = message;
+  toastEl.style.display = 'block';
+  setTimeout(() => toastEl.style.display = 'none', 1500);
+}
+
+// 字体设置功能（应用于所有元素）
+const settingsModal = document.getElementById('settingsModal');
+const body = document.body;
+// 打开字体设置模态框
+function openSettingsModal() {
+  settingsModal.style.display = 'block';
+}
+// 关闭字体设置模态框
+function closeSettingsModal() {
+  settingsModal.style.display = 'none';
+}
+// 点击模态框外部关闭
+window.addEventListener('click', (e) => {
+  if (e.target === settingsModal) closeSettingsModal();
+});
+// 切换字体大小（影响网页所有元素）
+document.querySelectorAll('.font-option').forEach(option => {
+  option.addEventListener('click', () => {
+    const size = option.dataset.size;
+    // 移除所有字体类，添加选中的类（body类控制所有元素继承）
+    body.classList.remove('font-regular', 'font-moderate', 'font-large');
+    body.classList.add(`font-${size}`);
+    // 显示提示
+    const sizeName = size === 'regular' ? 'Regular (16px)' : 
+                     size === 'moderate' ? 'Moderate (18px)' : 'Large (20px)';
+    showToast(`Font size set to ${sizeName}`);
+    closeSettingsModal();
+  });
+});
+
+// 答案与评分功能（Submit后停止计时器）
+const answers = {
+  q27: 'B',
+  q28: 'C',
+  q29: 'A',
+  q30: 'B',
+  q31: 'D',
+  q32: 'B',
+  q33: 'D',
+  q34: 'C',
+  q35: 'forehead',
+  q36: 'mental resources',
+  q37: 'cells',
+  q38: 'new memories',
+  q39: 'new skills',
+  q40: 'B'
+};
+// 评分函数（Submit后执行，包含停止计时器）
+function grade() {
+  // 1. 停止计时器
+  clearInterval(timerInterval);
+  
+  // 2. 计算得分
+  let total = 14;
+  let correct = 0;
+  const resultLines = [];
+  
+  // 检查27-31题（人物匹配）
+  for (let i = 27; i <= 31; i++) {
+    const qName = `q${i}`;
+    const selected = document.querySelector(`input[name="${qName}"]:checked`);
+    const userAns = selected ? selected.value : 'No answer';
+    const correctAns = answers[qName];
+    const isCorrect = userAns === correctAns;
+    if (isCorrect) correct++;
+    resultLines.push(`${qName.toUpperCase()}: ${userAns} ${isCorrect ? '✅ Correct' : `❌ Incorrect (Correct: ${correctAns})`}`);
+  }
+  
+  // 检查32-34题、40题（选择题）
+  for (let i of [32,33,34,40]) {
+    const qName = `q${i}`;
+    const selected = document.querySelector(`input[name="${qName}"]:checked`);
+    const userAns = selected ? selected.value : 'No answer';
+    const correctAns = answers[qName];
+    const isCorrect = userAns === correctAns;
+    if (isCorrect) correct++;
+    resultLines.push(`${qName.toUpperCase()}: ${userAns} ${isCorrect ? '✅ Correct' : `❌ Incorrect (Correct: ${correctAns})`}`);
+  }
+  
+  // 检查35-39题（摘要填空，忽略大小写和空格差异）
+  for (let i = 35; i <= 39; i++) {
+    const qName = `q${i}`;
+    const input = document.getElementById(qName);
+    const userAns = input ? input.value.trim().toLowerCase().replace(/\s+/g, ' ') : 'No answer';
+    const correctAns = answers[qName].toLowerCase().replace(/\s+/g, ' ');
+    const isCorrect = userAns === correctAns;
+    if (isCorrect) correct++;
+    resultLines.push(`${qName.toUpperCase()}: ${userAns || 'No answer'} ${isCorrect ? '✅ Correct' : `❌ Incorrect (Correct: ${answers[qName]})`}`);
+  }
+  
+  // 3. 显示结果
+  const accuracy = Math.round((correct / total) * 100);
+  const resultsHTML = `
+    <p><strong>Score:</strong> ${correct}/${total} (Accuracy: ${accuracy}%)</p>
+    <pre>${resultLines.join('\n')}</pre>
+  `;
+  document.getElementById('results').innerHTML = resultsHTML;
+  
+  // 4. 展开答案面板
+  const answerBox = document.getElementById('answerBox');
+  answerBox.open = true;
+  document.querySelector('#answerBox .badge').textContent = 'Visible';
+  
+  // 5. 标记所有题目为已回答
+  document.querySelectorAll('.q-item').forEach(item => {
+    item.classList.add('answered');
+  });
+}
+// 重置功能（重置计时器、选项、高亮等）
+function resetForm() {
+  // 1. 重置计时器
+  clearInterval(timerInterval);
+  _t = 0;
+  _timerEl.textContent = '00:00';
+  startTimer();
+  
+  // 2. 重置所有单选按钮
+  document.querySelectorAll('input[type="radio"]').forEach(radio => {
+    radio.checked = false;
+  });
+  
+  // 3. 重置35-39题填空题
+  document.querySelectorAll('input.blank').forEach(input => {
+    input.value = '';
+  });
+  
+  // 4. 重置结果和答案面板
+  document.getElementById('results').innerHTML = '';
+  const answerBox = document.getElementById('answerBox');
+  answerBox.open = false;
+  document.querySelector('#answerBox .badge').textContent = 'Hidden';
+  
+  // 5. 重置导航栏已回答状态
+  document.querySelectorAll('.q-item').forEach(item => {
+    item.classList.remove('answered');
+  });
+  
+  // 6. 重置笔记
+  noteArea.value = '';
+  notesPanel.style.display = 'none';
+  
+  // 7. 移除所有高亮
+  document.querySelectorAll('.hl').forEach(hl => {
+    const parent = hl.parentNode;
+    while (hl.firstChild) parent.insertBefore(hl.firstChild, hl);
+    parent.removeChild(hl);
+    parent.normalize();
+  });
+}
+// 滚动到指定题目
+function scrollToElement(id) {
+  const element = document.getElementById(id);
+  if (element) {
+    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  // 高亮导航项
+  document.querySelectorAll('.q-item').forEach(item => {
+    item.classList.remove('active');
+  });
+  const navItem = document.getElementById(id.replace('-anchor', '-nav'));
+  if (navItem) {
+    navItem.classList.add('active');
+    setTimeout(() => navItem.classList.remove('active'), 800);
+  }
+}
+// 监听输入，标记题目为已回答
+(function() {
+  // 监听单选按钮（27-34题、40题）
+  for (let i of [27,28,29,30,31,32,33,34,40]) {
+    document.querySelectorAll(`input[name="q${i}"]`).forEach(radio => {
+      radio.addEventListener('change', () => {
+        document.getElementById(`q${i}-nav`).classList.add('answered');
+      });
+    });
+  }
+  
+  // 监听填空题（35-39题）
+  for (let i = 35; i <= 39; i++) {
+    const input = document.getElementById(`q${i}`);
+    input.addEventListener('input', () => {
+      if (input.value.trim()) {
+        document.getElementById(`q${i}-nav`).classList.add('answered');
+      } else {
+        document.getElementById(`q${i}-nav`).classList.remove('answered');
+      }
+    });
+  }
+})();
+</script>
+</body>
+</html>
+    
