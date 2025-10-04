@@ -1,0 +1,1323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Language Strategy in Multinational Companies - Reading Passage</title>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<style>
+  :root { 
+    --line:#e5e7eb; 
+    --bg:#f6f7fb; 
+    --panel:#fff; 
+    --accent:#3b82f6; 
+    --muted:#6b7280; 
+    --shadow:0 6px 20px rgba(0,0,0,.12); 
+    --drag-hover: #dbeafe;
+    --drag-active: #bfdbfe;
+    /* 字体大小变量 - 基础regular，逐级放大 */
+    --font-size-regular: 16px;   /* 基础大小 */
+    --font-size-moderate: 18px;  /* 比regular大1号 */
+    --font-size-large: 20px;     /* 比moderate大1号 */
+  }
+  /* 字体大小类 - 所有元素继承 */
+  .font-regular {
+    font-size: var(--font-size-regular) !important;
+  }
+  .font-moderate {
+    font-size: var(--font-size-moderate) !important;
+  }
+  .font-large {
+    font-size: var(--font-size-large) !important;
+  }
+  * { 
+    box-sizing: border-box; 
+    font-size: inherit; /* 所有元素继承父级字体大小 */
+  }
+  html,body { 
+    height:100%; 
+    font-size: var(--font-size-regular); /* 默认regular */
+  }
+  body { 
+    margin:0; 
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; 
+    background:var(--bg); 
+  }
+  #timer-container {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  #timer { 
+    position: static; 
+    display: inline-block; 
+    background:#fff; 
+    border:1px solid var(--line); 
+    border-radius:10px; 
+    padding:2px 8px; 
+    vertical-align: middle; 
+  }
+  #settingsBtn {
+    padding:2px 8px;
+    border:1px solid var(--line);
+    border-radius:10px;
+    background:#fff;
+    cursor:pointer;
+  }
+  #settingsModal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:16px;
+    box-shadow:var(--shadow);
+    z-index: 1000;
+    display: none;
+  }
+  #settingsModal h4 {
+    margin-top:0;
+    font-weight: 600;
+  }
+  #settingsModal .font-option {
+    margin:8px 0;
+    cursor:pointer;
+    padding:4px 8px;
+    border-radius:6px;
+  }
+  #settingsModal .font-option:hover {
+    background:#f1f5f9;
+  }
+  #settingsModal .close-modal {
+    margin-top:12px;
+    padding:6px 12px;
+    border:1px solid var(--line);
+    border-radius:8px;
+    background:var(--accent);
+    color:#fff;
+    cursor:pointer;
+  }
+  .shell { 
+    display:flex; 
+    height:100vh; 
+    width:100%; 
+  }
+  .pane { 
+    background:var(--panel); 
+    overflow:auto; 
+    padding:20px; 
+  }
+  #left { 
+    flex: 0 0 50%; 
+    min-width: 280px; 
+  }
+  #right { 
+    flex: 1 1 auto; 
+    min-width: 320px; 
+    background:#fbfbff; 
+    border-left:1px solid var(--line); 
+  }
+  #divider { 
+    flex: 0 0 8px; 
+    background: linear-gradient(90deg,#e5e7eb,#d1d5db); 
+    cursor: ew-resize; 
+    position:relative; 
+    z-index: 5; 
+    user-select:none; 
+  }
+  h2,h3,h4 { 
+    margin:0 0 10px; 
+    font-weight: 600; 
+  }
+  #left p { 
+    margin: 0 0 12px; 
+    line-height: 1.6; 
+    word-break: normal; 
+    overflow-wrap: normal; 
+    hyphens: none; 
+  }
+  #left .section-heading { 
+    font-weight: 600; 
+    margin-top: 20px; 
+    margin-bottom: 8px; 
+  }
+  .group { 
+    background:#fff; 
+    border:1px solid var(--line); 
+    border-radius:10px; 
+    padding:12px; 
+    margin-bottom:14px; 
+  }
+  table { 
+    border-collapse: collapse; 
+    width:100%; 
+    margin: 10px 0;
+  }
+  th, td { 
+    border:1px solid var(--line); 
+    padding:6px; 
+    text-align:left; 
+  }
+  th {
+    background-color: #f1f5f9;
+    font-weight: 600;
+  }
+  button { 
+    padding:8px 12px; 
+    border:1px solid var(--line); 
+    border-radius:10px; 
+    background:#fff; 
+    cursor:pointer; 
+  }
+  button.primary { 
+    background:var(--accent); 
+    color:#fff; 
+    border-color:#3b82f6; 
+  }
+  #results { 
+    background:#fff; 
+    border:1px solid var(--line); 
+    border-radius:10px; 
+    padding:10px; 
+    margin-bottom:14px;
+  }
+  .hl { 
+    background:#fff3a3; 
+    box-shadow: inset 0 -2px 0 rgba(0,0,0,.05); 
+    cursor: pointer; 
+  }
+  .hl:hover { 
+    filter: brightness(0.98); 
+  }
+  #selbar { 
+    position: absolute; 
+    display:none; 
+    z-index: 6000; 
+    background:#111; 
+    color:#fff; 
+    border-radius: 8px; 
+    padding: 6px; 
+    box-shadow: var(--shadow); 
+    font-size: 13px; 
+    gap:6px; 
+    align-items: center; 
+  }
+  #selbar button { 
+    background: transparent; 
+    color:#fff; 
+    border: 1px solid rgba(255,255,255,.25); 
+    padding: 4px 8px; 
+    border-radius: 6px; 
+    cursor:pointer; 
+  }
+  #selbar button:hover { 
+    border-color:#fff; 
+  }
+  #notes { 
+    position: fixed; 
+    right: 12px; 
+    bottom: 12px; 
+    width: 320px; 
+    height: 42vh; 
+    background:#fff; 
+    border:1px solid var(--line); 
+    border-radius: 12px; 
+    display:none; 
+    flex-direction: column; 
+    z-index:1500; 
+    box-shadow: var(--shadow); 
+  }
+  #notes header { 
+    display:flex; 
+    align-items:center; 
+    justify-content: space-between; 
+    padding:8px 10px; 
+    border-bottom:1px solid var(--line); 
+  }
+  #notes textarea { 
+    flex:1; 
+    border:0; 
+    padding:10px; 
+    resize:none; 
+    line-height:1.5; 
+  }
+  #toast { 
+    position: fixed; 
+    left:50%; 
+    transform: translateX(-50%); 
+    bottom: 24px; 
+    background:#111; 
+    color:#fff; 
+    padding:8px 12px; 
+    border-radius: 8px; 
+    display:none; 
+    z-index:2500; 
+  }
+  .answer-option {
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin:4px 0 8px;
+  }
+  .answer-option label {
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    gap:4px;
+  }
+  .mcq-option {
+    margin: 6px 0;
+    padding: 4px;
+    cursor: pointer;
+  }
+  .mcq-option input {
+    margin-right: 8px;
+  }
+  .summary-option {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 10px 0;
+    padding: 10px;
+    background-color: #f8fafc;
+    border-radius: 8px;
+  }
+  .summary-option .drag-item {
+    cursor: grab;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 10px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background-color: white;
+    transition: all 0.2s ease;
+    user-select: none;
+  }
+  .summary-option .drag-item:hover {
+    background-color: #f1f5f9;
+    border-color: var(--accent);
+  }
+  .summary-option .drag-item.dragging {
+    opacity: 0.7;
+    transform: scale(1.05);
+    background-color: var(--drag-active);
+    border-color: var(--accent);
+    cursor: grabbing;
+  }
+  .blank-container {
+    display: inline-block;
+    position: relative;
+    min-width: 120px;
+    margin: 0 8px;
+  }
+  .drop-zone {
+    width: 100%;
+    padding: 8px;
+    min-height: 36px;
+    border: 2px dashed #94a3b8;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+  }
+  .drop-zone.highlight {
+    background-color: var(--drag-hover);
+    border-color: var(--accent);
+    border-style: solid;
+  }
+  .drop-zone.filled {
+    border-style: solid;
+    border-color: #94a3b8;
+    background-color: #f1f5f9;
+  }
+  .question-number {
+    font-weight: 600;
+  }
+  body { 
+    padding-bottom: 82px; 
+  }
+  .practice-nav { 
+    background:#fff; 
+    border-bottom:2px solid var(--line); 
+    padding:12px 20px; 
+    display:flex; 
+    align-items:center; 
+    gap:20px; 
+    box-shadow:0 2px 4px rgba(0,0,0,.05); 
+    flex-wrap:wrap; 
+    position:fixed; 
+    left:0; 
+    right:0; 
+    bottom:0; 
+    border-top:2px solid var(--line); 
+    border-bottom:0; 
+    z-index:4000; 
+  }
+  .practice-nav .title { 
+    font-weight:600; 
+    color:var(--muted); 
+  }
+  .practice-nav .questions { 
+    display:flex; 
+    gap:8px; 
+    align-items:center; 
+    flex-wrap:wrap; 
+  }
+  .practice-nav .q-item { 
+    padding:6px 10px; 
+    border:1px solid var(--line); 
+    border-radius:6px; 
+    background:#fff; 
+    cursor:pointer; 
+    transition:all 0.2s; 
+    min-width:36px; 
+    text-align:center; 
+  }
+  .practice-nav .q-item:hover { 
+    background:#f1f5f9; 
+    border-color:var(--accent); 
+  }
+  .practice-nav .q-item.answered { 
+    background:#e0e7ff; 
+    border-color:var(--accent); 
+    color:var(--accent); 
+    font-weight:500; 
+  }
+  .practice-nav .q-item.active { 
+    background:var(--accent); 
+    color:#fff; 
+    border-color:var(--accent); 
+  }
+  details.answerbox summary { 
+    cursor: pointer; 
+    user-select:none; 
+    list-style: none; 
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  details.answerbox summary::before {
+    content: "▼";
+    font-size: 12px;
+    transition: transform 0.2s;
+  }
+  details.answerbox[open] summary::before {
+    transform: rotate(180deg);
+  }
+  details.answerbox { 
+    border:1px dashed var(--line); 
+    border-radius:10px; 
+    padding:8px 10px; 
+    background:#fff; 
+    margin-bottom:14px;
+  }
+  .badge { 
+    display:inline-block; 
+    background:#eef2ff; 
+    color:#4338ca; 
+    padding:2px 8px; 
+    border-radius:999px; 
+    font-size:12px; 
+    margin-left:6px; 
+  }
+  .explanation-text {
+    margin-bottom: 4px;
+  }
+  .explanation-original {
+    font-style: italic;
+    color: #555;
+    font-size: 0.9em;
+    margin-top: 0;
+  }
+  .remove-answer {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background-color: #ef4444;
+    color: white;
+    border: none;
+    font-size: 12px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .blank-container:hover .remove-answer {
+    opacity: 1;
+  }
+</style>
+</head>
+<body class="font-regular">
+<div class="practice-nav">
+  <div class="title">Questions</div>
+  <div class="questions">
+    <div class="q-item" id="q27-nav" onclick="scrollToElement('q27-anchor')">27</div>
+    <div class="q-item" id="q28-nav" onclick="scrollToElement('q28-anchor')">28</div>
+    <div class="q-item" id="q29-nav" onclick="scrollToElement('q29-anchor')">29</div>
+    <div class="q-item" id="q30-nav" onclick="scrollToElement('q30-anchor')">30</div>
+    <div class="q-item" id="q31-nav" onclick="scrollToElement('q31-anchor')">31</div>
+    <div class="q-item" id="q32-nav" onclick="scrollToElement('q32-anchor')">32</div>
+    <div class="q-item" id="q33-nav" onclick="scrollToElement('q33-anchor')">33</div>
+    <div class="q-item" id="q34-nav" onclick="scrollToElement('q34-anchor')">34</div>
+    <div class="q-item" id="q35-nav" onclick="scrollToElement('q35-anchor')">35</div>
+    <div class="q-item" id="q36-nav" onclick="scrollToElement('q36-anchor')">36</div>
+    <div class="q-item" id="q37-nav" onclick="scrollToElement('q37-anchor')">37</div>
+    <div class="q-item" id="q38-nav" onclick="scrollToElement('q38-anchor')">38</div>
+    <div class="q-item" id="q39-nav" onclick="scrollToElement('q39-anchor')">39</div>
+    <div class="q-item" id="q40-nav" onclick="scrollToElement('q40-anchor')">40</div>
+  </div>
+</div>
+<!-- 字体设置模态框 -->
+<div id="settingsModal">
+  <h4>Font Size Settings</h4>
+  <div class="font-option" data-size="regular">Regular (Default - 16px)</div>
+  <div class="font-option" data-size="moderate">Moderate (Larger - 18px)</div>
+  <div class="font-option" data-size="large">Large (Largest - 20px)</div>
+  <button class="close-modal" onclick="closeSettingsModal()">Close</button>
+</div>
+<div class="shell">
+  <section class="pane" id="left">
+    <h2>READING PASSAGE 3 
+      <div id="timer-container">
+        <span id="timer">00:00</span>
+        <button id="settingsBtn" onclick="openSettingsModal()">Settings</button>
+      </div>
+    </h2>
+    <p>You should spend about 20 minutes on Questions 27–40, which are based on Reading Passage 3 below.</p>
+    
+    <h3>Language Strategy in Multinational Companies</h3>
+    <p>The importance of language management in multinational companies has never been greater than today. Multinationals are becoming ever more conscious of the importance of global coordination as a source of competitive advantage, and language remains the ultimate barrier to aspirations of international harmonization. Before attempting to consider language-management strategies, companies will have to evaluate the magnitude of the language barrier confronting them and, in doing so, examine it in three dimensions: language diversity, language penetration and language sophistication. Companies next need to turn their attention to how they should best manage language. There is a range of options from which MNCs can formulate their language strategy.</p>
+    
+    <p class="section-heading">Lingua Franca</p>
+    <p>The simplest answer-though realistic only for English-speaking companies-is to rely on one’s native tongue. As recently as 1991 a survey of British exporting companies found that over a third used English exclusively in dealings with foreign customers. This attitude that “one language fits all” has also been carried through into the Internet age. A survey of the websites of top American companies confirmed that over half made no provision for foreign-language access, and another found that less than 10% of leading companies were able to respond adequately to e-mails other than in the company’s language. Widespread though it is, however, reliance on a single language is a strategy that is fatally flawed. It makes no allowance for the growing trend in linguistic nationalism whereby buyers in Asia, South America and the Middle East in particular are asserting their right to “work in the language of the customer”. It also fails to recognise the increasing vitality of languages such as Spanish, Arabic and Chinese that over time are likely to challenge the dominance of English as a lingua franca. In the IT arena it ignores the rapid globalisation of the Internet, where the number of English-language e-commerce transactions, e-mails and websites is rapidly diminishing as a percentage of the total. Finally, total reliance on a single language puts the English speaker at risk in negotiations. Contracts, rules and legislation are invariably written in the local language, and a company unable to operate in that language is vulnerable.</p>
+    
+    <p class="section-heading">Functional Multilingualism</p>
+    <p>Another improvised approach is to rely on what has been termed “functional multilingualism”. Essentially, this means muddling through-relying on a mix of languages, pidgins and gestures to communicate by whatever means the parties have at their disposal. In a social context such a shared effort might aid bonding, the frustration of communication being regularly punctuated by moments of absurdity and humour. However, as the basis for business negotiations it appears very hit-and-miss. Yet Hagen’s recent study suggests that 16% of international business transactions are conducted in a “cocktail of languages”. Functional multilingualism shares the same defects as reliance on a lingua franca and increases the probability of cognitive divergence between the parties.</p>
+    
+    <p class="section-heading">External Language Resources</p>
+    <p>A more rational response is to employ external resources such as translators and interpreters, and certainly there are many excellent companies specialised in these fields. However, this is by no means an end to the language barrier. For a start these services can be very expensive, with a top simultaneous interpreter commanding daily rates as high as a partner in an international consulting firm. Secondly, any good translator or interpreter will insist that, to be fully effective, they must understand the context of the subject matter-something not always possible owing to complexity, lack of preparation time, or more often the reluctance of the parties to explain the wider context to an outsider. Unless there has been considerable pre-explanation, ambiguity and cultural overtones are likely to remain in the source messages. Interpreters will of course endeavour to provide a hi-fidelity translation, but in such circumstances they must use initiative and guess-work, clearly injecting a potential source of misunderstanding. Finally, while a good interpreter will attempt to convey spirit as well as meaning, there is inevitably a loss of rhetorical power; for negotiation, persuasion or humour, an interpreter is a poor substitute for direct communication.</p>
+    
+    <p class="section-heading">Training</p>
+    <p>The immediate and understandable reaction to any skills shortage is to consider personnel development, and the language-training industry is well developed, offering programmes at almost every level and in numerous languages. However, no company should be deluded into believing training alone guarantees success. Training budgets are geared to the economic cycle: when times are good, money is invested; when belts tighten, training is one of the first luxuries to be pared down. In a study across four European countries nearly twice as many companies said they needed language training in coming years as had conducted it in past years-highlighting the gap between good intentions and delivery. Unless a company is committed to sustaining the strategy even through bad times, it will fail.</p>
+    <p>One notable and committed leader in language training is the Volkswagen Group. Over many years it has developed a language strategy that can be regarded as a model of professional management. Volkswagen treats language training as a strategic solution, not a tactical one. Progressing from “basics” to full “communication competence” requires completion of six language stages, each demanding roughly 90 hours of classroom refresher work, supplemented by selfstudy over 6-9 months. Each stage ends with an achievement test that is a prerequisite for continuing. Even this highly structured programme expects a minimum of three years of fairly intensive study before an accountant, engineer, buyer or salesperson can work effectively in a foreign language. Clearly, firms pursuing this route must do so with realistic expectations and longterm commitment; except for brush-up courses for the already fluent, training is not a quick fix and other methods will still be needed.</p>
+    
+    <!-- 多加空白行防止加载不完全 -->
+    <p>&nbsp;</p>
+    <p>&nbsp;</p>
+    <p>&nbsp;</p>
+    <p>&nbsp;</p>
+  </section>
+  <div id="divider" title="Drag to resize"></div>
+  <section class="pane" id="right">
+    <h3>Questions</h3>
+    
+    <!-- Questions 27–32: Summary Completion with Drag and Drop -->
+    <div class="group">
+      <h4>Questions 27–32</h4>
+      <p>Complete the summary by dragging the correct phrases from the list below to the corresponding gaps.</p>
+      
+      <p>MNCs often encounter language barriers in their daily operations, so they seek several approaches to solve such problems. First, using the native language gives them a realistic base in a different language-speaking country, but problems turn up when they deal with overseas <span class="question-number">27.</span><a id="q27-anchor"></a> 
+        <div class="blank-container">
+          <div class="drop-zone" data-question="q27"></div>
+          <button class="remove-answer" onclick="removeAnswer('q27')">×</button>
+        </div>. For example, when translating key <span class="question-number">28.</span><a id="q28-anchor"></a> 
+        <div class="blank-container">
+          <div class="drop-zone" data-question="q28"></div>
+          <button class="remove-answer" onclick="removeAnswer('q28')">×</button>
+        </div>, differences inevitably arise because of rules in different countries. Another way is to rely on a combination of spoken language and <span class="question-number">29.</span><a id="q29-anchor"></a> 
+        <div class="blank-container">
+          <div class="drop-zone" data-question="q29"></div>
+          <button class="remove-answer" onclick="removeAnswer('q29')">×</button>
+        </div>, yet a report noted that over one-tenth of business <span class="question-number">30.</span><a id="q30-anchor"></a> 
+        <div class="blank-container">
+          <div class="drop-zone" data-question="q30"></div>
+          <button class="remove-answer" onclick="removeAnswer('q30')">×</button>
+        </div>, were processed in a party-language setting. A third way is to hire translators. However, this is <span class="question-number">31.</span><a id="q31-anchor"></a> 
+        <div class="blank-container">
+          <div class="drop-zone" data-question="q31"></div>
+          <button class="remove-answer" onclick="removeAnswer('q31')">×</button>
+        </div>; besides, if they are not well prepared, they have to engage in <span class="question-number">32.</span><a id="q32-anchor"></a> 
+        <div class="blank-container">
+          <div class="drop-zone" data-question="q32"></div>
+          <button class="remove-answer" onclick="removeAnswer('q32')">×</button>
+        </div> work.</p>
+      
+      <h5>List of Phrases (Drag to the gaps above)</h5>
+      <div class="summary-option">
+        <div class="drag-item" draggable="true" data-value="A">A. gestures</div>
+        <div class="drag-item" draggable="true" data-value="B">B. clients</div>
+        <div class="drag-item" draggable="true" data-value="C">C. transactions</div>
+        <div class="drag-item" draggable="true" data-value="D">D. assumption</div>
+        <div class="drag-item" draggable="true" data-value="E">E. accurate</div>
+        <div class="drag-item" draggable="true" data-value="F">F. documents</div>
+        <div class="drag-item" draggable="true" data-value="G">G. managers</div>
+        <div class="drag-item" draggable="true" data-value="H">H. body language</div>
+        <div class="drag-item" draggable="true" data-value="I">I. long-term</div>
+        <div class="drag-item" draggable="true" data-value="J">J. effective</div>
+        <div class="drag-item" draggable="true" data-value="K">K. rivals</div>
+        <div class="drag-item" draggable="true" data-value="L">L. costly</div>
+      </div>
+      
+      <!-- Hidden inputs to store answers for grading -->
+      <input type="hidden" id="q27" value="">
+      <input type="hidden" id="q28" value="">
+      <input type="hidden" id="q29" value="">
+      <input type="hidden" id="q30" value="">
+      <input type="hidden" id="q31" value="">
+      <input type="hidden" id="q32" value="">
+    </div>
+    
+    <!-- Questions 33–39: Short Answer -->
+    <div class="group">
+      <h4>Questions 33–39</h4>
+      <p>Answer the questions below.</p>
+      <p>Choose NO MORE THAN THREE WORDS AND/OR A NUMBER from the passage for each answer.</p>
+      <p>Write your answers in boxes 33–39 on your answer sheet.</p>
+      
+      <a id="q33-anchor"></a>
+      <div id="q33-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+        <p>33. What “understandable reaction” does the author say companies show when facing a skills shortage?</p>
+        <input type="text" class="blank" id="q33">
+      </div>
+      
+      <a id="q34-anchor"></a>
+      <div id="q34-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+        <p>34. During an economic depression, how does the writer label language training in firms?</p>
+        <input type="text" class="blank" id="q34">
+      </div>
+      
+      <a id="q35-anchor"></a>
+      <div id="q35-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+        <p>35. What has Volkswagen Group provided as an example for other multinationals?</p>
+        <input type="text" class="blank" id="q35">
+      </div>
+      
+      <a id="q36-anchor"></a>
+      <div id="q36-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+        <p>36. In Volkswagen, language training is regarded as what kind of solution?</p>
+        <input type="text" class="blank" id="q36">
+      </div>
+      
+      <a id="q37-anchor"></a>
+      <div id="q37-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+        <p>37. How many stages are required to progress from basics to full competence?</p>
+        <input type="text" class="blank" id="q37">
+      </div>
+      
+      <a id="q38-anchor"></a>
+      <div id="q38-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+        <p>38. Roughly how long does each refresher course take?</p>
+        <input type="text" class="blank" id="q38">
+      </div>
+      
+      <a id="q39-anchor"></a>
+      <div id="q39-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+        <p>39. At least how long is needed for a specialist to work effectively in a foreign language?</p>
+        <input type="text" class="blank" id="q39">
+      </div>
+    </div>
+    
+    <!-- Question 40: Multiple Choice -->
+    <div class="group">
+      <h4>Question 40</h4>
+      <p>Choose the correct letter, A, B, C or D.</p>
+      <p>Write the correct letter in box 40 on your answer sheet.</p>
+      
+      <a id="q40-anchor"></a>
+      <div id="q40-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+        <p>40. What is the main function of this passage?</p>
+        <div class="mcq-options">
+          <div class="mcq-option"><label><input name="q40" type="radio" value="A"> A. Reveal all kinds of language problems that companies may encounter.</label></div>
+          <div class="mcq-option"><label><input name="q40" type="radio" value="B"> B. Exhibit well-known cases in dealing with language difficulties.</label></div>
+          <div class="mcq-option"><label><input name="q40" type="radio" value="C"> C. Evaluate various approaches to the language barrier in multinational companies.</label></div>
+          <div class="mcq-option"><label><input name="q40" type="radio" value="D"> D. Testify that training is the only feasible approach to solve language problems.</label></div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Submit & Reset Buttons -->
+    <div style="display:flex;gap:8px;margin-bottom:10px;">
+      <button class="primary" onclick="grade()">Submit</button>
+      <button onclick="resetForm()">Reset</button>
+      <button onclick="toggleNotes()">Notes</button>
+    </div>
+    
+    <!-- Results & Answer Key -->
+    <div id="results"></div>
+    <details class="answerbox" id="answerBox">
+      <summary>Show Answers (Click to Toggle) <span class="badge">Hidden</span></summary>
+      <div id="answerContent">
+        <h4>正确答案及解析</h4>
+        <table>
+          <tr>
+            <th>题号</th>
+            <th>答案</th>
+            <th>解析与原文依据</th>
+          </tr>
+          <!-- 27-32 摘要填空 -->
+          <tr>
+            <td>27</td>
+            <td>B (clients)</td>
+            <td>
+              <p class="explanation-text">Lingua Franca段落提到“British exporting companies... used English exclusively in dealings with foreign customers”，“foreign customers”对应“overseas clients”。</p>
+              <p class="explanation-original">原文：As recently as 1991 a survey of British exporting companies found that over a third used English exclusively in dealings with foreign customers. (Lingua Franca)</p>
+            </td>
+          </tr>
+          <tr>
+            <td>28</td>
+            <td>F (documents)</td>
+            <td>
+              <p class="explanation-text">Lingua Franca段落指出“Contracts, rules and legislation are invariably written in the local language”，此类正式文件属于“key documents”，翻译时因各国规则会产生差异。</p>
+              <p class="explanation-original">原文：Contracts, rules and legislation are invariably written in the local language, and a company unable to operate in that language is vulnerable. (Lingua Franca)</p>
+            </td>
+          </tr>
+          <tr>
+            <td>29</td>
+            <td>A (gestures)</td>
+            <td>
+              <p class="explanation-text">Functional Multilingualism段落明确该方法是“relying on a mix of languages, pidgins and gestures”，即结合口语和手势。</p>
+              <p class="explanation-original">原文：Essentially, this means muddling through-relying on a mix of languages, pidgins and gestures to communicate... (Functional Multilingualism)</p>
+            </td>
+          </tr>
+          <tr>
+            <td>30</td>
+            <td>C (transactions)</td>
+            <td>
+              <p class="explanation-text">Functional Multilingualism段落引用Hagen研究：“16% of international business transactions are conducted in a 'cocktail of languages'”，即“business transactions”。</p>
+              <p class="explanation-original">原文：Yet Hagen’s recent study suggests that 16% of international business transactions are conducted in a “cocktail of languages”. (Functional Multilingualism)</p>
+            </td>
+          </tr>
+          <tr>
+            <td>31</td>
+            <td>L (costly)</td>
+            <td>
+              <p class="explanation-text">External Language Resources段落指出翻译/口译服务“can be very expensive”，“expensive”对应“costly”。</p>
+              <p class="explanation-original">原文：For a start these services can be very expensive, with a top simultaneous interpreter commanding daily rates as high as a partner in an international consulting firm. (External Language Resources)</p>
+            </td>
+          </tr>
+          <tr>
+            <td>32</td>
+            <td>D (assumption)</td>
+            <td>
+              <p class="explanation-text">External Language Resources段落提到，若缺乏背景信息，译员需“use initiative and guess-work”，“guess-work”本质是“assumption”。</p>
+              <p class="explanation-original">原文：Interpreters will of course endeavour to provide a hi-fidelity translation, but in such circumstances they must use initiative and guess-work... (External Language Resources)</p>
+            </td>
+          </tr>
+          <!-- 33-39 简答题 -->
+          <tr>
+            <td>33</td>
+            <td>personnel development</td>
+            <td>
+              <p class="explanation-text">Training段落首句明确：“The immediate and understandable reaction to any skills shortage is to consider personnel development”。</p>
+              <p class="explanation-original">原文：The immediate and understandable reaction to any skills shortage is to consider personnel development... (Training)</p>
+            </td>
+          </tr>
+          <tr>
+            <td>34</td>
+            <td>a luxury</td>
+            <td>
+              <p class="explanation-text">Training段落提到经济低迷时“when belts tighten, training is one of the first luxuries to be pared down”，作者将语言培训称为“a luxury”。</p>
+              <p class="explanation-original">原文：when belts tighten, training is one of the first luxuries to be pared down. (Training)</p>
+            </td>
+          </tr>
+          <tr>
+            <td>35</td>
+            <td>a language strategy</td>
+            <td>
+              <p class="explanation-text">Training段落指出大众集团“has developed a language strategy that can be regarded as a model of professional management”，即提供“a language strategy”作为范例。</p>
+              <p class="explanation-original">原文：Over many years it has developed a language strategy that can be regarded as a model of professional management. (Training)</p>
+            </td>
+          </tr>
+          <tr>
+            <td>36</td>
+            <td>strategic</td>
+            <td>
+              <p class="explanation-text">Training段落明确“Volkswagen treats language training as a strategic solution, not a tactical one”，即“strategic”解决方案。</p>
+              <p class="explanation-original">原文：Volkswagen treats language training as a strategic solution, not a tactical one. (Training)</p>
+            </td>
+          </tr>
+          <tr>
+            <td>37</td>
+            <td>six</td>
+            <td>
+              <p class="explanation-text">Training段落提到“Progressing from 'basics' to full 'communication competence' requires completion of six language stages”。</p>
+              <p class="explanation-original">原文：Progressing from “basics” to full “communication competence” requires completion of six language stages... (Training)</p>
+            </td>
+          </tr>
+          <tr>
+            <td>38</td>
+            <td>90 hours</td>
+            <td>
+              <p class="explanation-text">Training段落指出“each stage demanding roughly 90 hours of classroom refresher work”。</p>
+              <p class="explanation-original">原文：each stage demanding roughly 90 hours of classroom refresher work... (Training)</p>
+            </td>
+          </tr>
+          <tr>
+            <td>39</td>
+            <td>three years</td>
+            <td>
+              <p class="explanation-text">Training段落提到“expects a minimum of three years of fairly intensive study before an accountant... can work effectively in a foreign language”。</p>
+              <p class="explanation-original">原文：expects a minimum of three years of fairly intensive study before an accountant, engineer, buyer or salesperson can work effectively in a foreign language. (Training)</p>
+            </td>
+          </tr>
+          <!-- 40 选择题 -->
+          <tr>
+            <td>40</td>
+            <td>C</td>
+            <td>
+              <p class="explanation-text">全文依次评述“通用语言（Lingua Franca）”“功能性多语言（Functional Multilingualism）”“外部语言资源（External Language Resources）”“培训（Training）”四种策略的优劣，核心是“评估跨国公司应对语言壁垒的多种方法”，对应选项C。A仅揭示问题，B仅列举案例，D片面强调培训，均不符合主旨。</p>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </details>
+  </section>
+</div>
+<!-- 文本选择工具栏 -->
+<div aria-label="Selection tools" id="selbar" role="toolbar">
+  <button id="btnHL">Highlight</button>
+  <button id="btnUH">Remove Highlight</button>
+  <button id="btnNote">Add to Notes</button>
+</div>
+<!-- 笔记面板 -->
+<div id="notes">
+  <header>
+    <strong>Notes</strong>
+    <div>
+      <button id="btnCopy">Copy</button>
+      <button id="btnClose">Close</button>
+    </div>
+  </header>
+  <textarea id="noteArea" placeholder="Type your notes here..."></textarea>
+</div>
+<!-- 提示框 -->
+<div id="toast"></div>
+<script>
+// 计时器核心功能
+let _t = 0; 
+const _timerEl = document.getElementById('timer');
+let timerInterval; // 计时器间隔ID，用于后续停止
+// 启动计时器
+function startTimer() {
+  timerInterval = setInterval(() => { 
+    _t++; 
+    const m = String(Math.floor(_t/60)).padStart(2, '0'); 
+    const s = String(_t%60).padStart(2, '0'); 
+    _timerEl.textContent = `${m}:${s}`; 
+  }, 1000);
+}
+// 页面加载时启动计时器
+window.onload = function() {
+  startTimer();
+  initDragAndDrop();
+};
+
+// 拖拽功能初始化
+function initDragAndDrop() {
+  const dragItems = document.querySelectorAll('.drag-item');
+  const dropZones = document.querySelectorAll('.drop-zone');
+  
+  // 为每个可拖拽项添加事件监听
+  dragItems.forEach(item => {
+    item.addEventListener('dragstart', dragStart);
+    item.addEventListener('dragend', dragEnd);
+  });
+  
+  // 为每个放置区域添加事件监听
+  dropZones.forEach(zone => {
+    zone.addEventListener('dragover', dragOver);
+    zone.addEventListener('dragenter', dragEnter);
+    zone.addEventListener('dragleave', dragLeave);
+    zone.addEventListener('drop', drop);
+  });
+}
+
+// 拖拽开始
+function dragStart(e) {
+  // 存储被拖拽项的值
+  e.dataTransfer.setData('text/plain', this.getAttribute('data-value'));
+  // 添加拖拽状态类
+  setTimeout(() => this.classList.add('dragging'), 0);
+}
+
+// 拖拽结束
+function dragEnd() {
+  // 移除拖拽状态类
+  this.classList.remove('dragging');
+}
+
+// 拖拽经过放置区域
+function dragOver(e) {
+  e.preventDefault(); // 允许放置
+}
+
+// 拖拽进入放置区域
+function dragEnter(e) {
+  e.preventDefault();
+  // 如果放置区域为空，添加高亮类
+  if (this.children.length === 0) {
+    this.classList.add('highlight');
+  }
+}
+
+// 拖拽离开放置区域
+function dragLeave() {
+  // 移除高亮类
+  this.classList.remove('highlight');
+}
+
+// 在放置区域放下
+function drop(e) {
+  e.preventDefault();
+  // 移除高亮类
+  this.classList.remove('highlight');
+  
+  // 获取被拖拽项的值
+  const value = e.dataTransfer.getData('text/plain');
+  const question = this.getAttribute('data-question');
+  
+  // 清空放置区域
+  this.innerHTML = '';
+  
+  // 创建放置后的元素
+  const droppedItem = document.createElement('div');
+  droppedItem.className = 'dropped-item';
+  droppedItem.textContent = document.querySelector(`.drag-item[data-value="${value}"]`).textContent;
+  droppedItem.setAttribute('data-value', value);
+  
+  // 添加到放置区域
+  this.appendChild(droppedItem);
+  
+  // 标记放置区域为已填充
+  this.classList.add('filled');
+  
+  // 更新隐藏输入框的值（用于评分）
+  document.getElementById(question).value = value;
+  
+  // 更新导航栏状态
+  document.getElementById(`${question}-nav`).classList.add('answered');
+  
+  // 显示提示
+  showToast('Answer placed');
+}
+
+// 移除答案
+function removeAnswer(question) {
+  const dropZone = document.querySelector(`.drop-zone[data-question="${question}"]`);
+  const hiddenInput = document.getElementById(question);
+  
+  // 清空放置区域
+  dropZone.innerHTML = '';
+  dropZone.classList.remove('filled');
+  
+  // 清空隐藏输入框
+  hiddenInput.value = '';
+  
+  // 更新导航栏状态
+  document.getElementById(`${question}-nav`).classList.remove('answered');
+  
+  // 显示提示
+  showToast('Answer removed');
+}
+
+// 拖拽分隔线调整左右面板宽度
+const divider = document.getElementById('divider');
+const leftPane = document.getElementById('left');
+const rightPane = document.getElementById('right');
+let isDragging = false;
+divider.addEventListener('mousedown', (e) => {
+  isDragging = true;
+  document.body.style.cursor = 'ew-resize';
+  e.preventDefault();
+});
+window.addEventListener('mousemove', (e) => {
+  if (!isDragging) return;
+  const containerRect = document.querySelector('.shell').getBoundingClientRect();
+  let x = e.clientX - containerRect.left;
+  // 限制最小宽度，防止面板过窄
+  x = Math.max(280, Math.min(containerRect.width - 320, x));
+  leftPane.style.flex = `0 0 ${x}px`;
+  rightPane.style.flex = '1 1 auto';
+});
+window.addEventListener('mouseup', () => {
+  if (isDragging) {
+    isDragging = false;
+    document.body.style.cursor = '';
+  }
+});
+// 触摸设备支持
+divider.addEventListener('touchstart', (e) => {
+  isDragging = true;
+  e.preventDefault();
+}, { passive: false });
+window.addEventListener('touchmove', (e) => {
+  if (!isDragging) return;
+  const containerRect = document.querySelector('.shell').getBoundingClientRect();
+  let x = e.touches[0].clientX - containerRect.left;
+  x = Math.max(280, Math.min(containerRect.width - 320, x));
+  leftPane.style.flex = `0 0 ${x}px`;
+  rightPane.style.flex = '1 1 auto';
+}, { passive: false });
+window.addEventListener('touchend', () => {
+  isDragging = false;
+});
+// 文本高亮功能
+const selbar = document.getElementById('selbar');
+const btnHL = document.getElementById('btnHL');
+const btnUH = document.getElementById('btnUH');
+const btnNote = document.getElementById('btnNote');
+let lastRange = null;
+let currentHlNode = null;
+let keepToolbar = false;
+// 定位选择工具栏
+function positionSelbar(rect) {
+  selbar.style.display = 'flex';
+  requestAnimationFrame(() => {
+    const top = window.scrollY + rect.top - selbar.offsetHeight - 8;
+    const leftPos = window.scrollX + rect.left + rect.width/2 - selbar.offsetWidth/2;
+    // 确保工具栏不超出视口
+    selbar.style.top = (top > 0 ? top : window.scrollY + rect.bottom + 8) + 'px';
+    selbar.style.left = Math.max(8, leftPos) + 'px';
+  });
+}
+// 更新工具栏状态
+function updateSelbar() {
+  const selection = window.getSelection();
+  if (!selection || selection.rangeCount === 0 || selection.isCollapsed) {
+    selbar.style.display = 'none';
+    currentHlNode = null;
+    return;
+  }
+  const range = selection.getRangeAt(0);
+  lastRange = range.cloneRange();
+  currentHlNode = null;
+  positionSelbar(range.getBoundingClientRect());
+}
+// 监听文本选择事件（左右面板均支持高亮）
+document.getElementById('left').addEventListener('mouseup', updateSelbar);
+document.getElementById('right').addEventListener('mouseup', updateSelbar);
+document.addEventListener('selectionchange', () => {
+  const selection = window.getSelection();
+  if (!selection || selection.rangeCount === 0 || selection.isCollapsed) {
+    if (!keepToolbar && !currentHlNode) selbar.style.display = 'none';
+  }
+});
+// 滚动时重新定位工具栏
+document.addEventListener('scroll', () => {
+  if (selbar.style.display === 'flex') updateSelbar();
+});
+// 点击高亮文本时显示工具栏
+document.addEventListener('mousedown', (e) => {
+  keepToolbar = e.target.classList?.contains('hl') || false;
+}, true);
+document.addEventListener('click', (e) => {
+  if (e.target.classList?.contains('hl')) {
+    currentHlNode = e.target;
+    lastRange = null;
+    positionSelbar(e.target.getBoundingClientRect());
+    const selection = window.getSelection();
+    if (selection) selection.removeAllRanges();
+    setTimeout(() => keepToolbar = false, 0);
+  }
+}, true);
+// 执行高亮（支持所有文本）
+function doHighlight() {
+  if (currentHlNode || !lastRange || lastRange.collapsed) return;
+  const highlightSpan = document.createElement('span');
+  highlightSpan.className = 'hl';
+  try {
+    lastRange.surroundContents(highlightSpan);
+  } catch (e) {
+    // 处理跨元素选择的情况
+    const wrapSpan = document.createElement('span');
+    wrapSpan.className = 'hl';
+    wrapSpan.appendChild(lastRange.cloneContents());
+    lastRange.deleteContents();
+    lastRange.insertNode(wrapSpan);
+  }
+  selbar.style.display = 'none';
+  showToast('Text highlighted');
+}
+// 移除高亮
+function removeHighlight() {
+  if (currentHlNode) {
+    // 移除单个高亮元素
+    const parent = currentHlNode.parentNode;
+    while (currentHlNode.firstChild) {
+      parent.insertBefore(currentHlNode.firstChild, currentHlNode);
+    }
+    parent.removeChild(currentHlNode);
+    parent.normalize(); // 合并相邻文本节点
+    currentHlNode = null;
+    selbar.style.display = 'none';
+    showToast('Highlight removed');
+    return;
+  }
+  if (!lastRange) return;
+  // 移除选择范围内的所有高亮
+  const selRect = lastRange.getBoundingClientRect();
+  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_ELEMENT);
+  const toRemove = [];
+  let node;
+  while ((node = walker.nextNode())) {
+    if (node.classList?.contains('hl')) {
+      const nodeRect = node.getBoundingClientRect();
+      // 判断节点是否在选择范围内
+      if (!(nodeRect.right < selRect.left || nodeRect.left > selRect.right || 
+            nodeRect.bottom < selRect.top || nodeRect.top > selRect.bottom)) {
+        toRemove.push(node);
+      }
+    }
+  }
+  toRemove.forEach(el => {
+    const parent = el.parentNode;
+    while (el.firstChild) parent.insertBefore(el.firstChild, el);
+    parent.removeChild(el);
+    parent.normalize();
+  });
+  selbar.style.display = 'none';
+  showToast('Highlights removed');
+}
+// 绑定高亮按钮事件
+btnHL.addEventListener('click', doHighlight);
+btnUH.addEventListener('click', removeHighlight);
+// 笔记功能
+const notesPanel = document.getElementById('notes');
+const noteArea = document.getElementById('noteArea');
+const btnCopy = document.getElementById('btnCopy');
+const btnCloseNotes = document.getElementById('btnClose');
+// 切换笔记面板显示
+function toggleNotes() {
+  notesPanel.style.display = notesPanel.style.display === 'flex' ? 'none' : 'flex';
+}
+// 关闭笔记面板
+btnCloseNotes.addEventListener('click', toggleNotes);
+// 复制笔记
+btnCopy.addEventListener('click', async () => {
+  await navigator.clipboard.writeText(noteArea.value || '');
+  showToast('Notes copied to clipboard');
+});
+// 选中文本添加到笔记
+btnNote.addEventListener('click', () => {
+  let selectedText = '';
+  if (currentHlNode) {
+    selectedText = currentHlNode.textContent.trim();
+  } else if (lastRange) {
+    const frag = lastRange.cloneContents();
+    selectedText = frag.textContent.trim();
+  }
+  toggleNotes();
+  if (selectedText) {
+    noteArea.value = noteArea.value ? `${noteArea.value}\n> ${selectedText}\n` : `> ${selectedText}\n`;
+    // 滚动到笔记底部
+    noteArea.scrollTop = noteArea.scrollHeight;
+  }
+  selbar.style.display = 'none';
+});
+// 提示框功能
+const toastEl = document.getElementById('toast');
+function showToast(message) {
+  toastEl.textContent = message;
+  toastEl.style.display = 'block';
+  setTimeout(() => toastEl.style.display = 'none', 1500);
+}
+// 字体设置功能（应用于所有字体）
+const settingsModal = document.getElementById('settingsModal');
+const body = document.body;
+// 打开字体设置模态框
+function openSettingsModal() {
+  settingsModal.style.display = 'block';
+}
+// 关闭字体设置模态框
+function closeSettingsModal() {
+  settingsModal.style.display = 'none';
+}
+// 点击模态框外部关闭
+window.addEventListener('click', (e) => {
+  if (e.target === settingsModal) closeSettingsModal();
+});
+// 切换字体大小（影响网页所有元素）
+document.querySelectorAll('.font-option').forEach(option => {
+  option.addEventListener('click', () => {
+    const size = option.dataset.size;
+    // 移除所有字体类，添加选中的类（body类控制所有元素继承）
+    body.classList.remove('font-regular', 'font-moderate', 'font-large');
+    body.classList.add(`font-${size}`);
+    // 显示提示
+    const sizeName = size === 'regular' ? 'Regular (16px)' : 
+                     size === 'moderate' ? 'Moderate (18px)' : 'Large (20px)';
+    showToast(`Font size set to ${sizeName}`);
+    closeSettingsModal();
+  });
+});
+// 答案与评分功能（Submit后停止计时器）
+const answers = {
+  q27: 'B',
+  q28: 'F',
+  q29: 'A',
+  q30: 'C',
+  q31: 'L',
+  q32: 'D',
+  q33: 'personnel development',
+  q34: 'a luxury',
+  q35: 'a language strategy',
+  q36: 'strategic',
+  q37: 'six',
+  q38: '90 hours',
+  q39: 'three years',
+  q40: 'C'
+};
+// 评分函数（Submit后执行，包含停止计时器）
+function grade() {
+  // 1. 停止计时器
+  clearInterval(timerInterval);
+  
+  // 2. 计算得分
+  let total = 14;
+  let correct = 0;
+  const resultLines = [];
+  
+  // 检查27-32题（摘要填空）
+  for (let i = 27; i <= 32; i++) {
+    const qName = `q${i}`;
+    const userAns = document.getElementById(qName).value;
+    const correctAns = answers[qName];
+    const isCorrect = userAns === correctAns;
+    if (isCorrect) correct++;
+    resultLines.push(`${qName.toUpperCase()}: ${userAns || 'No answer'} ${isCorrect ? '✅ Correct' : `❌ Incorrect (Correct: ${correctAns})`}`);
+  }
+  
+  // 检查33-39题（简答题，忽略大小写和空格差异）
+  for (let i = 33; i <= 39; i++) {
+    const qName = `q${i}`;
+    const input = document.getElementById(qName);
+    const userAns = input ? input.value.trim().toLowerCase().replace(/\s+/g, ' ') : 'No answer';
+    const correctAns = answers[qName].toLowerCase().replace(/\s+/g, ' ');
+    const isCorrect = userAns === correctAns;
+    if (isCorrect) correct++;
+    resultLines.push(`${qName.toUpperCase()}: ${userAns || 'No answer'} ${isCorrect ? '✅ Correct' : `❌ Incorrect (Correct: ${answers[qName]})`}`);
+  }
+  
+  // 检查40题（选择题）
+  const q40Selected = document.querySelector(`input[name="q40"]:checked`);
+  const q40UserAns = q40Selected ? q40Selected.value : 'No answer';
+  const q40CorrectAns = answers.q40;
+  const q40IsCorrect = q40UserAns === q40CorrectAns;
+  if (q40IsCorrect) correct++;
+  resultLines.push(`Q40: ${q40UserAns} ${q40IsCorrect ? '✅ Correct' : `❌ Incorrect (Correct: ${q40CorrectAns})`}`);
+  
+  // 3. 显示结果
+  const accuracy = Math.round((correct / total) * 100);
+  const resultsHTML = `
+    <p><strong>Score:</strong> ${correct}/${total} (Accuracy: ${accuracy}%)</p>
+    <pre>${resultLines.join('\n')}</pre>
+  `;
+  document.getElementById('results').innerHTML = resultsHTML;
+  
+  // 4. 展开答案面板
+  const answerBox = document.getElementById('answerBox');
+  answerBox.open = true;
+  document.querySelector('#answerBox .badge').textContent = 'Visible';
+  
+  // 5. 标记所有题目为已回答
+  document.querySelectorAll('.q-item').forEach(item => {
+    item.classList.add('answered');
+  });
+}
+// 重置功能（重置计时器、选项、高亮等）
+function resetForm() {
+  // 1. 重置计时器
+  clearInterval(timerInterval);
+  _t = 0;
+  _timerEl.textContent = '00:00';
+  startTimer();
+  
+  // 2. 重置27-32题（拖拽题）
+  document.querySelectorAll('.drop-zone').forEach(zone => {
+    zone.innerHTML = '';
+    zone.classList.remove('filled');
+  });
+  document.querySelectorAll('input[type="hidden"]').forEach(input => {
+    input.value = '';
+  });
+  
+  // 3. 重置40题单选按钮
+  document.querySelectorAll('input[name="q40"]').forEach(radio => {
+    radio.checked = false;
+  });
+  
+  // 4. 重置33-39题填空题
+  document.querySelectorAll('input.blank').forEach(input => {
+    input.value = '';
+  });
+  
+  // 5. 重置结果和答案面板
+  document.getElementById('results').innerHTML = '';
+  const answerBox = document.getElementById('answerBox');
+  answerBox.open = false;
+  document.querySelector('#answerBox .badge').textContent = 'Hidden';
+  
+  // 6. 重置导航栏已回答状态
+  document.querySelectorAll('.q-item').forEach(item => {
+    item.classList.remove('answered');
+  });
+  
+  // 7. 重置笔记
+  noteArea.value = '';
+  notesPanel.style.display = 'none';
+  
+  // 8. 移除所有高亮
+  document.querySelectorAll('.hl').forEach(hl => {
+    const parent = hl.parentNode;
+    while (hl.firstChild) parent.insertBefore(hl.firstChild, hl);
+    parent.removeChild(hl);
+    parent.normalize();
+  });
+}
+// 滚动到指定题目
+function scrollToElement(id) {
+  const element = document.getElementById(id);
+  if (element) {
+    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  // 高亮导航项
+  document.querySelectorAll('.q-item').forEach(item => {
+    item.classList.remove('active');
+  });
+  const navItem = document.getElementById(id.replace('-anchor', '-nav'));
+  if (navItem) {
+    navItem.classList.add('active');
+    setTimeout(() => navItem.classList.remove('active'), 800);
+  }
+}
+// 监听输入，标记题目为已回答（针对非拖拽题）
+(function() {
+  // 监听40题单选按钮
+  document.querySelectorAll(`input[name="q40"]`).forEach(radio => {
+    radio.addEventListener('change', () => {
+      document.getElementById(`q40-nav`).classList.add('answered');
+    });
+  });
+  
+  // 监听33-39题填空题
+  for (let i = 33; i <= 39; i++) {
+    const input = document.getElementById(`q${i}`);
+    input.addEventListener('input', () => {
+      if (input.value.trim()) {
+        document.getElementById(`q${i}-nav`).classList.add('answered');
+      } else {
+        document.getElementById(`q${i}-nav`).classList.remove('answered');
+      }
+    });
+  }
+})();
+</script>
+</body>
+</html>

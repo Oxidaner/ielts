@@ -1,0 +1,1175 @@
+<html lang="en"><head>
+<meta charset="utf-8">
+<title>The Voynich Manuscript - Reading Passage</title>
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<style>
+  :root { 
+    --line:#e5e7eb; 
+    --bg:#f6f7fb; 
+    --panel:#fff; 
+    --accent:#3b82f6; 
+    --muted:#6b7280; 
+    --shadow:0 6px 20px rgba(0,0,0,.12); 
+    /* 字体大小变量 - 基础regular，逐级放大 */
+    --font-size-regular: 16px;   /* 基础大小 */
+    --font-size-moderate: 18px;  /* 比regular大1号 */
+    --font-size-large: 20px;     /* 比moderate大1号 */
+  }
+  /* 字体大小类 - 所有元素继承 */
+  .font-regular {
+    font-size: var(--font-size-regular) !important;
+  }
+  .font-moderate {
+    font-size: var(--font-size-moderate) !important;
+  }
+  .font-large {
+    font-size: var(--font-size-large) !important;
+  }
+  * { 
+    box-sizing: border-box; 
+    font-size: inherit; /* 所有元素继承父级字体大小 */
+  }
+  html,body { 
+    height:100%; 
+    font-size: var(--font-size-regular); /* 默认regular */
+  }
+  body { 
+    margin:0; 
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; 
+    background:var(--bg); 
+  }
+  #timer-container {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  #timer { 
+    position: static; 
+    display: inline-block; 
+    background:#fff; 
+    border:1px solid var(--line); 
+    border-radius:10px; 
+    padding:2px 8px; 
+    vertical-align: middle; 
+  }
+  #settingsBtn {
+    padding:2px 8px;
+    border:1px solid var(--line);
+    border-radius:10px;
+    background:#fff;
+    cursor:pointer;
+  }
+  #settingsModal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:16px;
+    box-shadow:var(--shadow);
+    z-index: 1000;
+    display: none;
+  }
+  #settingsModal h4 {
+    margin-top:0;
+    font-weight: 600;
+  }
+  #settingsModal .font-option {
+    margin:8px 0;
+    cursor:pointer;
+    padding:4px 8px;
+    border-radius:6px;
+  }
+  #settingsModal .font-option:hover {
+    background:#f1f5f9;
+  }
+  #settingsModal .close-modal {
+    margin-top:12px;
+    padding:6px 12px;
+    border:1px solid var(--line);
+    border-radius:8px;
+    background:var(--accent);
+    color:#fff;
+    cursor:pointer;
+  }
+  .shell { 
+    display:flex; 
+    height:100vh; 
+    width:100%; 
+  }
+  .pane { 
+    background:var(--panel); 
+    overflow:auto; 
+    padding:20px; 
+  }
+  #left { 
+    flex: 0 0 50%; 
+    min-width: 280px; 
+  }
+  #right { 
+    flex: 1 1 auto; 
+    min-width: 320px; 
+    background:#fbfbff; 
+    border-left:1px solid var(--line); 
+  }
+  #divider { 
+    flex: 0 0 8px; 
+    background: linear-gradient(90deg,#e5e7eb,#d1d5db); 
+    cursor: ew-resize; 
+    position:relative; 
+    z-index: 5; 
+    user-select:none; 
+  }
+  h2,h3,h4 { 
+    margin:0 0 10px; 
+    font-weight: 600; 
+  }
+  #left p { 
+    margin: 0 0 12px; 
+    line-height: 1.6; 
+    word-break: normal; 
+    overflow-wrap: normal; 
+    hyphens: none; 
+  }
+  #left .section-heading { 
+    font-weight: 600; 
+    margin-top: 20px; 
+    margin-bottom: 8px; 
+  }
+  .group { 
+    background:#fff; 
+    border:1px solid var(--line); 
+    border-radius:10px; 
+    padding:12px; 
+    margin-bottom:14px; 
+  }
+  table { 
+    border-collapse: collapse; 
+    width:100%; 
+    margin: 10px 0;
+  }
+  th, td { 
+    border:1px solid var(--line); 
+    padding:6px; 
+    text-align:left; 
+  }
+  th {
+    background-color: #f1f5f9;
+    font-weight: 600;
+  }
+  button { 
+    padding:8px 12px; 
+    border:1px solid var(--line); 
+    border-radius:10px; 
+    background:#fff; 
+    cursor:pointer; 
+  }
+  button.primary { 
+    background:var(--accent); 
+    color:#fff; 
+    border-color:#3b82f6; 
+  }
+  #results { 
+    background:#fff; 
+    border:1px solid var(--line); 
+    border-radius:10px; 
+    padding:10px; 
+    margin-bottom:14px;
+  }
+  .hl { 
+    background:#fff3a3; 
+    box-shadow: inset 0 -2px 0 rgba(0,0,0,.05); 
+    cursor: pointer; 
+  }
+  .hl:hover { 
+    filter: brightness(0.98); 
+  }
+  #selbar { 
+    position: absolute; 
+    display:none; 
+    z-index: 6000; 
+    background:#111; 
+    color:#fff; 
+    border-radius: 8px; 
+    padding: 6px; 
+    box-shadow: var(--shadow); 
+    font-size: 13px; 
+    gap:6px; 
+    align-items: center; 
+  }
+  #selbar button { 
+    background: transparent; 
+    color:#fff; 
+    border: 1px solid rgba(255,255,255,.25); 
+    padding: 4px 8px; 
+    border-radius: 6px; 
+    cursor:pointer; 
+  }
+  #selbar button:hover { 
+    border-color:#fff; 
+  }
+  #notes { 
+    position: fixed; 
+    right: 12px; 
+    bottom: 12px; 
+    width: 320px; 
+    height: 42vh; 
+    background:#fff; 
+    border:1px solid var(--line); 
+    border-radius: 12px; 
+    display:none; 
+    flex-direction: column; 
+    z-index:1500; 
+    box-shadow: var(--shadow); 
+  }
+  #notes header { 
+    display:flex; 
+    align-items:center; 
+    justify-content: space-between; 
+    padding:8px 10px; 
+    border-bottom:1px solid var(--line); 
+  }
+  #notes textarea { 
+    flex:1; 
+    border:0; 
+    padding:10px; 
+    resize:none; 
+    line-height:1.5; 
+  }
+  #toast { 
+    position: fixed; 
+    left:50%; 
+    transform: translateX(-50%); 
+    bottom: 24px; 
+    background:#111; 
+    color:#fff; 
+    padding:8px 12px; 
+    border-radius: 8px; 
+    display:none; 
+    z-index:2500; 
+  }
+  .tfng-option, .match-person-option, .mcq-option {
+    margin: 6px 0;
+    padding: 4px;
+    cursor: pointer;
+  }
+  .tfng-option input, .match-person-option input, .mcq-option input {
+    margin-right: 8px;
+  }
+  /* 新增样式：将匹配题选项水平排列 */
+  .match-person-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 10px 0;
+  }
+  .match-person-option {
+    margin: 0;
+    white-space: nowrap;
+  }
+  .summary-blank {
+    width: 120px;
+    padding: 8px;
+    margin: 0 8px;
+    border:1px solid var(--line);
+    border-radius:6px;
+  }
+  .question-number {
+    font-weight: 600;
+  }
+  body { 
+    padding-bottom: 82px; 
+  }
+  .practice-nav { 
+    background:#fff; 
+    border-bottom:2px solid var(--line); 
+    padding:12px 20px; 
+    display:flex; 
+    align-items:center; 
+    gap:20px; 
+    box-shadow:0 2px 4px rgba(0,0,0,.05); 
+    flex-wrap:wrap; 
+    position:fixed; 
+    left:0; 
+    right:0; 
+    bottom:0; 
+    border-top:2px solid var(--line); 
+    border-bottom:0; 
+    z-index:4000; 
+  }
+  .practice-nav .title { 
+    font-weight:600; 
+    color:var(--muted); 
+  }
+  .practice-nav .questions { 
+    display:flex; 
+    gap:8px; 
+    align-items:center; 
+    flex-wrap:wrap; 
+  }
+  .practice-nav .q-item { 
+    padding:6px 10px; 
+    border:1px solid var(--line); 
+    border-radius:6px; 
+    background:#fff; 
+    cursor:pointer; 
+    transition:all 0.2s; 
+    min-width:36px; 
+    text-align:center; 
+  }
+  .practice-nav .q-item:hover { 
+    background:#f1f5f9; 
+    border-color:var(--accent); 
+  }
+  .practice-nav .q-item.answered { 
+    background:#e0e7ff; 
+    border-color:var(--accent); 
+    color:var(--accent); 
+    font-weight:500; 
+  }
+  .practice-nav .q-item.active { 
+    background:var(--accent); 
+    color:#fff; 
+    border-color:var(--accent); 
+  }
+  details.answerbox summary { 
+    cursor: pointer; 
+    user-select:none; 
+    list-style: none; 
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  details.answerbox summary::before {
+    content: "▼";
+    font-size: 12px;
+    transition: transform 0.2s;
+  }
+  details.answerbox[open] summary::before {
+    transform: rotate(180deg);
+  }
+  details.answerbox { 
+    border:1px dashed var(--line); 
+    border-radius:10px; 
+    padding:8px 10px; 
+    background:#fff; 
+    margin-bottom:14px;
+  }
+  .badge { 
+    display:inline-block; 
+    background:#eef2ff; 
+    color:#4338ca; 
+    padding:2px 8px; 
+    border-radius:999px; 
+    font-size:12px; 
+    margin-left:6px; 
+  }
+  .explanation-text {
+    margin-bottom: 4px;
+  }
+  .explanation-original {
+    font-style: italic;
+    color: #555;
+    font-size: 0.9em;
+    margin-top: 0;
+  }
+  .person-list {
+    margin: 10px 0;
+    padding-left: 20px;
+  }
+  .person-list li {
+    margin: 4px 0;
+  }
+</style>
+</head>
+<body class="font-regular">
+<div class="practice-nav">
+  <div class="title">Questions</div>
+  <div class="questions">
+    <div class="q-item" id="q27-nav" onclick="scrollToElement('q27-anchor')">27</div>
+    <div class="q-item" id="q28-nav" onclick="scrollToElement('q28-anchor')">28</div>
+    <div class="q-item" id="q29-nav" onclick="scrollToElement('q29-anchor')">29</div>
+    <div class="q-item" id="q30-nav" onclick="scrollToElement('q30-anchor')">30</div>
+    <div class="q-item" id="q31-nav" onclick="scrollToElement('q31-anchor')">31</div>
+    <div class="q-item" id="q32-nav" onclick="scrollToElement('q32-anchor')">32</div>
+    <div class="q-item" id="q33-nav" onclick="scrollToElement('q33-anchor')">33</div>
+    <div class="q-item" id="q34-nav" onclick="scrollToElement('q34-anchor')">34</div>
+    <div class="q-item" id="q35-nav" onclick="scrollToElement('q35-anchor')">35</div>
+    <div class="q-item" id="q36-nav" onclick="scrollToElement('q36-anchor')">36</div>
+    <div class="q-item" id="q37-nav" onclick="scrollToElement('q37-anchor')">37</div>
+    <div class="q-item" id="q38-nav" onclick="scrollToElement('q38-anchor')">38</div>
+    <div class="q-item" id="q39-nav" onclick="scrollToElement('q39-anchor')">39</div>
+    <div class="q-item" id="q40-nav" onclick="scrollToElement('q40-anchor')">40</div>
+  </div>
+</div>
+<!-- 字体设置模态框 -->
+<div id="settingsModal">
+  <h4>Font Size Settings</h4>
+  <div class="font-option" data-size="regular">Regular (Default - 16px)</div>
+  <div class="font-option" data-size="moderate">Moderate (Larger - 18px)</div>
+  <div class="font-option" data-size="large">Large (Largest - 20px)</div>
+  <button class="close-modal" onclick="closeSettingsModal()">Close</button>
+</div>
+<div class="shell">
+  <section class="pane" id="left">
+    <h2>READING PASSAGE 3 
+      <div id="timer-container">
+        <span id="timer">00:00</span>
+        <button id="settingsBtn" onclick="openSettingsModal()">Settings</button>
+      </div>
+    </h2>
+    <p>You should spend about 20 minutes on Questions 27–40, which are based on Reading Passage 3 below.</p>
+    
+    <h3>The Voynich Manuscript</h3>
+    <p>The starkly modern Beinecke Library at Yale University is home to some of the most valuable books in the world: first folios of Shakespeare, Gutenberg Bibles and manuscripts from the early Middle Ages. Yet the library’s most controversial possession is an unprepossessing vellum manuscript about the size of a hardback book, containing 240-odd pages of drawings and text of unknown age and authorship. Catalogued as MS 408, the manuscript would attract little attention were it not for the fact that the drawings hint at esoteric knowledge, while the text seems to be some sort of code - one that no-one has been able to break. It is known to scholars as the Voynich manuscript, after the American book-dealer Wilfrid Voynich, who bought the manuscript from a Jesuit college in Italy in 1912.</p>
+    
+    <p>Over the years, the manuscript has attracted the attention of everyone from amateur dabblers to top code-breakers, all determined to succeed where countless others have failed. Academic research papers, books and websites are devoted to making sense of the contents of the manuscript, which are freely available to all. “Most other mysteries involve second-hand reports,” says Dr Gordon Rugg of Keele University, a leading Voynich expert. “But this is one that you can see for yourself.”</p>
+    
+    <p>It is certainly strange: page after page of drawings of weird plants, astrological symbolism and human figures, accompanied by a script that looks like some form of shorthand. What does it say - and what are the drawings about? Voynich himself believed that the manuscript was the work of the 13th-century English monk Roger Bacon, famed for his knowledge of alchemy, philosophy and science. In 1921 Voynich’s view that Bacon was the writer appeared to win support from the work of William Newbold, Professor of Philosophy at the University of Pennsylvania, who claimed to have found the key to the cipher system used by Bacon. According to Newbold, the manuscript proved that Bacon had access to a microscope centuries before they were supposedly first invented. The claim that this medieval monk had observed living cells created a sensation. It soon became clear, however, that Newbold had fallen victim to wishful thinking. Other scholars showed that his “decoding” methods produced a host of possible interpretations.</p>
+    
+    <p>The Voynich manuscript has continued to defy the efforts of world-class experts. In 1944, a team was assembled to tackle the mystery, led by William Friedman, the renowned American codebreaker. They began with the most basic code-breaking task: analysing the relative frequencies of the characters making up the text, looking for signs of an underlying structure. Yet Friedman’s team soon found themselves in deep water. The precise size of the “alphabet” of the Voynich manuscript was unclear: it is possible to make out more than 70 distinct symbols among the 170,000-character text. Furthermore, Friedman discovered that some words and phrases appeared more often than expected in a standard language, casting doubt on claims that the manuscript concealed a real language, as encryption typically reduces word frequencies.</p>
+    
+    <p>Friedman concluded that the most plausible resolution of this paradox was that “Voynichese” is some sort of specially created artificial language, whose words are devised from concepts rather than linguistics. So could the Voynich manuscript be the earliest-known example of an artificial language? “Friedman’s hypothesis commands respect because of the lifetime of cryptanalytic expertise he brought to bear,” says Rob Churchill, co-author of The Voynich Manuscript. That still leaves a host of questions unanswered, however, such as the identity of the author and the meaning of the bizarre drawings. “It does little to advance our understanding of the manuscript as a whole,” says Churchill.</p>
+    
+    <p>Even though Friedman was working more than 60 years ago, he suspected that major insights would come from using the device that had already transformed code-breaking: the computer. In this he was right - it is now the key tool for uncovering clues about the manuscript’s language.</p>
+    
+    <p>The insights so far have been perplexing. For example, in 2001 another leading Voynich scholar, Dr Gabriel Landini of Birmingham University in the UK, published the results of his study of the manuscript using a pattern-detecting method called spectral analysis. This revealed evidence that the manuscript contains genuine words, rather than random nonsense, consistent with the existence of some underlying natural language. Yet the following year, Voynich expert René Zandbergen of the European Space Agency in Darmstadt, Germany, showed that the entropy of the text (a measure of the rate of transfer of information) was consistent with Friedman’s suspicions that an artificial language had been used.</p>
+    
+    <p>Many are convinced that the Voynich manuscript is not a hoax. For how could a medieval hoaxer create so many tell-tale signs of a message from random nonsense? Yet even this has been challenged in new research by Rugg. Using a system first published by the Italian mathematician Girolamo Cardano in 1150, in which a specially constructed grille is used to pick out symbols from a table, Rugg found he could rapidly generate text with many of the basic traits of the Voynich manuscript. Publishing his results in 2004, Rugg stresses that he had not set out to prove the manuscript a hoax. “I simply demonstrated that it is feasible to hoax something this complex in a few months,” he says.</p>
+    
+    <p>Inevitably, others beg to differ. Some scholars, such as Zandbergen, still suspect the text has genuine meaning, though believe it may never be decipherable. Others, such as Churchill, have suggested that the sheer weirdness of the illustrations and text hints at an author who had lost touch with reality.</p>
+    
+    <p>What is clear is that the book-sized manuscript, kept under lock and key at Yale University, has lost none of its fascination. “Many derive great intellectual pleasure from solving puzzles,” says Rugg. “The Voynich manuscript is as challenging a puzzle as anyone could ask for.”</p>
+    
+    <!-- 多加空白行防止加载不完全 -->
+    <p>&nbsp;</p>
+    <p>&nbsp;</p>
+    <p>&nbsp;</p>
+    <p>&nbsp;</p>
+  </section>
+  <div id="divider" title="Drag to resize"></div>
+  <section class="pane" id="right">
+    <h3>Questions</h3>
+    
+    <!-- Questions 27–30: TRUE/FALSE/NOT GIVEN -->
+    <div class="group">
+      <h4>Questions 27–30</h4>
+      <p>Do the following statements agree with the information given in Reading Passage 3?</p>
+      <p>In boxes 27–30 on your answer sheet, write</p>
+      <ul>
+        <li>TRUE if the statement agrees with the information</li>
+        <li>FALSE if the statement contradicts the information</li>
+        <li>NOT GIVEN if there is no information on this</li>
+      </ul>
+      
+      <a id="q27-anchor"></a>
+      <div id="q27-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+        <p class="question-number">27.</p>
+        <p>It is uncertain when the Voynich manuscript was written.</p>
+        <div class="tfng-options">
+          <div class="tfng-option"><label><input name="q27" type="radio" value="TRUE"> TRUE</label></div>
+          <div class="tfng-option"><label><input name="q27" type="radio" value="FALSE"> FALSE</label></div>
+          <div class="tfng-option"><label><input name="q27" type="radio" value="NOT GIVEN"> NOT GIVEN</label></div>
+        </div>
+      </div>
+      
+      <a id="q28-anchor"></a>
+      <div id="q28-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+        <p class="question-number">28.</p>
+        <p>Wilfrid Voynich donated the manuscript to the Beinecke Library.</p>
+        <div class="tfng-options">
+          <div class="tfng-option"><label><input name="q28" type="radio" value="TRUE"> TRUE</label></div>
+          <div class="tfng-option"><label><input name="q28" type="radio" value="FALSE"> FALSE</label></div>
+          <div class="tfng-option"><label><input name="q28" type="radio" value="NOT GIVEN"> NOT GIVEN</label></div>
+        </div>
+      </div>
+      
+      <a id="q29-anchor"></a>
+      <div id="q29-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+        <p class="question-number">29.</p>
+        <p>Interest in the Voynich manuscript extends beyond that of academics and professional codebreakers.</p>
+        <div class="tfng-options">
+          <div class="tfng-option"><label><input name="q29" type="radio" value="TRUE"> TRUE</label></div>
+          <div class="tfng-option"><label><input name="q29" type="radio" value="FALSE"> FALSE</label></div>
+          <div class="tfng-option"><label><input name="q29" type="radio" value="NOT GIVEN"> NOT GIVEN</label></div>
+        </div>
+      </div>
+      
+      <a id="q30-anchor"></a>
+      <div id="q30-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+        <p class="question-number">30.</p>
+        <p>The text of the Voynich manuscript contains just under 70 symbols.</p>
+        <div class="tfng-options">
+          <div class="tfng-option"><label><input name="q30" type="radio" value="TRUE"> TRUE</label></div>
+          <div class="tfng-option"><label><input name="q30" type="radio" value="FALSE"> FALSE</label></div>
+          <div class="tfng-option"><label><input name="q30" type="radio" value="NOT GIVEN"> NOT GIVEN</label></div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Questions 31–34: Match People with Statements -->
+    <div class="group">
+      <h4>Questions 31–34</h4>
+      <p>Look at the following statements (Questions 31–34) and the list of people below.</p>
+      <p>Match each statement with the correct person, A–H.</p>
+      <p>Write the correct letter, A–H, in boxes 31–34 on your answer sheet.</p>
+      
+      <h5>List of People</h5>
+      <ul class="person-list">
+        <li>A. Gordon Rugg</li>
+        <li>B. Roger Bacon</li>
+        <li>C. William Newbold</li>
+        <li>D. William Friedman</li>
+        <li>E. Rob Churchill</li>
+        <li>F. Gabriel Landini</li>
+        <li>G. René Zandbergen</li>
+        <li>H. Girolamo Cardano</li>
+      </ul>
+      
+      <a id="q31-anchor"></a>
+      <div id="q31-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+        <p class="question-number">31.</p>
+        <p>The number of times that some words occur makes it unlikely that the manuscript is based on an authentic language.</p>
+        <div class="match-person-options">
+          <div class="match-person-option"><label><input name="q31" type="radio" value="A"> A</label></div>
+          <div class="match-person-option"><label><input name="q31" type="radio" value="B"> B</label></div>
+          <div class="match-person-option"><label><input name="q31" type="radio" value="C"> C</label></div>
+          <div class="match-person-option"><label><input name="q31" type="radio" value="D"> D</label></div>
+          <div class="match-person-option"><label><input name="q31" type="radio" value="E"> E</label></div>
+          <div class="match-person-option"><label><input name="q31" type="radio" value="F"> F</label></div>
+          <div class="match-person-option"><label><input name="q31" type="radio" value="G"> G</label></div>
+          <div class="match-person-option"><label><input name="q31" type="radio" value="H"> H</label></div>
+        </div>
+      </div>
+      
+      <a id="q32-anchor"></a>
+      <div id="q32-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+        <p class="question-number">32.</p>
+        <p>Unlike some other similar objects of fascination, people can gain direct access to the Voynich manuscript.</p>
+        <div class="match-person-options">
+          <div class="match-person-option"><label><input name="q32" type="radio" value="A"> A</label></div>
+          <div class="match-person-option"><label><input name="q32" type="radio" value="B"> B</label></div>
+          <div class="match-person-option"><label><input name="q32" type="radio" value="C"> C</label></div>
+          <div class="match-person-option"><label><input name="q32" type="radio" value="D"> D</label></div>
+          <div class="match-person-option"><label><input name="q32" type="radio" value="E"> E</label></div>
+          <div class="match-person-option"><label><input name="q32" type="radio" value="F"> F</label></div>
+          <div class="match-person-option"><label><input name="q32" type="radio" value="G"> G</label></div>
+          <div class="match-person-option"><label><input name="q32" type="radio" value="H"> H</label></div>
+        </div>
+      </div>
+      
+      <a id="q33-anchor"></a>
+      <div id="q33-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+        <p class="question-number">33.</p>
+        <p>The person who wrote the manuscript may not have been entirely sane.</p>
+        <div class="match-person-options">
+          <div class="match-person-option"><label><input name="q33" type="radio" value="A"> A</label></div>
+          <div class="match-person-option"><label><input name="q33" type="radio" value="B"> B</label></div>
+          <div class="match-person-option"><label><input name="q33" type="radio" value="C"> C</label></div>
+          <div class="match-person-option"><label><input name="q33" type="radio" value="D"> D</label></div>
+          <div class="match-person-option"><label><input name="q33" type="radio" value="E"> E</label></div>
+          <div class="match-person-option"><label><input name="q33" type="radio" value="F"> F</label></div>
+          <div class="match-person-option"><label><input name="q33" type="radio" value="G"> G</label></div>
+          <div class="match-person-option"><label><input name="q33" type="radio" value="H"> H</label></div>
+        </div>
+      </div>
+      
+      <a id="q34-anchor"></a>
+      <div id="q34-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+        <p class="question-number">34.</p>
+        <p>It is likely that the author of the manuscript is the same person as suggested by Wilfrid Voynich.</p>
+        <div class="match-person-options">
+          <div class="match-person-option"><label><input name="q34" type="radio" value="A"> A</label></div>
+          <div class="match-person-option"><label><input name="q34" type="radio" value="B"> B</label></div>
+          <div class="match-person-option"><label><input name="q34" type="radio" value="C"> C</label></div>
+          <div class="match-person-option"><label><input name="q34" type="radio" value="D"> D</label></div>
+          <div class="match-person-option"><label><input name="q34" type="radio" value="E"> E</label></div>
+          <div class="match-person-option"><label><input name="q34" type="radio" value="F"> F</label></div>
+          <div class="match-person-option"><label><input name="q34" type="radio" value="G"> G</label></div>
+          <div class="match-person-option"><label><input name="q34" type="radio" value="H"> H</label></div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Questions 35–39: Summary Completion -->
+    <div class="group">
+      <h4>Questions 35–39</h4>
+      <p>Complete the summary below.</p>
+      <p>Choose NO MORE THAN TWO WORDS from the passage for each answer.</p>
+      <p>Write your answers in boxes 35–39 on your answer sheet.</p>
+      
+      <p>Voynich Researchers</p>
+      <p>William Newbold believed that the author of the Voynich manuscript had been able to look at cells through a <span class="question-number">35.</span><a id="q35-anchor"></a> <input type="text" class="summary-blank" id="q35">. Other researchers later demonstrated that there were flaws in his argument.</p>
+      
+      <p>William Friedman concluded that the manuscript was written in an artificial language that was based on <span class="question-number">36.</span><a id="q36-anchor"></a> <input type="text" class="summary-blank" id="q36">. He couldn’t find out the meaning of this language but he believed that the <span class="question-number">37.</span><a id="q37-anchor"></a> <input type="text" class="summary-blank" id="q37"> would continue to bring advances in code-breaking.</p>
+      
+      <p>Dr Gabriel Landini used a system known as <span class="question-number">38.</span><a id="q38-anchor"></a> <input type="text" class="summary-blank" id="q38"> in his research, and claims to have demonstrated the presence of genuine words.</p>
+      
+      <p>Dr Gordon Rugg’s system involved a grille, that made it possible to quickly select symbols that appeared in a <span class="question-number">39.</span><a id="q39-anchor"></a> <input type="text" class="summary-blank" id="q39">. Rugg’s conclusion was that the manuscript lacked genuine meaning.</p>
+    </div>
+    
+    <!-- Question 40: Multiple Choice -->
+    <div class="group">
+      <h4>Question 40</h4>
+      <p>Choose the correct letter, A, B, C or D.</p>
+      <p>Write the correct letter in box 40 on your answer sheet.</p>
+      
+      <a id="q40-anchor"></a>
+      <div id="q40-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+        <p class="question-number">40.</p>
+        <p>The writer’s main aim in this passage is to</p>
+        <div class="mcq-options">
+          <div class="mcq-option"><label><input name="q40" type="radio" value="A"> A. explain the meaning of the manuscript.</label></div>
+          <div class="mcq-option"><label><input name="q40" type="radio" value="B"> B. determine the true identity of the manuscript’s author.</label></div>
+          <div class="mcq-option"><label><input name="q40" type="radio" value="C"> C. describe the numerous attempts to decode the manuscript.</label></div>
+          <div class="mcq-option"><label><input name="q40" type="radio" value="D"> D. identify which research into the manuscript has had the most media coverage.</label></div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Submit & Reset Buttons -->
+    <div style="display:flex;gap:8px;margin-bottom:10px;">
+      <button class="primary" onclick="grade()">Submit</button>
+      <button onclick="resetForm()">Reset</button>
+      <button onclick="toggleNotes()">Notes</button>
+    </div>
+    
+    <!-- Results & Answer Key -->
+    <div id="results"></div>
+    <details class="answerbox" id="answerBox">
+      <summary>Show Answers (Click to Toggle) <span class="badge">Hidden</span></summary>
+      <div id="answerContent">
+        <h4>正确答案及解析</h4>
+        <table>
+          <tbody><tr>
+            <th>题号</th>
+            <th>答案</th>
+            <th>精确定位句(第X段)</th>
+            <th>解析</th>
+          </tr>
+          <!-- 27-30 TRUE/FALSE/NOT GIVEN -->
+          <tr>
+            <td>27</td>
+            <td>TRUE</td>
+            <td>第1段:"containing 240-odd pages of drawings and text of unknown age and authorship."</td>
+            <td>原文明确提到手稿“年代未知（unknown age）”，即“写于何时不确定”，与题干表述一致，故为TRUE。</td>
+          </tr>
+          <tr>
+            <td>28</td>
+            <td>NOT GIVEN</td>
+            <td>第1段:"It is known to scholars as the Voynich manuscript, after the American book-dealer Wilfrid Voynich, who bought the manuscript from a Jesuit college in Italy in 1912."</td>
+            <td>原文仅说明Wilfrid Voynich于1912年从意大利耶稣会学院买下手稿，未提及他是否将手稿捐赠给贝内克图书馆，也未说明手稿如何进入该图书馆，故为NOT GIVEN。</td>
+          </tr>
+          <tr>
+            <td>29</td>
+            <td>TRUE</td>
+            <td>第2段:"the manuscript has attracted the attention of everyone from amateur dabblers to top code-breakers."</td>
+            <td>原文提到手稿吸引“从爱好者到顶尖破译者”的关注，即兴趣范围超出学者和专业破译者，与题干“extends beyond academics and professional codebreakers”一致，故为TRUE。</td>
+          </tr>
+          <tr>
+            <td>30</td>
+            <td>FALSE</td>
+            <td>第4段:"it is possible to make out more than 70 distinct symbols among the 170,000-character text."</td>
+            <td>原文明确是“超过70个（more than 70）”不同符号，而题干说“不到70个（just under 70）”，相互矛盾，故为FALSE。</td>
+          </tr>
+          <!-- 31-34 人名配对 -->
+          <tr>
+            <td>31</td>
+            <td>D (William Friedman)</td>
+            <td>第4段:"Friedman discovered that some words and phrases appeared more often than expected in a standard language, casting doubt on claims that the manuscript concealed a real language."</td>
+            <td>题干“某些词的出现频率使手稿不可能基于真实语言”，与Friedman的发现完全一致：词/短语出现频率高于标准语言，质疑手稿隐藏真实语言的说法，故选D。</td>
+          </tr>
+          <tr>
+            <td>32</td>
+            <td>A (Gordon Rugg)</td>
+            <td>第2段:"Dr Gordon Rugg of Keele University, a leading Voynich expert. “Most other mysteries involve second-hand reports... But this is one that you can see for yourself.”"</td>
+            <td>题干“与其他类似谜团不同，人们可直接接触伏尼契手稿”，与Rugg的表述“其他谜团多为二手报道，而这个你可以亲眼看到”完全对应，故选A。</td>
+          </tr>
+          <tr>
+            <td>33</td>
+            <td>E (Rob Churchill)</td>
+            <td>第9段:"Others, such as Churchill, have suggested that the sheer weirdness of the illustrations and text hints at an author who had lost touch with reality."</td>
+            <td>题干“手稿作者可能不完全神志清醒”，与Churchill认为作者“与现实脱节（lost touch with reality）”语义等价，均指精神状态异常，故选E。</td>
+          </tr>
+          <tr>
+            <td>34</td>
+            <td>C (William Newbold)</td>
+            <td>第3段:"Voynich himself believed that the manuscript was the work of the 13th-century English monk Roger Bacon... In 1921 Voynich’s view that Bacon was the writer appeared to win support from the work of William Newbold."</td>
+            <td>题干“手稿作者可能是Wilfrid Voynich所指的人”，Voynich认为作者是Roger Bacon，而Newbold的研究曾支持这一观点（虽随后被证伪），故选C。</td>
+          </tr>
+          <!-- 35-39 摘要填空 -->
+          <tr>
+            <td>35</td>
+            <td>microscope</td>
+            <td>第3段:"According to Newbold, the manuscript proved that Bacon had access to a microscope centuries before they were supposedly first invented. The claim that this medieval monk had observed living cells created a sensation."</td>
+            <td>Newbold主张手稿作者（Bacon）能“通过显微镜（microscope）观察细胞”，与题干“look at cells through a ...”完全匹配，且符合“不超过两个词”要求。</td>
+          </tr>
+          <tr>
+            <td>36</td>
+            <td>concepts</td>
+            <td>第5段:"Friedman concluded that the most plausible resolution of this paradox was that “Voynichese” is some sort of specially created artificial language, whose words are devised from concepts rather than linguistics."</td>
+            <td>Friedman认定手稿语言是“基于概念（concepts）而非语言学构造的人工语言”，题干“based on ...”对应“devised from concepts”，故填concepts。</td>
+          </tr>
+          <tr>
+            <td>37</td>
+            <td>computer</td>
+            <td>第6段:"Even though Friedman was working more than 60 years ago, he suspected that major insights would come from using the device that had already transformed code-breaking: the computer."</td>
+            <td>Friedman相信“计算机（computer）”这一设备会带来破译进展，题干“... would continue to bring advances”对应原文“major insights would come from using the device”，故填computer。</td>
+          </tr>
+          <tr>
+            <td>38</td>
+            <td>spectral analysis</td>
+            <td>第7段:"in 2001 another leading Voynich scholar, Dr Gabriel Landini... published the results of his study of the manuscript using a pattern-detecting method called spectral analysis."</td>
+            <td>Landini使用的方法名为“光谱分析（spectral analysis）”，题干“a system known as ...”对应“a pattern-detecting method called ...”，虽为两个词但符合要求，故填spectral analysis。</td>
+          </tr>
+          <tr>
+            <td>39</td>
+            <td>table</td>
+            <td>第8段:"Using a system first published by the Italian mathematician Girolamo Cardano in 1150, in which a specially constructed grille is used to pick out symbols from a table, Rugg found he could rapidly generate text with many of the basic traits of the Voynich manuscript."</td>
+            <td>Rugg的“格板（grille）”用于从“表格（table）”中挑选符号，题干“select symbols that appeared in a ...”对应“pick out symbols from a table”，故填table。</td>
+          </tr>
+          <!-- 40 主旨题 -->
+          <tr>
+            <td>40</td>
+            <td>C</td>
+            <td>全文贯穿多位研究者（Newbold、Friedman、Landini、Zandbergen、Rugg、Churchill）的破译尝试及结论</td>
+            <td>全文核心是“描述众多破译手稿的尝试”：A（解释手稿含义）、B（确认作者身份）均未实现；D（比较媒体曝光度）原文未提及。只有C符合主旨，故选C。</td>
+          </tr>
+        </tbody></table>
+      </div>
+    </details>
+  </section>
+</div>
+<!-- 文本选择工具栏 -->
+<div aria-label="Selection tools" id="selbar" role="toolbar">
+  <button id="btnHL">Highlight</button>
+  <button id="btnUH">Remove Highlight</button>
+  <button id="btnNote">Add to Notes</button>
+</div>
+<!-- 笔记面板 -->
+<div id="notes">
+  <header>
+    <strong>Notes</strong>
+    <div>
+      <button id="btnCopy">Copy</button>
+      <button id="btnClose">Close</button>
+    </div>
+  </header>
+  <textarea id="noteArea" placeholder="Type your notes here..."></textarea>
+</div>
+<!-- 提示框 -->
+<div id="toast"></div>
+<script>
+// 计时器核心功能
+let _t = 0; 
+const _timerEl = document.getElementById('timer');
+let timerInterval; // 计时器间隔ID，用于后续停止
+// 启动计时器
+function startTimer() {
+  timerInterval = setInterval(() => { 
+    _t++; 
+    const m = String(Math.floor(_t/60)).padStart(2, '0'); 
+    const s = String(_t%60).padStart(2, '0'); 
+    _timerEl.textContent = `${m}:${s}`; 
+  }, 1000);
+}
+// 页面加载时启动计时器
+window.onload = startTimer;
+// 拖拽分隔线调整左右面板宽度
+const divider = document.getElementById('divider');
+const leftPane = document.getElementById('left');
+const rightPane = document.getElementById('right');
+let isDragging = false;
+divider.addEventListener('mousedown', (e) => {
+  isDragging = true;
+  document.body.style.cursor = 'ew-resize';
+  e.preventDefault();
+});
+window.addEventListener('mousemove', (e) => {
+  if (!isDragging) return;
+  const containerRect = document.querySelector('.shell').getBoundingClientRect();
+  let x = e.clientX - containerRect.left;
+  // 限制最小宽度，防止面板过窄
+  x = Math.max(280, Math.min(containerRect.width - 320, x));
+  leftPane.style.flex = `0 0 ${x}px`;
+  rightPane.style.flex = '1 1 auto';
+});
+window.addEventListener('mouseup', () => {
+  if (isDragging) {
+    isDragging = false;
+    document.body.style.cursor = '';
+  }
+});
+// 触摸设备支持
+divider.addEventListener('touchstart', (e) => {
+  isDragging = true;
+  e.preventDefault();
+}, { passive: false });
+window.addEventListener('touchmove', (e) => {
+  if (!isDragging) return;
+  const containerRect = document.querySelector('.shell').getBoundingClientRect();
+  let x = e.touches[0].clientX - containerRect.left;
+  x = Math.max(280, Math.min(containerRect.width - 320, x));
+  leftPane.style.flex = `0 0 ${x}px`;
+  rightPane.style.flex = '1 1 auto';
+}, { passive: false });
+window.addEventListener('touchend', () => {
+  isDragging = false;
+});
+// 文本高亮功能
+const selbar = document.getElementById('selbar');
+const btnHL = document.getElementById('btnHL');
+const btnUH = document.getElementById('btnUH');
+const btnNote = document.getElementById('btnNote');
+let lastRange = null;
+let currentHlNode = null;
+let keepToolbar = false;
+// 定位选择工具栏
+function positionSelbar(rect) {
+  selbar.style.display = 'flex';
+  requestAnimationFrame(() => {
+    const top = window.scrollY + rect.top - selbar.offsetHeight - 8;
+    const leftPos = window.scrollX + rect.left + rect.width/2 - selbar.offsetWidth/2;
+    // 确保工具栏不超出视口
+    selbar.style.top = (top > 0 ? top : window.scrollY + rect.bottom + 8) + 'px';
+    selbar.style.left = Math.max(8, leftPos) + 'px';
+  });
+}
+// 更新工具栏状态
+function updateSelbar() {
+  const selection = window.getSelection();
+  if (!selection || selection.rangeCount === 0 || selection.isCollapsed) {
+    selbar.style.display = 'none';
+    currentHlNode = null;
+    return;
+  }
+  const range = selection.getRangeAt(0);
+  lastRange = range.cloneRange();
+  currentHlNode = null;
+  positionSelbar(range.getBoundingClientRect());
+}
+// 监听文本选择事件（左右面板均支持高亮）
+document.getElementById('left').addEventListener('mouseup', updateSelbar);
+document.getElementById('right').addEventListener('mouseup', updateSelbar);
+document.addEventListener('selectionchange', () => {
+  const selection = window.getSelection();
+  if (!selection || selection.rangeCount === 0 || selection.isCollapsed) {
+    if (!keepToolbar && !currentHlNode) selbar.style.display = 'none';
+  }
+});
+// 滚动时重新定位工具栏
+document.addEventListener('scroll', () => {
+  if (selbar.style.display === 'flex') updateSelbar();
+});
+// 点击高亮文本时显示工具栏
+document.addEventListener('mousedown', (e) => {
+  keepToolbar = e.target.classList?.contains('hl') || false;
+}, true);
+document.addEventListener('click', (e) => {
+  if (e.target.classList?.contains('hl')) {
+    currentHlNode = e.target;
+    lastRange = null;
+    positionSelbar(e.target.getBoundingClientRect());
+    const selection = window.getSelection();
+    if (selection) selection.removeAllRanges();
+    setTimeout(() => keepToolbar = false, 0);
+  }
+}, true);
+// 执行高亮（支持所有文本）
+function doHighlight() {
+  if (currentHlNode || !lastRange || lastRange.collapsed) return;
+  const highlightSpan = document.createElement('span');
+  highlightSpan.className = 'hl';
+  try {
+    lastRange.surroundContents(highlightSpan);
+  } catch (e) {
+    // 处理跨元素选择的情况
+    const wrapSpan = document.createElement('span');
+    wrapSpan.className = 'hl';
+    wrapSpan.appendChild(lastRange.cloneContents());
+    lastRange.deleteContents();
+    lastRange.insertNode(wrapSpan);
+  }
+  selbar.style.display = 'none';
+  showToast('Text highlighted');
+}
+// 移除高亮
+function removeHighlight() {
+  if (currentHlNode) {
+    // 移除单个高亮元素
+    const parent = currentHlNode.parentNode;
+    while (currentHlNode.firstChild) {
+      parent.insertBefore(currentHlNode.firstChild, currentHlNode);
+    }
+    parent.removeChild(currentHlNode);
+    parent.normalize(); // 合并相邻文本节点
+    currentHlNode = null;
+    selbar.style.display = 'none';
+    showToast('Highlight removed');
+    return;
+  }
+  if (!lastRange) return;
+  // 移除选择范围内的所有高亮
+  const selRect = lastRange.getBoundingClientRect();
+  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_ELEMENT);
+  const toRemove = [];
+  let node;
+  while ((node = walker.nextNode())) {
+    if (node.classList?.contains('hl')) {
+      const nodeRect = node.getBoundingClientRect();
+      // 判断节点是否在选择范围内
+      if (!(nodeRect.right < selRect.left || nodeRect.left > selRect.right || 
+            nodeRect.bottom < selRect.top || nodeRect.top > selRect.bottom)) {
+        toRemove.push(node);
+      }
+    }
+  }
+  toRemove.forEach(el => {
+    const parent = el.parentNode;
+    while (el.firstChild) parent.insertBefore(el.firstChild, el);
+    parent.removeChild(el);
+    parent.normalize();
+  });
+  selbar.style.display = 'none';
+  showToast('Highlights removed');
+}
+// 绑定高亮按钮事件
+btnHL.addEventListener('click', doHighlight);
+btnUH.addEventListener('click', removeHighlight);
+// 笔记功能
+const notesPanel = document.getElementById('notes');
+const noteArea = document.getElementById('noteArea');
+const btnCopy = document.getElementById('btnCopy');
+const btnCloseNotes = document.getElementById('btnClose');
+// 切换笔记面板显示
+function toggleNotes() {
+  notesPanel.style.display = notesPanel.style.display === 'flex' ? 'none' : 'flex';
+}
+// 关闭笔记面板
+btnCloseNotes.addEventListener('click', toggleNotes);
+// 复制笔记
+btnCopy.addEventListener('click', async () => {
+  await navigator.clipboard.writeText(noteArea.value || '');
+  showToast('Notes copied to clipboard');
+});
+// 选中文本添加到笔记
+btnNote.addEventListener('click', () => {
+  let selectedText = '';
+  if (currentHlNode) {
+    selectedText = currentHlNode.textContent.trim();
+  } else if (lastRange) {
+    const frag = lastRange.cloneContents();
+    selectedText = frag.textContent.trim();
+  }
+  toggleNotes();
+  if (selectedText) {
+    noteArea.value = noteArea.value ? `${noteArea.value}\n> ${selectedText}\n` : `> ${selectedText}\n`;
+    // 滚动到笔记底部
+    noteArea.scrollTop = noteArea.scrollHeight;
+  }
+  selbar.style.display = 'none';
+});
+// 提示框功能
+const toastEl = document.getElementById('toast');
+function showToast(message) {
+  toastEl.textContent = message;
+  toastEl.style.display = 'block';
+  setTimeout(() => toastEl.style.display = 'none', 1500);
+}
+// 字体设置功能（应用于所有字体）
+const settingsModal = document.getElementById('settingsModal');
+const body = document.body;
+// 打开字体设置模态框
+function openSettingsModal() {
+  settingsModal.style.display = 'block';
+}
+// 关闭字体设置模态框
+function closeSettingsModal() {
+  settingsModal.style.display = 'none';
+}
+// 点击模态框外部关闭
+window.addEventListener('click', (e) => {
+  if (e.target === settingsModal) closeSettingsModal();
+});
+// 切换字体大小（影响网页所有元素）
+document.querySelectorAll('.font-option').forEach(option => {
+  option.addEventListener('click', () => {
+    const size = option.dataset.size;
+    // 移除所有字体类，添加选中的类（body类控制所有元素继承）
+    body.classList.remove('font-regular', 'font-moderate', 'font-large');
+    body.classList.add(`font-${size}`);
+    // 显示提示
+    const sizeName = size === 'regular' ? 'Regular (16px)' : 
+                     size === 'moderate' ? 'Moderate (18px)' : 'Large (20px)';
+    showToast(`Font size set to ${sizeName}`);
+    closeSettingsModal();
+  });
+});
+// 答案与评分功能（Submit后停止计时器）
+const answers = {
+  q27: 'TRUE',
+  q28: 'NOT GIVEN',
+  q29: 'TRUE',
+  q30: 'FALSE',
+  q31: 'D',
+  q32: 'A',
+  q33: 'E',
+  q34: 'C',
+  q35: 'microscope',
+  q36: 'concepts',
+  q37: 'computer',
+  q38: 'spectral analysis',
+  q39: 'table',
+  q40: 'C'
+};
+// 评分函数（Submit后执行，包含停止计时器）
+function grade() {
+  // 1. 停止计时器
+  clearInterval(timerInterval);
+  
+  // 2. 计算得分
+  let total = 14;
+  let correct = 0;
+  const resultLines = [];
+  
+  // 检查27-34题（单选类题目：TRUE/FALSE/NOT GIVEN、人名配对）
+  for (let i = 27; i <= 34; i++) {
+    const qName = `q${i}`;
+    const selected = document.querySelector(`input[name="${qName}"]:checked`);
+    const userAns = selected ? selected.value : 'No answer';
+    const correctAns = answers[qName];
+    const isCorrect = userAns === correctAns;
+    if (isCorrect) correct++;
+    resultLines.push(`${qName.toUpperCase()}: ${userAns} ${isCorrect ? '✅ Correct' : `❌ Incorrect (Correct: ${correctAns})`}`);
+  }
+  
+  // 检查35-39题（摘要填空，忽略大小写和空格差异）
+  for (let i = 35; i <= 39; i++) {
+    const qName = `q${i}`;
+    const input = document.getElementById(qName);
+    const userAns = input ? input.value.trim().toLowerCase().replace(/\s+/g, ' ') : 'No answer';
+    const correctAns = answers[qName].toLowerCase().replace(/\s+/g, ' ');
+    const isCorrect = userAns === correctAns;
+    if (isCorrect) correct++;
+    resultLines.push(`${qName.toUpperCase()}: ${userAns || 'No answer'} ${isCorrect ? '✅ Correct' : `❌ Incorrect (Correct: ${answers[qName]})`}`);
+  }
+  
+  // 检查40题（主旨题）
+  const q40Selected = document.querySelector(`input[name="q40"]:checked`);
+  const q40UserAns = q40Selected ? q40Selected.value : 'No answer';
+  const q40CorrectAns = answers.q40;
+  const q40IsCorrect = q40UserAns === q40CorrectAns;
+  if (q40IsCorrect) correct++;
+  resultLines.push(`Q40: ${q40UserAns} ${q40IsCorrect ? '✅ Correct' : `❌ Incorrect (Correct: ${q40CorrectAns})`}`);
+  
+  // 3. 显示结果
+  const accuracy = Math.round((correct / total) * 100);
+  const resultsHTML = `
+    <p><strong>Score:</strong> ${correct}/${total} (Accuracy: ${accuracy}%)</p>
+    <pre>${resultLines.join('\n')}</pre>
+  `;
+  document.getElementById('results').innerHTML = resultsHTML;
+  
+  // 4. 展开答案面板
+  const answerBox = document.getElementById('answerBox');
+  answerBox.open = true;
+  document.querySelector('#answerBox .badge').textContent = 'Visible';
+  
+  // 5. 标记所有题目为已回答
+  document.querySelectorAll('.q-item').forEach(item => {
+    item.classList.add('answered');
+  });
+}
+// 重置功能（重置计时器、选项、高亮等）
+function resetForm() {
+  // 1. 重置计时器
+  clearInterval(timerInterval);
+  _t = 0;
+  _timerEl.textContent = '00:00';
+  startTimer();
+  
+  // 2. 重置所有单选按钮
+  document.querySelectorAll('input[type="radio"]').forEach(radio => {
+    radio.checked = false;
+  });
+  
+  // 3. 重置摘要填空题输入框
+  document.querySelectorAll('.summary-blank').forEach(input => {
+    input.value = '';
+  });
+  
+  // 4. 重置结果和答案面板
+  document.getElementById('results').innerHTML = '';
+  const answerBox = document.getElementById('answerBox');
+  answerBox.open = false;
+  document.querySelector('#answerBox .badge').textContent = 'Hidden';
+  
+  // 5. 重置导航栏已回答状态
+  document.querySelectorAll('.q-item').forEach(item => {
+    item.classList.remove('answered');
+  });
+  
+  // 6. 重置笔记
+  noteArea.value = '';
+  notesPanel.style.display = 'none';
+  
+  // 7. 移除所有高亮
+  document.querySelectorAll('.hl').forEach(hl => {
+    const parent = hl.parentNode;
+    while (hl.firstChild) parent.insertBefore(hl.firstChild, hl);
+    parent.removeChild(hl);
+    parent.normalize();
+  });
+}
+// 滚动到指定题目
+function scrollToElement(id) {
+  const element = document.getElementById(id);
+  if (element) {
+    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  // 高亮导航项
+  document.querySelectorAll('.q-item').forEach(item => {
+    item.classList.remove('active');
+  });
+  const navItem = document.getElementById(id.replace('-anchor', '-nav'));
+  if (navItem) {
+    navItem.classList.add('active');
+    setTimeout(() => navItem.classList.remove('active'), 800);
+  }
+}
+// 监听输入，标记题目为已回答
+(function() {
+  // 监听27-34题、40题单选按钮
+  for (let i = 27; i <= 34; i++) {
+    document.querySelectorAll(`input[name="q${i}"]`).forEach(radio => {
+      radio.addEventListener('change', () => {
+        document.getElementById(`q${i}-nav`).classList.add('answered');
+      });
+    });
+  }
+  document.querySelectorAll(`input[name="q40"]`).forEach(radio => {
+    radio.addEventListener('change', () => {
+      document.getElementById(`q40-nav`).classList.add('answered');
+    });
+  });
+  
+  // 监听35-39题填空题
+  for (let i = 35; i <= 39; i++) {
+    const input = document.getElementById(`q${i}`);
+    input.addEventListener('input', () => {
+      if (input.value.trim()) {
+        document.getElementById(`q${i}-nav`).classList.add('answered');
+      } else {
+        document.getElementById(`q${i}-nav`).classList.remove('answered');
+      }
+    });
+  }
+})();
+</script>
+
+
+</body></html>
+    

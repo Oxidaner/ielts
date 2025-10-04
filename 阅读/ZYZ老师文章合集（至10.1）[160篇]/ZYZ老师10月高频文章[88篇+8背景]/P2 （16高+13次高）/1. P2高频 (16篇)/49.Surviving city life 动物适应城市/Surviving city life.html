@@ -1,0 +1,1207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Surviving City Life - Reading Passage</title>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<style>
+  :root { 
+    --line:#e5e7eb; 
+    --bg:#f6f7fb; 
+    --panel:#fff; 
+    --accent:#3b82f6; 
+    --muted:#6b7280; 
+    --shadow:0 6px 20px rgba(0,0,0,.12); 
+    /* 字体大小变量 - 基础regular，逐级放大 */
+    --font-size-regular: 16px;
+    --font-size-moderate: 18px; /* 比regular大1号 */
+    --font-size-large: 20px;    /* 比moderate大1号 */
+  }
+  /* 字体大小类 - 所有元素继承 */
+  .font-regular {
+    font-size: var(--font-size-regular) !important;
+  }
+  .font-moderate {
+    font-size: var(--font-size-moderate) !important;
+  }
+  .font-large {
+    font-size: var(--font-size-large) !important;
+  }
+  * { 
+    box-sizing: border-box; 
+    font-size: inherit; /* 所有元素继承父级字体大小 */
+  }
+  html,body { 
+    height:100%; 
+    font-size: var(--font-size-regular); /* 默认regular */
+  }
+  body { 
+    margin:0; 
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; 
+    background:var(--bg); 
+  }
+  #timer-container {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  #timer { 
+    position: static; 
+    display: inline-block; 
+    background:#fff; 
+    border:1px solid var(--line); 
+    border-radius:10px; 
+    padding:2px 8px; 
+    vertical-align: middle; 
+  }
+  #settingsBtn {
+    padding:2px 8px;
+    border:1px solid var(--line);
+    border-radius:10px;
+    background:#fff;
+    cursor:pointer;
+  }
+  #settingsModal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:16px;
+    box-shadow:var(--shadow);
+    z-index: 1000;
+    display: none;
+  }
+  #settingsModal h4 {
+    margin-top:0;
+    font-weight: 600;
+  }
+  #settingsModal .font-option {
+    margin:8px 0;
+    cursor:pointer;
+    padding:4px 8px;
+    border-radius:6px;
+  }
+  #settingsModal .font-option:hover {
+    background:#f1f5f9;
+  }
+  #settingsModal .close-modal {
+    margin-top:12px;
+    padding:6px 12px;
+    border:1px solid var(--line);
+    border-radius:8px;
+    background:var(--accent);
+    color:#fff;
+    cursor:pointer;
+  }
+  .shell { 
+    display:flex; 
+    height:100vh; 
+    width:100%; 
+  }
+  .pane { 
+    background:var(--panel); 
+    overflow:auto; 
+    padding:20px; 
+  }
+  #left { 
+    flex: 0 0 50%; 
+    min-width: 280px; 
+  }
+  #right { 
+    flex: 1 1 auto; 
+    min-width: 320px; 
+    background:#fbfbff; 
+    border-left:1px solid var(--line); 
+  }
+  #divider { 
+    flex: 0 0 8px; 
+    background: linear-gradient(90deg,#e5e7eb,#d1d5db); 
+    cursor: ew-resize; 
+    position:relative; 
+    z-index: 5; 
+    user-select:none; 
+  }
+  h2,h3,h4 { 
+    margin:0 0 10px; 
+    font-weight: 600; 
+  }
+  #left p { 
+    margin: 0 0 12px; 
+    line-height: 1.6; 
+    word-break: normal; 
+    overflow-wrap: normal; 
+    hyphens: none; 
+  }
+  .paragraph-label {
+    font-weight: 600;
+    color: var(--accent);
+    margin-right: 8px;
+  }
+  .group { 
+    background:#fff; 
+    border:1px solid var(--line); 
+    border-radius:10px; 
+    padding:12px; 
+    margin-bottom:14px; 
+  }
+  table { 
+    border-collapse: collapse; 
+    width:100%; 
+    margin: 10px 0;
+  }
+  th, td { 
+    border:1px solid var(--line); 
+    padding:6px; 
+    text-align:left; 
+  }
+  th {
+    background-color: #f1f5f9;
+    font-weight: 600;
+  }
+  button { 
+    padding:8px 12px; 
+    border:1px solid var(--line); 
+    border-radius:10px; 
+    background:#fff; 
+    cursor:pointer; 
+  }
+  button.primary { 
+    background:var(--accent); 
+    color:#fff; 
+    border-color:#3b82f6; 
+  }
+  #results { 
+    background:#fff; 
+    border:1px solid var(--line); 
+    border-radius:10px; 
+    padding:10px; 
+    margin-bottom:14px;
+  }
+  .hl { 
+    background:#fff3a3; 
+    box-shadow: inset 0 -2px 0 rgba(0,0,0,.05); 
+    cursor: pointer; 
+  }
+  .hl:hover { 
+    filter: brightness(0.98); 
+  }
+  #selbar { 
+    position: absolute; 
+    display:none; 
+    z-index: 6000; 
+    background:#111; 
+    color:#fff; 
+    border-radius: 8px; 
+    padding: 6px; 
+    box-shadow: var(--shadow); 
+    font-size: 13px; 
+    gap:6px; 
+    align-items: center; 
+  }
+  #selbar button { 
+    background: transparent; 
+    color:#fff; 
+    border: 1px solid rgba(255,255,255,.25); 
+    padding: 4px 8px; 
+    border-radius: 6px; 
+    cursor:pointer; 
+  }
+  #selbar button:hover { 
+    border-color:#fff; 
+  }
+  #notes { 
+    position: fixed; 
+    right: 12px; 
+    bottom: 12px; 
+    width: 320px; 
+    height: 42vh; 
+    background:#fff; 
+    border:1px solid var(--line); 
+    border-radius: 12px; 
+    display:none; 
+    flex-direction: column; 
+    z-index:1500; 
+    box-shadow: var(--shadow); 
+  }
+  #notes header { 
+    display:flex; 
+    align-items:center; 
+    justify-content: space-between; 
+    padding:8px 10px; 
+    border-bottom:1px solid var(--line); 
+  }
+  #notes textarea { 
+    flex:1; 
+    border:0; 
+    padding:10px; 
+    resize:none; 
+    line-height:1.5; 
+  }
+  #toast { 
+    position: fixed; 
+    left:50%; 
+    transform: translateX(-50%); 
+    bottom: 24px; 
+    background:#111; 
+    color:#fff; 
+    padding:8px 12px; 
+    border-radius: 8px; 
+    display:none; 
+    z-index:2500; 
+  }
+  .answer-option {
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin:4px 0 8px;
+  }
+  .answer-option label {
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    gap:4px;
+  }
+  .heading-match-option {
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin:6px 0;
+  }
+  .heading-match-option label {
+    cursor:pointer;
+    padding:4px 8px;
+    border:1px solid var(--line);
+    border-radius:6px;
+    transition: all 0.2s;
+  }
+  .heading-match-option label:hover {
+    background:#f1f5f9;
+    border-color:var(--accent);
+  }
+  .researcher-match-option {
+    display:flex;
+    flex-direction: column;
+    gap:6px;
+    margin:6px 0;
+  }
+  .researcher-match-option label {
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  input.blank {
+    width: 120px; /* 适配单字填空长度 */
+    padding: 8px;
+    margin: 0 8px;
+    border:1px solid var(--line);
+    border-radius:6px;
+  }
+  .question-number {
+    font-weight: 600;
+  }
+  body { 
+    padding-bottom: 82px; 
+  }
+  .practice-nav { 
+    background:#fff; 
+    border-bottom:2px solid var(--line); 
+    padding:12px 20px; 
+    display:flex; 
+    align-items:center; 
+    gap:20px; 
+    box-shadow:0 2px 4px rgba(0,0,0,.05); 
+    flex-wrap:wrap; 
+    position:fixed; 
+    left:0; 
+    right:0; 
+    bottom:0; 
+    border-top:2px solid var(--line); 
+    border-bottom:0; 
+    z-index:4000; 
+  }
+  .practice-nav .title { 
+    font-weight:600; 
+    color:var(--muted); 
+  }
+  .practice-nav .questions { 
+    display:flex; 
+    gap:8px; 
+    align-items:center; 
+    flex-wrap:wrap; 
+  }
+  .practice-nav .q-item { 
+    padding:6px 10px; 
+    border:1px solid var(--line); 
+    border-radius:6px; 
+    background:#fff; 
+    cursor:pointer; 
+    transition:all 0.2s; 
+    min-width:36px; 
+    text-align:center; 
+  }
+  .practice-nav .q-item:hover { 
+    background:#f1f5f9; 
+    border-color:var(--accent); 
+  }
+  .practice-nav .q-item.answered { 
+    background:#e0e7ff; 
+    border-color:var(--accent); 
+    color:var(--accent); 
+    font-weight:500; 
+  }
+  .practice-nav .q-item.active { 
+    background:var(--accent); 
+    color:#fff; 
+    border-color:var(--accent); 
+  }
+  details.answerbox summary { 
+    cursor: pointer; 
+    user-select:none; 
+    list-style: none; 
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  details.answerbox summary::before {
+    content: "▼";
+    font-size: 12px;
+    transition: transform 0.2s;
+  }
+  details.answerbox[open] summary::before {
+    transform: rotate(180deg);
+  }
+  details.answerbox { 
+    border:1px dashed var(--line); 
+    border-radius:10px; 
+    padding:8px 10px; 
+    background:#fff; 
+    margin-bottom:14px;
+  }
+  .badge { 
+    display:inline-block; 
+    background:#eef2ff; 
+    color:#4338ca; 
+    padding:2px 8px; 
+    border-radius:999px; 
+    font-size:12px; 
+    margin-left:6px; 
+  }
+  .explanation-text {
+    margin-bottom: 4px;
+  }
+  .explanation-original {
+    font-style: italic;
+    color: #555;
+    font-size: 0.9em;
+    margin-top: 0;
+  }
+  /* 列表样式：移除默认黑点，替换为短横线，按行排列 */
+  ul {
+    list-style-type: none;
+    padding-left: 20px;
+    margin: 8px 0;
+  }
+  ul li::before {
+    content: "- ";
+    color: inherit;
+    font-weight: 500;
+  }
+  .heading-list {
+    margin: 10px 0;
+  }
+  .heading-list li {
+    margin-bottom: 8px;
+  }
+  .researcher-list {
+    margin: 10px 0;
+  }
+</style>
+</head>
+<body class="font-regular">
+<div class="practice-nav">
+  <div class="title">Questions</div>
+  <div class="questions">
+    <div class="q-item" id="q14-nav" onclick="scrollToElement('q14-anchor')">14</div>
+    <div class="q-item" id="q15-nav" onclick="scrollToElement('q15-anchor')">15</div>
+    <div class="q-item" id="q16-nav" onclick="scrollToElement('q16-anchor')">16</div>
+    <div class="q-item" id="q17-nav" onclick="scrollToElement('q17-anchor')">17</div>
+    <div class="q-item" id="q18-nav" onclick="scrollToElement('q18-anchor')">18</div>
+    <div class="q-item" id="q19-nav" onclick="scrollToElement('q19-anchor')">19</div>
+    <div class="q-item" id="q20-nav" onclick="scrollToElement('q20-anchor')">20</div>
+    <div class="q-item" id="q21-nav" onclick="scrollToElement('q21-anchor')">21</div>
+    <div class="q-item" id="q22-nav" onclick="scrollToElement('q22-anchor')">22</div>
+    <div class="q-item" id="q23-nav" onclick="scrollToElement('q23-anchor')">23</div>
+    <div class="q-item" id="q24-nav" onclick="scrollToElement('q24-anchor')">24</div>
+    <div class="q-item" id="q25-nav" onclick="scrollToElement('q25-anchor')">25</div>
+    <div class="q-item" id="q26-nav" onclick="scrollToElement('q26-anchor')">26</div>
+  </div>
+</div>
+<!-- 字体设置模态框 -->
+<div id="settingsModal">
+  <h4>Font Size Settings</h4>
+  <div class="font-option" data-size="regular">Regular (Default - 16px)</div>
+  <div class="font-option" data-size="moderate">Moderate (Larger - 18px)</div>
+  <div class="font-option" data-size="large">Large (Largest - 20px)</div>
+  <button class="close-modal" onclick="closeSettingsModal()">Close</button>
+</div>
+<div class="shell">
+  <section class="pane" id="left">
+    <h2>READING PASSAGE 2 
+      <div id="timer-container">
+        <span id="timer">00:00</span>
+        <button id="settingsBtn" onclick="openSettingsModal()">Settings</button>
+      </div>
+    </h2>
+    <p>You should spend about 20 minutes on Questions 14–26, which are based on Reading Passage 2 below.</p>
+    
+    <h3>Surviving City Life</h3>
+    <p>Although the colonisation of Australia profoundly affected the continent’s natural environment, many plants and animals have actually flourished since European settlement. Some even thrive in the concrete jungle of Australia’s biggest city, Sydney.</p>
+    
+    <p><span class="paragraph-label">A</span> Ecologists often prefer to study plants and animals in exotic locations, but a growing number have turned their attention to the complex interactions of the wildlife that inhabits concrete jungles. Inner-city Sydney is the laboratory of choice for a number of ecologists, and their research is timely. More than half the world’s human population resides in cities, and urban development continues to increase all over the world. By 2030, the United Nations projects five billion people will live in cities. Associate Professor Dieter Hochuli, a biologist at the University of Sydney, believes that ‘we need to understand how cities are changing the ecology of the systems they are built on, and how plants and animals are adapting to them’.</p>
+    
+    <p><span class="paragraph-label">B</span> If any species has learnt to thrive in an urban environment, it’s the native white ibis. A strange long-legged bird with a bow-shaped beak, it is known as the ‘garbage turkey’. The bird’s reputation for digging through inner-city bins and scavenging street garbage has not endeared it to the public. The white ibis began its move to the city in the 1970s, when large parts of its natural habitat of inland wetlands became degraded due to years of low rainfall. ‘The species is a wetland forager,’ wildlife officer John Martin from Sydney’s Royal Botanic Gardens says. ‘Now it happily forages in city parks and landfill.’ During the peak of its spring breeding season, there are more than 9,000 of these birds in Sydney.</p>
+    
+    <p><span class="paragraph-label">C</span> Specimens at Sydney’s Australian Museum show that the city’s overall bird life has changed dramatically over the two centuries since colonisation. Prior to urban development, Sydney’s native bushland was populated by large numbers of small insect-eating birds, such as the superb fairy-wren and the eastern yellow robin. Today, homeowners prefer to landscape their backyards with tall trees and manicured lawns-an environment that provides little protection for small birds. But one bird’s trash is another’s treasure. Gardens filled with flowering plants and fruit trees favour omnivorous birds such as currawongs, bowerbirds and the city’s most despised resident – the noisy miner. ‘They’re a real winner in cities,’ Australian Museum ornithologist Richard Major says. ‘The predominant driver in the decline of small birds is that we’ve made a suitable environment for native noisy miners.’</p>
+    
+    <p><span class="paragraph-label">D</span> Many invertebrates, such as the golden orb-weaver spider and the blue triangle butterfly, also relish living in the city. The golden orb spiders in Sydney are fatter and fitter than species found elsewhere, and Professor Hochuli and his team are trying to understand why. ‘We’re trying to determine whether it’s more food or the urban heat – as it’s up to four degrees warmer in the city.’ Hochuli has also found some varieties of ant more at home in the city. ‘The green ant, known for its painful bite, will build a nest where there is space and food, regardless of whether it’s a backyard or a sports oval.’ ‘It’s remarkable how many things persist in city environments,’ he says. The decline in birds that eat small invertebrates means these populations grow unchecked, allowing them to chew their way through the foliage of the city’s trees.</p>
+    
+    <p><span class="paragraph-label">E</span> While some species can survive in relatively small areas, mammals have been confined to patches of bushland scattered around Sydney and its nearby national parks. However, the rabbit-sized, long-nosed bandicoot has discovered the advantages of venturing out to grassy suburban backyards and gardens. ‘They forage for invertebrates in the grass and like the surrounding habitat to nest and escape from predators,’ Catherine Price, a research associate at the University of Sydney, says. Dr Price is trying to understand what encourages the little mammal into urban environments. ‘We don’t know if it’s an overflow from the park, or if they’ve got particular survival traits that allow them to evade dogs and cats, and use the urban habitat that benefits them,’ she says.</p>
+    
+    <p><span class="paragraph-label">F</span> It’s not just native wildlife that has sought comfort in city living. Non-native species such as black rodents, cockroaches and foxes have developed survival strategies too. But weeds are the pest that has gained the most advantage. ‘In residential Sydney there would not be a single area of remnant bushland not infested by introduced plant life,’ Michelle Leishman, a Macquarie University plant biologist, says. Over 20 years, Leishman and her colleagues have shown how Sydney’s huge stretches of impermeable concrete, together with the storm-water system, have helped weeds infiltrate the few remaining pockets of bushland. As rain washes over backyards and roadways, it collects chemicals which enter the storm-water system, where they are piped to the edges of bushland. The nutrient-rich water seeps into the earth, favouring the many exotic species that ‘live fast and die young,’ Leishman says. Indigenous plants prefer low-fertility soil and struggle to cope with one that is more fertile.</p>
+    
+    <!-- 多加空白行防止加载不完全 -->
+    <p>&nbsp;</p>
+    <p>&nbsp;</p>
+    <p>&nbsp;</p>
+  </section>
+  <div id="divider" title="Drag to resize"></div>
+  <section class="pane" id="right">
+    <h3>Questions</h3>
+    
+    <!-- Questions 14-19: Paragraph Headings Matching -->
+    <div class="group">
+      <h4>Questions 14–19</h4>
+      <p>Reading Passage 2 has six paragraphs, A–F.</p>
+      <p>Choose the correct heading for each paragraph from the list of headings below.</p>
+      <p>Write the correct number, i–vii, in boxes 14–19 on your answer sheet.</p>
+      
+      <h5>List of Headings</h5>
+      <ul class="heading-list">
+        <li>i The behaviour of a small animal expanding its territory</li>
+        <li>ii The urban environment encouraging the spread of imported flora and fauna</li>
+        <li>iii Insects that thrive in urban areas</li>
+        <li>iv A creature which likes rubbish</li>
+        <li>v Creatures which change their shape and colour</li>
+        <li>vi Why natural scientists are interested in studying urban areas</li>
+        <li>vii Changes in the urban built environments encourage particular species</li>
+      </ul>
+      
+      <a id="q14-anchor"></a>
+      <div id="q14-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+        <p><span class="question-number">14.</span> Paragraph A</p>
+        <div class="heading-match-option">
+          <label><input name="q14" type="radio" value="i"> i</label>
+          <label><input name="q14" type="radio" value="ii"> ii</label>
+          <label><input name="q14" type="radio" value="iii"> iii</label>
+          <label><input name="q14" type="radio" value="iv"> iv</label>
+          <label><input name="q14" type="radio" value="v"> v</label>
+          <label><input name="q14" type="radio" value="vi"> vi</label>
+          <label><input name="q14" type="radio" value="vii"> vii</label>
+        </div>
+      </div>
+      
+      <a id="q15-anchor"></a>
+      <div id="q15-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+        <p><span class="question-number">15.</span> Paragraph B</p>
+        <div class="heading-match-option">
+          <label><input name="q15" type="radio" value="i"> i</label>
+          <label><input name="q15" type="radio" value="ii"> ii</label>
+          <label><input name="q15" type="radio" value="iii"> iii</label>
+          <label><input name="q15" type="radio" value="iv"> iv</label>
+          <label><input name="q15" type="radio" value="v"> v</label>
+          <label><input name="q15" type="radio" value="vi"> vi</label>
+          <label><input name="q15" type="radio" value="vii"> vii</label>
+        </div>
+      </div>
+      
+      <a id="q16-anchor"></a>
+      <div id="q16-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+        <p><span class="question-number">16.</span> Paragraph C</p>
+        <div class="heading-match-option">
+          <label><input name="q16" type="radio" value="i"> i</label>
+          <label><input name="q16" type="radio" value="ii"> ii</label>
+          <label><input name="q16" type="radio" value="iii"> iii</label>
+          <label><input name="q16" type="radio" value="iv"> iv</label>
+          <label><input name="q16" type="radio" value="v"> v</label>
+          <label><input name="q16" type="radio" value="vi"> vi</label>
+          <label><input name="q16" type="radio" value="vii"> vii</label>
+        </div>
+      </div>
+      
+      <a id="q17-anchor"></a>
+      <div id="q17-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+        <p><span class="question-number">17.</span> Paragraph D</p>
+        <div class="heading-match-option">
+          <label><input name="q17" type="radio" value="i"> i</label>
+          <label><input name="q17" type="radio" value="ii"> ii</label>
+          <label><input name="q17" type="radio" value="iii"> iii</label>
+          <label><input name="q17" type="radio" value="iv"> iv</label>
+          <label><input name="q17" type="radio" value="v"> v</label>
+          <label><input name="q17" type="radio" value="vi"> vi</label>
+          <label><input name="q17" type="radio" value="vii"> vii</label>
+        </div>
+      </div>
+      
+      <a id="q18-anchor"></a>
+      <div id="q18-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+        <p><span class="question-number">18.</span> Paragraph E</p>
+        <div class="heading-match-option">
+          <label><input name="q18" type="radio" value="i"> i</label>
+          <label><input name="q18" type="radio" value="ii"> ii</label>
+          <label><input name="q18" type="radio" value="iii"> iii</label>
+          <label><input name="q18" type="radio" value="iv"> iv</label>
+          <label><input name="q18" type="radio" value="v"> v</label>
+          <label><input name="q18" type="radio" value="vi"> vi</label>
+          <label><input name="q18" type="radio" value="vii"> vii</label>
+        </div>
+      </div>
+      
+      <a id="q19-anchor"></a>
+      <div id="q19-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+        <p><span class="question-number">19.</span> Paragraph F</p>
+        <div class="heading-match-option">
+          <label><input name="q19" type="radio" value="i"> i</label>
+          <label><input name="q19" type="radio" value="ii"> ii</label>
+          <label><input name="q19" type="radio" value="iii"> iii</label>
+          <label><input name="q19" type="radio" value="iv"> iv</label>
+          <label><input name="q19" type="radio" value="v"> v</label>
+          <label><input name="q19" type="radio" value="vi"> vi</label>
+          <label><input name="q19" type="radio" value="vii"> vii</label>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Questions 20-23: Researcher & Statement Matching -->
+    <div class="group">
+      <h4>Questions 20–23</h4>
+      <p>Look at the following statements (Questions 20–23) and the list of researchers below.</p>
+      <p>Match each statement with the correct researcher, A, B, C or D.</p>
+      <p>Write the correct letter, A, B, C or D, in boxes 20–23 on your answer sheet.</p>
+      <p><strong>NB:</strong> You may use any letter more than once.</p>
+      
+      <h5>List of Researchers</h5>
+      <ul class="researcher-list">
+        <li>A Dieter Hochuli</li>
+        <li>B John Martin</li>
+        <li>C Richard Major</li>
+        <li>D Catherine Price</li>
+      </ul>
+      
+      <a id="q20-anchor"></a>
+      <div id="q20-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+        <p><span class="question-number">20.</span> It is not clear why one small animal is moving from its natural environment.</p>
+        <div class="researcher-match-option">
+          <label><input name="q20" type="radio" value="A"> A</label>
+          <label><input name="q20" type="radio" value="B"> B</label>
+          <label><input name="q20" type="radio" value="C"> C</label>
+          <label><input name="q20" type="radio" value="D"> D</label>
+        </div>
+      </div>
+      
+      <a id="q21-anchor"></a>
+      <div id="q21-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+        <p><span class="question-number">21.</span> Hot weather might positively affect the health of a species.</p>
+        <div class="researcher-match-option">
+          <label><input name="q21" type="radio" value="A"> A</label>
+          <label><input name="q21" type="radio" value="B"> B</label>
+          <label><input name="q21" type="radio" value="C"> C</label>
+          <label><input name="q21" type="radio" value="D"> D</label>
+        </div>
+      </div>
+      
+      <a id="q22-anchor"></a>
+      <div id="q22-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+        <p><span class="question-number">22.</span> Sydney’s residential gardens suit some species better than others.</p>
+        <div class="researcher-match-option">
+          <label><input name="q22" type="radio" value="A"> A</label>
+          <label><input name="q22" type="radio" value="B"> B</label>
+          <label><input name="q22" type="radio" value="C"> C</label>
+          <label><input name="q22" type="radio" value="D"> D</label>
+        </div>
+      </div>
+      
+      <a id="q23-anchor"></a>
+      <div id="q23-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+        <p><span class="question-number">23.</span> Research into the natural world’s responses to urban settings is vital.</p>
+        <div class="researcher-match-option">
+          <label><input name="q23" type="radio" value="A"> A</label>
+          <label><input name="q23" type="radio" value="B"> B</label>
+          <label><input name="q23" type="radio" value="C"> C</label>
+          <label><input name="q23" type="radio" value="D"> D</label>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Questions 24-26: Summary Completion -->
+    <div class="group">
+      <h4>Questions 24–26</h4>
+      <p>Complete the summary below.</p>
+      <p>Choose ONE WORD ONLY from the passage for each answer.</p>
+      <p>Write your answers in boxes 24–26 on your answer sheet.</p>
+      
+      <h5>Seeking comfort in city living</h5>
+      <p class="summary-text">
+        It’s not only native plants and animals that are adapting to city life; non-native plants and animals are also adapting. Examples of successful ‘city dwellers’ include small, non-native rats and non-native insects such as <span class="question-number"><a id="q24-anchor"></a>24.</span> <input type="text" class="blank" id="q24">. However, what causes most problems in the city is weeds. Michelle Leishman, a scientist from Macquarie University, has proven that Sydney’s large areas of <span class="question-number"><a id="q25-anchor"></a>25.</span> <input type="text" class="blank" id="q25"> and its drainage network favour the growth of weeds. Water gathers chemicals as it passes from gardens and streets into the city drainage network. This, in turn, creates very good soil for several varieties of rapidly growing non-native plants, which then outcompete native species that prefer less fertile conditions.
+      </p>
+    </div>
+    
+    <!-- Submit & Reset Buttons -->
+    <div style="display:flex;gap:8px;margin-bottom:10px;">
+      <button class="primary" onclick="grade()">Submit</button>
+      <button onclick="resetForm()">Reset</button>
+      <button onclick="toggleNotes()">Notes</button>
+    </div>
+    
+    <!-- Results & Answer Key -->
+    <div id="results"></div>
+    <details class="answerbox" id="answerBox">
+      <summary>Show Answers (Click to Toggle) <span class="badge">Hidden</span></summary>
+      <div id="answerContent">
+        <h4>正确答案及解析</h4>
+        <table>
+          <tr>
+            <th>题号</th>
+            <th>答案</th>
+            <th>解析与原文依据</th>
+          </tr>
+          <tr>
+            <td>14</td>
+            <td>vi</td>
+            <td>
+              <p class="explanation-text">题干要求匹配Paragraph A的标题，A段核心为“生态学家转向研究城市野生动物互动，Hochuli指出需了解城市对生态的影响及动植物适应情况”，对应“为何自然科学家关注城市研究”（vi）。</p>
+              <p class="explanation-original">原文：we need to understand how cities are changing the ecology of the systems they are built on, and how plants and animals are adapting to them. (Paragraph A)</p>
+            </td>
+          </tr>
+          <tr>
+            <td>15</td>
+            <td>iv</td>
+            <td>
+              <p class="explanation-text">题干要求匹配Paragraph B的标题，B段全篇描述“白鹮（white ibis）被称为‘垃圾火鸡’，以城市垃圾为食，在垃圾填埋场觅食”，对应“喜欢垃圾的生物”（iv）。</p>
+              <p class="explanation-original">原文：it is known as the ‘garbage turkey’... digging through inner-city bins and scavenging street garbage... Now it happily forages in city parks and landfill. (Paragraph B)</p>
+            </td>
+          </tr>
+          <tr>
+            <td>16</td>
+            <td>vii</td>
+            <td>
+              <p class="explanation-text">题干要求匹配Paragraph C的标题，C段指出“城市花园改造后，小型食虫鸟减少，杂食性鸟类（如噪钟鹊）因适宜环境增多”，对应“城市建成环境变化促进特定物种”（vii）。</p>
+              <p class="explanation-original">原文：homeowners prefer to landscape their backyards... favour omnivorous birds... The predominant driver in the decline of small birds is that we’ve made a suitable environment for native noisy miners. (Paragraph C)</p>
+            </td>
+          </tr>
+          <tr>
+            <td>17</td>
+            <td>iii</td>
+            <td>
+              <p class="explanation-text">题干要求匹配Paragraph D的标题，D段讨论“金球织网蛛、蓝三角蝶、绿蚁等无脊椎动物在城市茁壮成长，蜘蛛更肥壮”，对应“在城市繁盛的昆虫/无脊椎动物”（iii）。</p>
+              <p class="explanation-original">原文：Many invertebrates... also relish living in the city. The golden orb spiders in Sydney are fatter and fitter... Hochuli has also found some varieties of ant more at home in the city. (Paragraph D)</p>
+            </td>
+          </tr>
+          <tr>
+            <td>18</td>
+            <td>i</td>
+            <td>
+              <p class="explanation-text">题干要求匹配Paragraph E的标题，E段描述“长鼻袋狸（bandicoot）从灌丛地扩张到郊区后院觅食、筑巢”，对应“小型动物扩张领地的行为”（i）。</p>
+              <p class="explanation-original">原文：the rabbit-sized, long-nosed bandicoot has discovered the advantages of venturing out to grassy suburban backyards and gardens. (Paragraph E)</p>
+            </td>
+          </tr>
+          <tr>
+            <td>19</td>
+            <td>ii</td>
+            <td>
+              <p class="explanation-text">题干要求匹配Paragraph F的标题，F段说明“城市混凝土和排水系统帮助外来杂草（引入植物）入侵原生灌丛地”，对应“城市环境促进外来动植物扩散”（ii）。</p>
+              <p class="explanation-original">原文：Sydney’s huge stretches of impermeable concrete, together with the storm-water system, have helped weeds infiltrate the few remaining pockets of bushland... favouring the many exotic species. (Paragraph F)</p>
+            </td>
+          </tr>
+          <tr>
+            <td>20</td>
+            <td>D</td>
+            <td>
+              <p class="explanation-text">题干“不清楚为何一种小型动物离开自然环境”，E段Price指出“无法确定长鼻袋狸进入城市是公园溢出还是有特定生存特征”，对应D（Catherine Price）。</p>
+              <p class="explanation-original">原文：Catherine Price... We don’t know if it’s an overflow from the park, or if they’ve got particular survival traits that allow them to evade dogs and cats... (Paragraph E)</p>
+            </td>
+          </tr>
+          <tr>
+            <td>21</td>
+            <td>A</td>
+            <td>
+              <p class="explanation-text">题干“高温可能对某物种健康有积极影响”，D段Hochuli研究“悉尼金球蛛更肥壮，可能是食物多或城市高温（高4℃）导致”，暗示高温可能有益，对应A（Dieter Hochuli）。</p>
+              <p class="explanation-original">原文：Dieter Hochuli... We’re trying to determine whether it’s more food or the urban heat – as it’s up to four degrees warmer in the city. (Paragraph D)</p>
+            </td>
+          </tr>
+          <tr>
+            <td>22</td>
+            <td>C</td>
+            <td>
+              <p class="explanation-text">题干“悉尼住宅花园更适合某些物种”，C段Major指出“噪钟鹊在城市是赢家，花园环境适合它们却不利于小型鸟类”，对应C（Richard Major）。</p>
+              <p class="explanation-original">原文：Richard Major... They’re a real winner in cities... we’ve made a suitable environment for native noisy miners. (Paragraph C)</p>
+            </td>
+          </tr>
+          <tr>
+            <td>23</td>
+            <td>A</td>
+            <td>
+              <p class="explanation-text">题干“研究自然界对城市环境的反应至关重要”，A段Hochuli强调“需了解城市如何改变生态及动植物适应情况”，凸显研究的必要性，对应A（Dieter Hochuli）。</p>
+              <p class="explanation-original">原文：Dieter Hochuli... we need to understand how cities are changing the ecology of the systems they are built on, and how plants and animals are adapting to them. (Paragraph A)</p>
+            </td>
+          </tr>
+          <tr>
+            <td>24</td>
+            <td>cockroaches</td>
+            <td>
+              <p class="explanation-text">题干要求填“外来昆虫例子”，F段明确“非本地物种包括黑啮齿类、蟑螂（cockroaches）和狐狸”，对应“cockroaches”。</p>
+              <p class="explanation-original">原文：Non-native species such as black rodents, cockroaches and foxes have developed survival strategies too. (Paragraph F)</p>
+            </td>
+          </tr>
+          <tr>
+            <td>25</td>
+            <td>concrete</td>
+            <td>
+              <p class="explanation-text">题干要求填“悉尼促进杂草生长的区域特征”，F段提到“悉尼大片不透水混凝土（concrete）和排水系统帮助杂草扩散”，对应“concrete”。</p>
+              <p class="explanation-original">原文：Sydney’s huge stretches of impermeable concrete, together with the storm-water system, have helped weeds infiltrate... (Paragraph F)</p>
+            </td>
+          </tr>
+          <tr>
+            <td>26</td>
+            <td>chemicals</td>
+            <td>
+              <p class="explanation-text">题干要求填“雨水收集的物质”，F段指出“雨水冲刷庭院和道路时收集化学物质（chemicals），进入排水系统后滋养杂草”，对应“chemicals”。</p>
+              <p class="explanation-original">原文：As rain washes over backyards and roadways, it collects chemicals which enter the storm-water system... The nutrient-rich water seeps into the earth, favouring the many exotic species. (Paragraph F)</p>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </details>
+  </section>
+</div>
+<!-- 文本选择工具栏 -->
+<div aria-label="Selection tools" id="selbar" role="toolbar">
+  <button id="btnHL">Highlight</button>
+  <button id="btnUH">Remove Highlight</button>
+  <button id="btnNote">Add to Notes</button>
+</div>
+<!-- 笔记面板 -->
+<div id="notes">
+  <header>
+    <strong>Notes</strong>
+    <div>
+      <button id="btnCopy">Copy</button>
+      <button id="btnClose">Close</button>
+    </div>
+  </header>
+  <textarea id="noteArea" placeholder="Type your notes here..."></textarea>
+</div>
+<!-- 提示框 -->
+<div id="toast"></div>
+<script>
+// 计时器核心功能
+let _t = 0; 
+const _timerEl = document.getElementById('timer');
+let timerInterval; // 计时器间隔ID，用于后续停止
+// 启动计时器
+function startTimer() {
+  timerInterval = setInterval(() => { 
+    _t++; 
+    const m = String(Math.floor(_t/60)).padStart(2, '0'); 
+    const s = String(_t%60).padStart(2, '0'); 
+    _timerEl.textContent = `${m}:${s}`; 
+  }, 1000);
+}
+// 页面加载时启动计时器
+window.onload = startTimer;
+// 拖拽分隔线调整左右面板宽度
+const divider = document.getElementById('divider');
+const leftPane = document.getElementById('left');
+const rightPane = document.getElementById('right');
+let isDragging = false;
+divider.addEventListener('mousedown', (e) => {
+  isDragging = true;
+  document.body.style.cursor = 'ew-resize';
+  e.preventDefault();
+});
+window.addEventListener('mousemove', (e) => {
+  if (!isDragging) return;
+  const containerRect = document.querySelector('.shell').getBoundingClientRect();
+  let x = e.clientX - containerRect.left;
+  // 限制最小宽度，防止面板过窄
+  x = Math.max(280, Math.min(containerRect.width - 320, x));
+  leftPane.style.flex = `0 0 ${x}px`;
+  rightPane.style.flex = '1 1 auto';
+});
+window.addEventListener('mouseup', () => {
+  if (isDragging) {
+    isDragging = false;
+    document.body.style.cursor = '';
+  }
+});
+// 触摸设备支持
+divider.addEventListener('touchstart', (e) => {
+  isDragging = true;
+  e.preventDefault();
+}, { passive: false });
+window.addEventListener('touchmove', (e) => {
+  if (!isDragging) return;
+  const containerRect = document.querySelector('.shell').getBoundingClientRect();
+  let x = e.touches[0].clientX - containerRect.left;
+  x = Math.max(280, Math.min(containerRect.width - 320, x));
+  leftPane.style.flex = `0 0 ${x}px`;
+  rightPane.style.flex = '1 1 auto';
+}, { passive: false });
+window.addEventListener('touchend', () => {
+  isDragging = false;
+});
+// 文本高亮功能
+const selbar = document.getElementById('selbar');
+const btnHL = document.getElementById('btnHL');
+const btnUH = document.getElementById('btnUH');
+const btnNote = document.getElementById('btnNote');
+let lastRange = null;
+let currentHlNode = null;
+let keepToolbar = false;
+// 定位选择工具栏
+function positionSelbar(rect) {
+  selbar.style.display = 'flex';
+  requestAnimationFrame(() => {
+    const top = window.scrollY + rect.top - selbar.offsetHeight - 8;
+    const leftPos = window.scrollX + rect.left + rect.width/2 - selbar.offsetWidth/2;
+    // 确保工具栏不超出视口
+    selbar.style.top = (top > 0 ? top : window.scrollY + rect.bottom + 8) + 'px';
+    selbar.style.left = Math.max(8, leftPos) + 'px';
+  });
+}
+// 更新工具栏状态
+function updateSelbar() {
+  const selection = window.getSelection();
+  if (!selection || selection.rangeCount === 0 || selection.isCollapsed) {
+    selbar.style.display = 'none';
+    currentHlNode = null;
+    return;
+  }
+  const range = selection.getRangeAt(0);
+  lastRange = range.cloneRange();
+  currentHlNode = null;
+  positionSelbar(range.getBoundingClientRect());
+}
+// 监听文本选择事件
+document.getElementById('left').addEventListener('mouseup', updateSelbar);
+document.getElementById('right').addEventListener('mouseup', updateSelbar);
+document.addEventListener('selectionchange', () => {
+  const selection = window.getSelection();
+  if (!selection || selection.rangeCount === 0 || selection.isCollapsed) {
+    if (!keepToolbar && !currentHlNode) selbar.style.display = 'none';
+  }
+});
+// 滚动时重新定位工具栏
+document.addEventListener('scroll', () => {
+  if (selbar.style.display === 'flex') updateSelbar();
+});
+// 点击高亮文本时显示工具栏
+document.addEventListener('mousedown', (e) => {
+  keepToolbar = e.target.classList?.contains('hl') || false;
+}, true);
+document.addEventListener('click', (e) => {
+  if (e.target.classList?.contains('hl')) {
+    currentHlNode = e.target;
+    lastRange = null;
+    positionSelbar(e.target.getBoundingClientRect());
+    const selection = window.getSelection();
+    if (selection) selection.removeAllRanges();
+    setTimeout(() => keepToolbar = false, 0);
+  }
+}, true);
+// 执行高亮
+function doHighlight() {
+  if (currentHlNode || !lastRange || lastRange.collapsed) return;
+  const highlightSpan = document.createElement('span');
+  highlightSpan.className = 'hl';
+  try {
+    lastRange.surroundContents(highlightSpan);
+  } catch (e) {
+    // 处理跨元素选择的情况
+    const wrapSpan = document.createElement('span');
+    wrapSpan.className = 'hl';
+    wrapSpan.appendChild(lastRange.cloneContents());
+    lastRange.deleteContents();
+    lastRange.insertNode(wrapSpan);
+  }
+  selbar.style.display = 'none';
+  showToast('Text highlighted');
+}
+// 移除高亮
+function removeHighlight() {
+  if (currentHlNode) {
+    // 移除单个高亮元素
+    const parent = currentHlNode.parentNode;
+    while (currentHlNode.firstChild) {
+      parent.insertBefore(currentHlNode.firstChild, currentHlNode);
+    }
+    parent.removeChild(currentHlNode);
+    parent.normalize(); // 合并相邻文本节点
+    currentHlNode = null;
+    selbar.style.display = 'none';
+    showToast('Highlight removed');
+    return;
+  }
+  if (!lastRange) return;
+  // 移除选择范围内的所有高亮
+  const selRect = lastRange.getBoundingClientRect();
+  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_ELEMENT);
+  const toRemove = [];
+  let node;
+  while ((node = walker.nextNode())) {
+    if (node.classList?.contains('hl')) {
+      const nodeRect = node.getBoundingClientRect();
+      // 判断节点是否在选择范围内
+      if (!(nodeRect.right < selRect.left || nodeRect.left > selRect.right || 
+            nodeRect.bottom < selRect.top || nodeRect.top > selRect.bottom)) {
+        toRemove.push(node);
+      }
+    }
+  }
+  toRemove.forEach(el => {
+    const parent = el.parentNode;
+    while (el.firstChild) parent.insertBefore(el.firstChild, el);
+    parent.removeChild(el);
+    parent.normalize();
+  });
+  selbar.style.display = 'none';
+  showToast('Highlights removed');
+}
+// 绑定高亮按钮事件
+btnHL.addEventListener('click', doHighlight);
+btnUH.addEventListener('click', removeHighlight);
+// 笔记功能
+const notesPanel = document.getElementById('notes');
+const noteArea = document.getElementById('noteArea');
+const btnCopy = document.getElementById('btnCopy');
+const btnCloseNotes = document.getElementById('btnClose');
+// 切换笔记面板显示
+function toggleNotes() {
+  notesPanel.style.display = notesPanel.style.display === 'flex' ? 'none' : 'flex';
+}
+// 关闭笔记面板
+btnCloseNotes.addEventListener('click', toggleNotes);
+// 复制笔记
+btnCopy.addEventListener('click', async () => {
+  await navigator.clipboard.writeText(noteArea.value || '');
+  showToast('Notes copied to clipboard');
+});
+// 选中文本添加到笔记
+btnNote.addEventListener('click', () => {
+  let selectedText = '';
+  if (currentHlNode) {
+    selectedText = currentHlNode.textContent.trim();
+  } else if (lastRange) {
+    const frag = lastRange.cloneContents();
+    selectedText = frag.textContent.trim();
+  }
+  toggleNotes();
+  if (selectedText) {
+    noteArea.value = noteArea.value ? `${noteArea.value}\n> ${selectedText}\n` : `> ${selectedText}\n`;
+    // 滚动到笔记底部
+    noteArea.scrollTop = noteArea.scrollHeight;
+  }
+  selbar.style.display = 'none';
+});
+// 提示框功能
+const toastEl = document.getElementById('toast');
+function showToast(message) {
+  toastEl.textContent = message;
+  toastEl.style.display = 'block';
+  setTimeout(() => toastEl.style.display = 'none', 1500);
+}
+// 字体设置功能
+const settingsModal = document.getElementById('settingsModal');
+const body = document.body;
+// 打开字体设置模态框
+function openSettingsModal() {
+  settingsModal.style.display = 'block';
+}
+// 关闭字体设置模态框
+function closeSettingsModal() {
+  settingsModal.style.display = 'none';
+}
+// 点击模态框外部关闭
+window.addEventListener('click', (e) => {
+  if (e.target === settingsModal) closeSettingsModal();
+});
+// 切换字体大小（影响所有元素）
+document.querySelectorAll('.font-option').forEach(option => {
+  option.addEventListener('click', () => {
+    const size = option.dataset.size;
+    // 移除所有字体类，添加选中的类
+    body.classList.remove('font-regular', 'font-moderate', 'font-large');
+    body.classList.add(`font-${size}`);
+    // 显示提示
+    const sizeName = size === 'regular' ? 'Regular (16px)' : 
+                     size === 'moderate' ? 'Moderate (18px)' : 'Large (20px)';
+    showToast(`Font size set to ${sizeName}`);
+    closeSettingsModal();
+  });
+});
+// 答案与评分功能（Submit后停止计时器）
+const answers = {
+  q14: 'vi',
+  q15: 'iv',
+  q16: 'vii',
+  q17: 'iii',
+  q18: 'i',
+  q19: 'ii',
+  q20: 'D',
+  q21: 'A',
+  q22: 'C',
+  q23: 'A',
+  q24: 'cockroaches',
+  q25: 'concrete',
+  q26: 'chemicals'
+};
+// 评分函数（Submit后执行，包含停止计时器）
+function grade() {
+  // 1. 停止计时器
+  clearInterval(timerInterval);
+  
+  // 2. 计算得分
+  let total = 13;
+  let correct = 0;
+  const resultLines = [];
+  
+  // 检查14-26题（所有题型）
+  for (let i = 14; i <= 26; i++) {
+    const qName = `q${i}`;
+    let selected, userAns, isCorrect;
+    
+    // 处理单选类型题目（14-23）
+    if (i <= 23) {
+      selected = document.querySelector(`input[name="${qName}"]:checked`);
+      userAns = selected ? selected.value : 'No answer';
+      const correctAns = answers[qName];
+      isCorrect = userAns === correctAns;
+      if (isCorrect) correct++;
+      resultLines.push(`${qName.toUpperCase()}: ${userAns} ${isCorrect ? '✅ Correct' : `❌ Incorrect (Correct: ${correctAns})`}`);
+    } 
+    // 处理填空类型题目（24-26）
+    else {
+      const input = document.getElementById(qName);
+      userAns = input ? input.value.trim().toLowerCase() : 'No answer';
+      const correctAns = answers[qName].toLowerCase();
+      isCorrect = userAns === correctAns;
+      if (isCorrect) correct++;
+      resultLines.push(`${qName.toUpperCase()}: ${userAns || 'No answer'} ${isCorrect ? '✅ Correct' : `❌ Incorrect (Correct: ${answers[qName]})`}`);
+    }
+  }
+  
+  // 3. 显示结果
+  const accuracy = Math.round((correct / total) * 100);
+  const resultsHTML = `
+    <p><strong>Score:</strong> ${correct}/${total} (Accuracy: ${accuracy}%)</p>
+    <pre>${resultLines.join('\n')}</pre>
+  `;
+  document.getElementById('results').innerHTML = resultsHTML;
+  
+  // 4. 展开答案面板
+  const answerBox = document.getElementById('answerBox');
+  answerBox.open = true;
+  document.querySelector('#answerBox .badge').textContent = 'Visible';
+  
+  // 5. 标记所有题目为已回答
+  document.querySelectorAll('.q-item').forEach(item => {
+    item.classList.add('answered');
+  });
+}
+// 重置功能（重置计时器、选项、高亮等）
+function resetForm() {
+  // 1. 重置计时器
+  clearInterval(timerInterval);
+  _t = 0;
+  _timerEl.textContent = '00:00';
+  startTimer();
+  
+  // 2. 重置所有单选按钮
+  document.querySelectorAll('input[type="radio"]').forEach(radio => {
+    radio.checked = false;
+  });
+  
+  // 3. 重置填空输入框
+  document.querySelectorAll('input.blank').forEach(input => {
+    input.value = '';
+  });
+  
+  // 4. 重置结果和答案面板
+  document.getElementById('results').innerHTML = '';
+  const answerBox = document.getElementById('answerBox');
+  answerBox.open = false;
+  document.querySelector('#answerBox .badge').textContent = 'Hidden';
+  
+  // 5. 重置导航栏已回答状态
+  document.querySelectorAll('.q-item').forEach(item => {
+    item.classList.remove('answered');
+  });
+  
+  // 6. 重置笔记
+  noteArea.value = '';
+  notesPanel.style.display = 'none';
+  
+  // 7. 移除所有高亮
+  document.querySelectorAll('.hl').forEach(hl => {
+    const parent = hl.parentNode;
+    while (hl.firstChild) parent.insertBefore(hl.firstChild, hl);
+    parent.removeChild(hl);
+    parent.normalize();
+  });
+}
+// 滚动到指定题目
+function scrollToElement(id) {
+  const element = document.getElementById(id);
+  if (element) {
+    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  // 高亮导航项
+  document.querySelectorAll('.q-item').forEach(item => {
+    item.classList.remove('active');
+  });
+  const navItem = document.getElementById(id.replace('-anchor', '-nav'));
+  if (navItem) {
+    navItem.classList.add('active');
+    setTimeout(() => navItem.classList.remove('active'), 800);
+  }
+}
+// 监听输入，标记题目为已回答
+(function() {
+  // 监听单选按钮（14-23）
+  for (let i = 14; i <= 23; i++) {
+    document.querySelectorAll(`input[name="q${i}"]`).forEach(radio => {
+      radio.addEventListener('change', () => {
+        document.getElementById(`q${i}-nav`).classList.add('answered');
+      });
+    });
+  }
+  
+  // 监听填空题（24-26）
+  for (let i = 24; i <= 26; i++) {
+    const input = document.getElementById(`q${i}`);
+    input.addEventListener('input', () => {
+      if (input.value.trim()) {
+        document.getElementById(`q${i}-nav`).classList.add('answered');
+      } else {
+        document.getElementById(`q${i}-nav`).classList.remove('answered');
+      }
+    });
+  }
+})();
+</script>
+</body>
+</html>

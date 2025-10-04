@@ -1,0 +1,1392 @@
+<html lang="en"><head>
+<meta charset="UTF-8">
+<title>P1 – Fishbourne Roman Palace (IELTS Reading)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  :root { 
+    --line:#e5e7eb; 
+    --bg:#f6f7fb; 
+    --panel:#fff; 
+    --accent:#3b82f6; 
+    --muted:#6b7280; 
+    --shadow:0 6px 20px rgba(0,0,0,.12);
+    --success:#10b981;
+    --error:#ef4444;
+    --font-normal:16px;
+    --font-large:18px;
+    --font-extra-large:20px;
+    --font-small:14px;
+  }
+  * { box-sizing: border-box; }
+  html,body { 
+    height:100%; 
+    font-size:var(--font-normal);
+    transition: font-size 0.3s ease;
+    margin: 0;
+    padding: 0;
+  }
+  body { 
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; 
+    background:var(--bg); 
+    overflow-x: hidden;
+  }
+  
+  /* Common styles for both screens */
+  .screen {
+    display: none;
+    height: 100vh;
+    width: 100%;
+  }
+  
+  .active {
+    display: block !important;
+  }
+  
+  /* Header styles */
+  .header {
+    padding: 12px 20px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .header h1 {
+    margin: 0;
+    font-size: 1.4rem;
+    color: #333;
+  }
+  
+  /* Font size control */
+  #fontSizeMenu {
+    position: fixed;
+    top:10px;
+    right:10px;
+    z-index:2000;
+  }
+  #fontSizeBtn {
+    padding:8px 12px;
+    border:1px solid var(--line);
+    border-radius:10px;
+    background:var(--panel);
+    cursor:pointer;
+    font-weight:500;
+    font-size:var(--font-small);
+  }
+  #fontSizeOptions {
+    display:none;
+    position:absolute;
+    top:40px;
+    right:0;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:8px 0;
+    box-shadow:var(--shadow);
+    min-width:120px;
+  }
+  #fontSizeOptions.active { display:block; }
+  #fontSizeOptions button {
+    width:100%;
+    padding:6px 12px;
+    text-align:left;
+    border:none;
+    background:transparent;
+    cursor:pointer;
+    font-size:var(--font-small);
+  }
+  #fontSizeOptions button:hover {
+    background:var(--bg);
+  }
+  
+  /* Timer styles */
+  .timer-display {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: var(--font-small);
+    z-index: 1000;
+  }
+  
+  /* Main practice screen styles */
+  .shell { display:flex; height: calc(100vh - 60px); width:100%; }
+  .pane { 
+    background:var(--panel); 
+    overflow:auto; 
+    padding:20px; 
+  }
+  #left { flex: 0 0 50%; min-width: 280px; }
+  #right { 
+    flex: 1 1 auto; 
+    min-width: 320px; 
+    background:#fbfbff; 
+    border-left:1px solid var(--line); 
+  }
+  #divider { 
+    flex: 0 0 8px; 
+    background: linear-gradient(90deg,#e5e7eb,#d1d5db); 
+    cursor: ew-resize; 
+    position:relative; 
+    z-index: 5; 
+    user-select:none; 
+  }
+  #divider::after { content:""; position:absolute; inset:0; }
+  
+  /* Text styles */
+  h2,h3,h4 { 
+    margin:0 0 10px; 
+    transition: font-size 0.3s ease;
+  }
+  h2 { font-size: calc(var(--font-normal) * 1.5); }
+  h3 { font-size: calc(var(--font-normal) * 1.3); }
+  h4 { font-size: calc(var(--font-normal) * 1.1); }
+  
+  #left p { 
+    margin: 0 0 12px; 
+    line-height: 1.6; 
+    word-break: normal; 
+    overflow-wrap: normal; 
+    hyphens: none; 
+  }
+  
+  /* Question group styles */
+  .group { 
+    background:var(--panel); 
+    border:1px solid var(--line); 
+    border-radius:10px; 
+    padding:12px; 
+    margin-bottom:14px; 
+  }
+  table { 
+    border-collapse: collapse; 
+    width:100%; 
+    margin:10px 0;
+  }
+  th, td { 
+    border:1px solid var(--line); 
+    padding:8px; 
+    text-align:left; 
+    font-size:var(--font-small);
+    transition: font-size 0.3s ease;
+  }
+  /* 调整列宽 - 扩大Statement列，缩小其他三列 */
+th:first-child, td:first-child { 
+  width: 60%; /* 扩大Statement列宽度 */
+  min-width: 200px; /* 确保在小屏幕上有足够宽度 */
+}
+th:not(:first-child), td:not(:first-child) { 
+  width: 13.33%; /* 平均分配剩余宽度给三列 */
+  text-align: center; /* 让单选框居中显示 */
+}
+
+  
+  /* Input styles */
+  input[type="radio"] { margin-right:6px; }
+  input[type="text"] {
+    width:100%;
+    padding:6px;
+    margin-top:4px;
+    border:1px solid var(--line);
+    border-radius:6px;
+    max-width:200px;
+    font-size:var(--font-small);
+    transition: font-size 0.3s ease;
+  }
+  
+  /* Button styles */
+  button { 
+    padding:8px 12px; 
+    border:1px solid var(--line); 
+    border-radius:10px; 
+    background:var(--panel); 
+    cursor:pointer; 
+    font-size:var(--font-small);
+    transition: all 0.2s ease;
+  }
+  button.primary { 
+    background:var(--accent); 
+    color:#fff; 
+    border-color:#3b82f6; 
+  }
+  button.primary:hover {
+    background: #2563eb;
+  }
+  
+  /* Results & tools styles */
+  #results { 
+    background:var(--panel); 
+    border:1px solid var(--line); 
+    border-radius:10px; 
+    padding:10px; 
+    margin-top:10px;
+    font-size:var(--font-small);
+  }
+  #results pre {
+    font-size:var(--font-small);
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+  
+  .hl { 
+    background:#fff3a3; 
+    box-shadow: inset 0 -2px 0 rgba(0,0,0,.05); 
+    cursor: pointer; 
+  }
+  .hl:hover { filter: brightness(0.98); }
+  
+  #selbar { 
+    position: absolute; 
+    display:none; 
+    z-index: 2000; 
+    background:#111; 
+    color:#fff; 
+    border-radius: 8px; 
+    padding: 6px; 
+    box-shadow: var(--shadow); 
+    font-size: var(--font-small); 
+    gap:6px; 
+    align-items: center; 
+  }
+  #selbar button { 
+    background: transparent; 
+    color:#fff; 
+    border: 1px solid rgba(255,255,255,.25); 
+    padding: 4px 8px; 
+    border-radius: 6px; 
+    cursor:pointer; 
+  }
+  #selbar button:hover { border-color:#fff; }
+  
+  /* Notes styles */
+  #notes { 
+    position: fixed; 
+    right: 12px; 
+    bottom: 12px; 
+    width: 320px; 
+    height: 42vh; 
+    background:var(--panel); 
+    border:1px solid var(--line); 
+    border-radius: 12px; 
+    display:none; 
+    flex-direction: column; 
+    z-index:1500; 
+    box-shadow: var(--shadow); 
+  }
+  #notes header { 
+    display:flex; 
+    align-items:center; 
+    justify-content: space-between; 
+    padding:8px 10px; 
+    border-bottom:1px solid var(--line); 
+    font-size:var(--font-small);
+  }
+  #notes textarea { 
+    flex:1; 
+    border:0; 
+    padding:10px; 
+    resize:none; 
+    font-size:var(--font-small); 
+    line-height:1.5; 
+  }
+  
+  /* Toast styles */
+  #toast { 
+    position: fixed; 
+    left:50%; 
+    transform: translateX(-50%); 
+    bottom: 24px; 
+    background:#111; 
+    color:#fff; 
+    padding:8px 12px; 
+    border-radius: 8px; 
+    display:none; 
+    z-index:2500; 
+    font-size:var(--font-small);
+  }
+  
+  /* Practice nav styles */
+  .practice-nav { 
+    background:var(--panel); 
+    border-top:2px solid var(--line); 
+    padding:12px 20px; 
+    display:flex; 
+    align-items:center; 
+    gap:20px; 
+    box-shadow:0 -2px 4px rgba(0,0,0,.05); 
+    flex-wrap:wrap; 
+    position:fixed; 
+    left:0; 
+    right:0; 
+    bottom:0; 
+    z-index:4000; 
+  }
+  .practice-nav .title { 
+    font-weight:600; 
+    color:var(--muted); 
+    font-size:var(--font-small);
+  }
+  .practice-nav .questions { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .practice-nav .q-item { 
+    padding:6px 10px; 
+    border:1px solid var(--line); 
+    border-radius:6px; 
+    background:var(--panel); 
+    cursor:pointer; 
+    font-size:var(--font-small); 
+    transition:all 0.2s; 
+    min-width:36px; 
+    text-align:center; 
+  }
+  .practice-nav .q-item:hover { background:#f1f5f9; border-color:var(--accent); }
+  .practice-nav .q-item.answered { background:#e0e7ff; border-color:var(--accent); color:var(--accent); font-weight:500; }
+  .practice-nav .q-item.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+  
+  /* Answer box styles */
+  #answerBox {
+    font-size:var(--font-small);
+  }
+  #answerContent ol li {
+    margin-bottom:6px;
+  }
+  
+  /* Results screen styles */
+  #resultsScreen {
+    padding-top: 60px;
+  }
+  
+  .results-container {
+    display: flex;
+    height: calc(100vh - 60px);
+  }
+  
+  .summary-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: var(--panel);
+    border-right: 1px solid var(--line);
+    overflow: hidden;
+  }
+  
+  .score-section {
+    padding: 20px;
+    border-bottom: 1px solid var(--line);
+  }
+  
+  .passage-section {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    background: #f8fafc;
+  }
+  
+  .passage-section h3 {
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--line);
+  }
+  
+  .details-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: #fbfbff;
+    overflow: hidden;
+  }
+  
+  .question-section {
+    padding: 20px;
+    border-bottom: 1px solid var(--line);
+    max-height: 35%;
+    overflow-y: auto;
+  }
+  
+  .explanation-section {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+  }
+  
+  .score-overview {
+    background: var(--panel);
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow);
+    text-align: center;
+  }
+  
+  .score-overview h2 {
+    margin-bottom: 10px;
+    color: #333;
+  }
+  
+  .score-display {
+    font-size: 3rem;
+    font-weight: bold;
+    color: var(--accent);
+    margin: 10px 0;
+  }
+  
+  .answer-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+  }
+  
+  .answer-item {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--line);
+    cursor: pointer;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  .answer-item:hover {
+    background: var(--bg);
+  }
+  
+  .answer-item.active {
+    background: #e0e7ff;
+    border-left: 4px solid var(--accent);
+  }
+  
+  .answer-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  .question-number {
+    font-weight: bold;
+    min-width: 30px;
+  }
+  
+  .result-indicator {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+  }
+  
+  .result-correct {
+    background: var(--success);
+    color: white;
+  }
+  
+  .result-incorrect {
+    background: var(--error);
+    color: white;
+  }
+  
+  .answer-details {
+    margin-top: 10px;
+    font-size: var(--font-small);
+  }
+  
+  .details-content {
+    display: none;
+  }
+  
+  .details-content.active {
+    display: block;
+    animation: fadeIn 0.3s ease;
+  }
+  
+  .details-header {
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--line);
+  }
+  
+  .question-text {
+    margin-bottom: 16px;
+    padding: 12px;
+    background: var(--panel);
+    border-radius: 8px;
+    border-left: 4px solid var(--accent);
+  }
+  
+  .chinese-translation {
+    margin-bottom: 16px;
+    padding: 12px;
+    background: #f0f9ff;
+    border-radius: 8px;
+  }
+  
+  .explanation {
+    padding: 12px;
+    background: #f8fafc;
+    border-radius: 8px;
+    line-height: 1.6;
+  }
+  
+  .passage-reference {
+    margin: 12px 0;
+    padding: 12px;
+    background: #fff8e1;
+    border-radius: 8px;
+    font-size: var(--font-small);
+    border-left: 3px solid #f59e0b;
+  }
+  
+  .answer-comparison {
+    margin: 16px 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  
+  .answer-card {
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+  }
+  
+  .answer-card h4 {
+    margin-bottom: 8px;
+    font-size: var(--font-small);
+    color: var(--muted);
+  }
+  
+  .action-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  @media (max-width: 768px) {
+    .results-container {
+      flex-direction: column;
+    }
+    
+    .summary-panel, .details-panel {
+      flex: none;
+      width: 100%;
+      height: 100%;
+    }
+    
+    .shell {
+      flex-direction: column;
+    }
+    
+    #left, #right {
+      flex: none;
+      width: 100%;
+    }
+  }
+</style>
+</head>
+<body>
+  <!-- Header -->
+  <div class="header">
+    <h1>
+</h1>
+  </div>
+
+  <!-- Timer (固定在左上角) -->
+  <div class="timer-display" id="timer">00:00</div>
+
+  <!-- Font size control -->
+  <div id="fontSizeMenu">
+    <button id="fontSizeBtn">Size</button>
+    <div id="fontSizeOptions">
+      <button onclick="changeFontSize('normal')">Normal</button>
+      <button onclick="changeFontSize('large')">Large</button>
+      <button onclick="changeFontSize('extra-large')">Extra Large</button>
+    </div>
+  </div>
+
+  <!-- Main practice screen -->
+  <div id="practiceScreen" class="screen active">
+    <div class="shell">
+      <!-- Left pane: Reading passage -->
+      <section class="pane" id="left">
+        <h2>READING PASSAGE 1</h2>
+        <p>You should spend about 20 minutes on Questions 1–13, which are based on Reading Passage 1 below.</p>
+        <h3>Fishbourne Roman Palace</h3>
+        <p>Fishbourne Roman Palace is in the village of Fishbourne in West Sussex, England. This large palace was built in the 1st century AD, around thirty years after the Roman conquest of Britain, on the site of Roman army grain stores that had been established after the invasion during the reign of the Roman Emperor Claudius in 43 AD. The rectangular palace was built around formal gardens, the northern half of which has been reconstructed. There were extensive alterations in the 2nd and 3rd centuries AD, with many of the original black-and-white mosaic floors being overlaid with more sophisticated coloured ones, including a perfectly preserved mosaic of a dolphin in the north wing. More alterations were in progress when the palace burnt down in around 270 AD, after which it was abandoned.</p>
+        
+        <p>Local people had long believed that a Roman palace once existed in the area. However, it was not until 1960 that the archaeologist Barry Cunliffe of Oxford University first systematically excavated the site, after workmen had accidentally uncovered a wall while they were laying a water main. The Roman villa excavated by Cunliffe’s team was so grand that it became known as Fishbourne Roman Palace, and a museum was erected to preserve some of the remains. This is administered by the Sussex Archaeological Society.</p>
+        
+        <p>In its day, the completed palace would have comprised four large wings with colonnaded fronts. The north and east wings consisted of suites of private rooms built around courtyards, with a monumental entrance in the middle of the east wing. In the north-east corner there was an assembly hall. The west wing contained state rooms, a large ceremonial reception room and a gallery. The south wing contained the owner’s private apartments. The palace included as many as fifty mosaic floors, under-floor central heating and a bathhouse. In size, Fishbourne Palace would have been approximately equivalent to some of the great Roman palaces of Italy, and was by far the largest known Roman residence north of the European Alps, at about 500 feet (150 m) square. A team of volunteers and professional archaeologists is involved in an ongoing archaeological excavation on the site of nearby, possibly military, buildings.</p>
+        
+        <p>The first buildings to be erected on the site were constructed in the early part of the conquest in 43 AD. Later, two timber buildings were constructed, one with clay-and-mortar floors and plaster walls, which appears to have been a house of some comfort. These buildings were demolished in the 60s AD and replaced by a substantial stone house, which included colonnades and a bath suite. It has been suggested that the palace itself, incorporating the previous house in its south-east corner, was constructed around 73–75 AD. However, Dr Miles Russell of Bournemouth University re-interpreted the ground plan and the collection of objects found, and has suggested that, given the extremely close parallels with the imperial palace of Domitian in Rome, its construction may more plausibly date to after 92 AD.</p>
+        
+        <p>With regard to who lived in Fishbourne Palace, there are a number of theories. For example, one proposed by Professor Cunliffe is that, in its early phase, the palace was the residence of Tiberius Claudius Cogidubnus, a local chieftain who supported the Romans and who may have been installed as king of a number of territories following the first stage of the conquest. Cogidubnus is known from a reference to his loyalty in Agricola, a work by the Roman writer Tacitus, and from an inscription commemorating a temple dedicated to the gods Neptune and Minerva found in the nearby city of Chichester. Another theory is that it was built for Sallustius Lucullus, a Roman governor of Britain in the late 1st century, who may have been the son of the British prince Adminius. Two inscriptions recording the presence of Lucullus have been found in Chichester, and the redating by Miles Russell suggests that, if the palace was designed for Lucullus, then it may have been in use for only a few years, as the Roman historian Suetonius records that Lucullus was executed by the Emperor Domitian in or shortly after 93 AD.</p>
+        
+        <p>Additional theories suggest that either Verica, a British king of the Roman Empire in the years preceding the Claudian invasion, was the owner of the palace, or Tiberius Claudius Catuarus, following the recent discovery of a gold ring belonging to him. The palace outlasted the original owner, whoever he was, and was extensively re-planned early in the 2nd century AD and subdivided into a series of smaller apartments. Further redevelopment was begun in the late 3rd century AD, but these alterations were incomplete when the north wing was destroyed in a fire in around 270 AD. The damage was too great to repair, and the palace was abandoned and later dismantled.</p>
+        
+        <p>A modern museum has been built by the Sussex Archaeological Society, incorporating most of the visible remains, including one wing of the palace. The gardens have been replanted using authentic plants from the Roman period.</p>
+      </section>
+
+      <!-- Divider -->
+      <div id="divider" title="Drag to resize"></div>
+
+      <!-- Right pane: Questions -->
+      <section class="pane" id="right">
+        <h3>Questions</h3>
+
+        <!-- Questions 1-6: True/False/Not Given -->
+        <div class="group">
+          <h4>Questions 1–6</h4>
+          <p>Do the following statements agree with the information given in Reading Passage 1?</p>
+          <p>In boxes 1–6 on your answer sheet, write</p>
+          <table>
+            <tbody><tr>
+              <th>Statement</th>
+              <th>TRUE</th>
+              <th>FALSE</th>
+              <th>NOT GIVEN</th>
+            </tr>
+            <tr>
+              <td>1 Fishbourne Palace was the first structure to be built on its site.</td>
+              <td><label><input type="radio" name="q1" value="TRUE"></label></td>
+              <td><label><input type="radio" name="q1" value="FALSE"></label></td>
+              <td><label><input type="radio" name="q1" value="NOT GIVEN"></label></td>
+            </tr>
+            <tr>
+              <td>2 Fishbourne Palace was renovated more than once.</td>
+              <td><label><input type="radio" name="q2" value="TRUE"></label></td>
+              <td><label><input type="radio" name="q2" value="FALSE"></label></td>
+              <td><label><input type="radio" name="q2" value="NOT GIVEN"></label></td>
+            </tr>
+            <tr>
+              <td>3 Fishbourne Palace was large in comparison with Roman palaces in Italy.</td>
+              <td><label><input type="radio" name="q3" value="TRUE"></label></td>
+              <td><label><input type="radio" name="q3" value="FALSE"></label></td>
+              <td><label><input type="radio" name="q3" value="NOT GIVEN"></label></td>
+            </tr>
+            <tr>
+              <td>4 Research is continuing in the area close to Fishbourne Palace.</td>
+              <td><label><input type="radio" name="q4" value="TRUE"></label></td>
+              <td><label><input type="radio" name="q4" value="FALSE"></label></td>
+              <td><label><input type="radio" name="q4" value="NOT GIVEN"></label></td>
+            </tr>
+            <tr>
+              <td>5 Researchers agree on the identity of the person for whom Fishbourne Palace was constructed.</td>
+              <td><label><input type="radio" name="q5" value="TRUE"></label></td>
+              <td><label><input type="radio" name="q5" value="FALSE"></label></td>
+              <td><label><input type="radio" name="q5" value="NOT GIVEN"></label></td>
+            </tr>
+            <tr>
+              <td>6 Fishbourne Palace was burnt down by local people.</td>
+              <td><label><input type="radio" name="q6" value="TRUE"></label></td>
+              <td><label><input type="radio" name="q6" value="FALSE"></label></td>
+              <td><label><input type="radio" name="q6" value="NOT GIVEN"></label></td>
+            </tr>
+          </tbody></table>
+        </div>
+
+        <!-- Questions 7-13: Completion -->
+        <div class="group">
+          <h4>Questions 7–13</h4>
+          <p>Complete the notes below.</p>
+          <p>Choose NO MORE THAN TWO WORDS AND/OR A NUMBER from the passage for each answer.</p>
+          <p>Write your answers in boxes 7–13 on your answer sheet.</p>
+          
+          <h5>Fishbourne Palace</h5>
+          <p><strong>Construction</strong></p>
+          <p>The first buildings on the site contained food for the 7. <input type="text" name="q7" maxlength="20"></p>
+          <p>The palace building surrounded 8. <input type="text" name="q8" maxlength="20"></p>
+          <p>In the 2nd and 3rd centuries colour was added to the 9. <input type="text" name="q9" maxlength="20"> of the palace.</p>
+          
+          <p><strong>Discovery</strong></p>
+          <p>The first part of the palace to be found was part of a 10. <input type="text" name="q10" maxlength="20"></p>
+          
+          <p><strong>Possible inhabitants</strong></p>
+          <p>- Cogidubnus - he is named in several writings.</p>
+          <p>- Sallustius Lucullus - he may have lived there until approximately 11. <input type="text" name="q11" maxlength="4"></p>
+          <p>- Verica - a British king.</p>
+          <p>- Catuarus - his 12. <input type="text" name="q12" maxlength="10"> was found there.</p>
+          
+          <p><strong>Present Day</strong></p>
+          <p>A 13. <input type="text" name="q13" maxlength="10"> has been built on the site to help protect it.</p>
+        </div>
+
+        <!-- Action buttons -->
+        <div style="display:flex;gap:8px;margin-bottom:90px;">
+          <button class="primary" onclick="showResults()">Submit</button>
+          <button onclick="resetForm()">Reset</button>
+          <button onclick="toggleNotes()">Notes</button>
+        </div>
+
+        <!-- Answer box -->
+        <details class="answerbox" id="answerBox" style="border:1px dashed var(--line);border-radius:10px;padding:8px 10px;background:var(--panel);margin-top:10px;">
+          <summary style="cursor:pointer;user-select:none;list-style:none;"><strong>Show Answers (Click to Toggle)</strong></summary>
+          <div id="answerContent" style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);">
+            <ol>
+              <li>1 → FALSE (Built on Roman army grain stores site)</li>
+              <li>2 → TRUE (Alterations in 2nd, 3rd centuries; late 3rd century redevelopment)</li>
+              <li>3 → FALSE (Approximately equivalent to some Italian Roman palaces)</li>
+              <li>4 → TRUE (Ongoing excavation near the palace)</li>
+              <li>5 → FALSE (Multiple theories about the owner; no agreement)</li>
+              <li>6 → NOT GIVEN (No information about who caused the fire)</li>
+              <li>7 → Roman army</li>
+              <li>8 → formal gardens</li>
+              <li>9 → mosaic floors</li>
+              <li>10 → wall</li>
+              <li>11 → 93</li>
+              <li>12 → ring</li>
+              <li>13 → museum</li>
+            </ol>
+          </div>
+        </details>
+      </section>
+    </div>
+  </div>
+
+  <!-- Results screen -->
+  <div id="resultsScreen" class="screen">
+    <div class="results-container">
+      <div class="summary-panel">
+        <div class="score-section">
+          <div class="score-overview">
+            <h2>Your Score</h2>
+            <div class="score-display" id="finalScore">0/13</div>
+            <p>Completed in <span id="timeSpent">00:00</span></p>
+            <div class="action-buttons">
+              <button class="primary" onclick="restartPractice()">Try Again</button>
+            </div>
+          </div>
+          
+          <h3>Question Summary</h3>
+          <ul class="answer-list" id="answerSummary">
+            <!-- Answer items will be generated here -->
+          </ul>
+        </div>
+        
+        <div class="passage-section">
+          <h3>Reading Passage</h3>
+          <div id="passageContent">
+            <!-- Reading passage will be inserted here -->
+          </div>
+        </div>
+      </div>
+      
+      <div class="details-panel">
+        <div class="question-section">
+          <div id="questionContent">
+            <!-- Question content will be generated here -->
+          </div>
+        </div>
+        
+        <div class="explanation-section">
+          <div id="explanationContent">
+            <!-- Explanation content will be generated here -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Selection toolbar -->
+  <div id="selbar" role="toolbar" aria-label="Selection tools">
+    <button id="btnHL">Highlight</button>
+    <button id="btnUH">Remove</button>
+    <button id="btnNote">Note</button>
+  </div>
+
+  <!-- Notes panel -->
+  <div id="notes">
+    <header>
+      <strong>Notes</strong>
+      <div>
+        <button id="btnCopy">Copy</button>
+        <button id="btnClose">Close</button>
+      </div>
+    </header>
+    <textarea id="noteArea" placeholder="Type your notes here..."></textarea>
+  </div>
+
+  <!-- Toast notification -->
+  <div id="toast"></div>
+
+  <!-- Practice navigation (bottom) -->
+  <div class="practice-nav">
+    <div class="title">Questions</div>
+    <div class="questions">
+      <div class="q-item" id="q1-nav" onclick="scrollToElement('q1')">1</div>
+      <div class="q-item" id="q2-nav" onclick="scrollToElement('q2')">2</div>
+      <div class="q-item" id="q3-nav" onclick="scrollToElement('q3')">3</div>
+      <div class="q-item" id="q4-nav" onclick="scrollToElement('q4')">4</div>
+      <div class="q-item" id="q5-nav" onclick="scrollToElement('q5')">5</div>
+      <div class="q-item" id="q6-nav" onclick="scrollToElement('q6')">6</div>
+      <div class="q-item" id="q7-nav" onclick="scrollToElement('q7')">7</div>
+      <div class="q-item" id="q8-nav" onclick="scrollToElement('q8')">8</div>
+      <div class="q-item" id="q9-nav" onclick="scrollToElement('q9')">9</div>
+      <div class="q-item" id="q10-nav" onclick="scrollToElement('q10')">10</div>
+      <div class="q-item" id="q11-nav" onclick="scrollToElement('q11')">11</div>
+      <div class="q-item" id="q12-nav" onclick="scrollToElement('q12')">12</div>
+      <div class="q-item" id="q13-nav" onclick="scrollToElement('q13')">13</div>
+    </div>
+  </div>
+
+  <script>
+    // Store user answers and question data
+    let userAnswers = {};
+    let questionData = {
+      q1: {
+        type: "radio",
+        text: "Fishbourne Palace was the first structure to be built on its site.",
+        chinese: "菲什本罗马宫殿是其所在遗址上建造的第一个建筑。",
+        explanation: "文章第一段明确提到，这座宫殿建在罗马军队粮仓的旧址上，说明在宫殿建造之前已有其他建筑存在，因此该陈述错误。",
+        passageRef: null
+      },
+      q2: {
+        type: "radio",
+        text: "Fishbourne Palace was renovated more than once.",
+        chinese: "菲什本罗马宫殿经过了不止一次的翻新。",
+        explanation: "文章第一段提到在2世纪和3世纪进行了大规模改建，第六段又提到2世纪初进行了大规模重新规划，3世纪后期还在进行进一步的重建，说明宫殿确实经过了多次翻新，因此该陈述正确。",
+        passageRef: null
+      },
+      q3: {
+        type: "radio",
+        text: "Fishbourne Palace was large in comparison with Roman palaces in Italy.",
+        chinese: "与意大利的罗马宫殿相比，菲什本罗马宫殿规模更大。",
+        explanation: "文章第三段指出，菲什本宫殿的规模与意大利的一些罗马宫殿大致相当(approximately equivalent)，而非更大，因此该陈述错误。",
+        passageRef: null
+      },
+      q4: {
+        type: "radio",
+        text: "Research is continuing in the area close to Fishbourne Palace.",
+        chinese: "在菲什本罗马宫殿附近地区，研究仍在继续。",
+        explanation: "文章第三段提到，一组志愿者和专业考古学家正在附近可能是军事建筑的遗址上进行持续的考古发掘(ongoing archaeological excavation)，因此该陈述正确。",
+        passageRef: null
+      },
+      q5: {
+        type: "radio",
+        text: "Researchers agree on the identity of the person for whom Fishbourne Palace was constructed.",
+        chinese: "研究人员就菲什本罗马宫殿的建造对象达成了共识。",
+        explanation: "文章第五段和第六段提到了多种关于宫殿主人的理论（Cogidubnus、Sallustius Lucullus、Verica、Catuarus等），说明研究人员并未达成共识，因此该陈述错误。",
+        passageRef: null
+      },
+      q6: {
+        type: "radio",
+        text: "Fishbourne Palace was burnt down by local people.",
+        chinese: "菲什本罗马宫殿是被当地人烧毁的。",
+        explanation: "文章第一段和第六段提到宫殿在约270年毁于火灾，但未提及火灾原因或是否由当地人所为，因此该信息未被提及。",
+        passageRef: null
+      },
+      q7: {
+        type: "text",
+        text: "The first buildings on the site contained food for the _______.",
+        chinese: "该遗址上最早的建筑存放着供_______食用的食物。",
+        explanation: "根据原文信息，该遗址最初是罗马军队的粮仓，因此答案是罗马军队。",
+        passageRef: "This large palace was built in the 1st century AD, around thirty years after the Roman conquest of Britain, on the site of Roman army grain stores that had been established after the invasion during the reign of the Roman Emperor Claudius in 43 AD."
+      },
+      q8: {
+        type: "text",
+        text: "The palace building surrounded _______.",
+        chinese: "宫殿建筑环绕着_______。",
+        explanation: "原文明确说明宫殿是围绕着正式花园建造的，因此答案是正式花园。",
+        passageRef: "The rectangular palace was built around formal gardens, the northern half of which has been reconstructed."
+      },
+      q9: {
+        type: "text",
+        text: "In the 2nd and 3rd centuries colour was added to the _______ of the palace.",
+        chinese: "在2世纪和3世纪，宫殿的_______增添了色彩。",
+        explanation: "原文提到在2世纪和3世纪的改建中，许多原始的黑白马赛克地板被更复杂的彩色马赛克取代，因此答案是马赛克地板。",
+        passageRef: "There were extensive alterations in the 2nd and 3rd centuries AD, with many of the original black-and-white mosaic floors being overlaid with more sophisticated coloured ones..."
+      },
+      q10: {
+        type: "text",
+        text: "The first part of the palace to be found was part of a _______.",
+        chinese: "宫殿首先被发现的部分是_______的一部分。",
+        explanation: "原文提到1960年工人在铺设水管时意外发现了一堵墙，这是宫殿首次被发现的部分，因此答案是墙。",
+        passageRef: "However, it was not until 1960 that the archaeologist Barry Cunliffe of Oxford University first systematically excavated the site, after workmen had accidentally uncovered a wall while they were laying a water main."
+      },
+      q11: {
+        type: "text",
+        text: "Sallustius Lucullus - he may have lived there until approximately _______.",
+        chinese: "萨卢斯特·卢库卢斯——他可能在那里居住到大约_______年。",
+        explanation: "原文提到罗马历史学家苏维托尼乌斯记载卢库卢斯在93年或之后不久被多米提安皇帝处决，因此答案是93。",
+        passageRef: "...as the Roman historian Suetonius records that Lucullus was executed by the Emperor Domitian in or shortly after 93 AD."
+      },
+      q12: {
+        type: "text",
+        text: "Catuarus - his _______ was found there.",
+        chinese: "卡图鲁斯——在那里发现了他的_______。",
+        explanation: "原文提到在最近发现了一枚属于提比略·克劳狄乌斯·卡图鲁斯的金戒指后，有人认为他可能是宫殿的主人，因此答案是戒指。",
+        passageRef: "Additional theories suggest that either Verica, a British king of the Roman Empire in the years preceding the Claudian invasion, was the owner of the palace, or Tiberius Claudius Catuarus, following the recent discovery of a gold ring belonging to him."
+      },
+      q13: {
+        type: "text",
+        text: "A _______ has been built on the site to help protect it.",
+        chinese: "为了保护该遗址，在其上建造了一座_______。",
+        explanation: "原文第二段和最后一段都提到，苏塞克斯考古学会建造了一座现代博物馆来保护遗址的部分遗迹，因此答案是博物馆。",
+        passageRef: "The Roman villa excavated by Cunliffe's team was so grand that it became known as Fishbourne Roman Palace, and a museum was erected to preserve some of the remains. A modern museum has been built by the Sussex Archaeological Society, incorporating most of the visible remains..."
+      }
+    };
+    
+    // Answer key
+    const answerKey = {
+      q1: 'FALSE', q2: 'TRUE', q3: 'FALSE', q4: 'TRUE', q5: 'FALSE', q6: 'NOT GIVEN',
+      q7: 'Roman army', q8: 'formal gardens', q9: 'mosaic floors', q10: 'wall',
+      q11: '93', q12: 'ring', q13: 'museum'
+    };
+    
+    // Timer functionality
+    let timerSeconds = 0;
+    const timerEl = document.getElementById('timer');
+    let timerInterval;
+    
+    function startTimer() {
+      timerInterval = setInterval(() => {
+        timerSeconds++;
+        const minutes = String(Math.floor(timerSeconds / 60)).padStart(2, '0');
+        const seconds = String(timerSeconds % 60).padStart(2, '0');
+        timerEl.textContent = `${minutes}:${seconds}`;
+      }, 1000);
+    }
+    
+    startTimer();
+    
+    // Font size control
+    const fontSizeBtn = document.getElementById('fontSizeBtn');
+    const fontSizeOptions = document.getElementById('fontSizeOptions');
+    const root = document.documentElement;
+    
+    function toggleFontSizeMenu() {
+      fontSizeOptions.classList.toggle('active');
+    }
+    
+    function changeFontSize(size) {
+      switch(size) {
+        case 'normal':
+          root.style.setProperty('--font-normal', '16px');
+          root.style.setProperty('--font-large', '18px');
+          root.style.setProperty('--font-extra-large', '20px');
+          root.style.setProperty('--font-small', '14px');
+          document.body.style.fontSize = 'var(--font-normal)';
+          break;
+        case 'large':
+          root.style.setProperty('--font-normal', '18px');
+          root.style.setProperty('--font-large', '20px');
+          root.style.setProperty('--font-extra-large', '22px');
+          root.style.setProperty('--font-small', '16px');
+          document.body.style.fontSize = 'var(--font-large)';
+          break;
+        case 'extra-large':
+          root.style.setProperty('--font-normal', '20px');
+          root.style.setProperty('--font-large', '22px');
+          root.style.setProperty('--font-extra-large', '24px');
+          root.style.setProperty('--font-small', '18px');
+          document.body.style.fontSize = 'var(--font-extra-large)';
+          break;
+      }
+      toggleFontSizeMenu();
+    }
+    
+    fontSizeBtn.addEventListener('click', toggleFontSizeMenu);
+    
+    // Divider drag functionality
+    const divider = document.getElementById('divider');
+    const leftPane = document.getElementById('left');
+    let isDragging = false;
+    
+    divider.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      document.body.style.cursor = 'ew-resize';
+      e.preventDefault();
+    });
+    
+    window.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      const container = document.querySelector('.shell').getBoundingClientRect();
+      const x = e.clientX - container.left;
+      const minWidth = 280;
+      const maxWidth = container.width - 280;
+      const newLeftWidth = Math.max(minWidth, Math.min(maxWidth, x));
+      leftPane.style.flex = `0 0 ${newLeftWidth}px`;
+    });
+    
+    window.addEventListener('mouseup', () => {
+      if (isDragging) {
+        isDragging = false;
+        document.body.style.cursor = '';
+      }
+    });
+    
+    // Touch support for divider
+    divider.addEventListener('touchstart', (e) => {
+      isDragging = true;
+      e.preventDefault();
+    }, { passive: false });
+    
+    window.addEventListener('touchmove', (e) => {
+      if (!isDragging) return;
+      const container = document.querySelector('.shell').getBoundingClientRect();
+      const x = e.touches[0].clientX - container.left;
+      const minWidth = 280;
+      const maxWidth = container.width - 280;
+      const newLeftWidth = Math.max(minWidth, Math.min(maxWidth, x));
+      leftPane.style.flex = `0 0 ${newLeftWidth}px`;
+    }, { passive: false });
+    
+    window.addEventListener('touchend', () => {
+      isDragging = false;
+    });
+    
+    // Selection toolbar functionality
+    const selbar = document.getElementById('selbar');
+    const btnHL = document.getElementById('btnHL');
+    const btnUH = document.getElementById('btnUH');
+    const btnNote = document.getElementById('btnNote');
+    let lastSelectionRange = null;
+    let currentHighlight = null;
+    
+    function updateSelectionToolbar() {
+      const selection = window.getSelection();
+      if (!selection || selection.rangeCount === 0 || selection.isCollapsed) {
+        if (!currentHighlight) selbar.style.display = 'none';
+        return;
+      }
+      const range = selection.getRangeAt(0);
+      lastSelectionRange = range.cloneRange();
+      currentHighlight = null;
+      
+      const rect = range.getBoundingClientRect();
+      const top = window.scrollY + rect.top - selbar.offsetHeight - 8;
+      const left = window.scrollX + rect.left + rect.width/2 - selbar.offsetWidth/2;
+      
+      selbar.style.display = 'flex';
+      selbar.style.top = `${top > 0 ? top : window.scrollY + rect.bottom + 8}px`;
+      selbar.style.left = `${Math.max(8, left)}px`;
+    }
+    
+    document.addEventListener('mouseup', updateSelectionToolbar);
+    document.addEventListener('selectionchange', updateSelectionToolbar);
+    document.addEventListener('scroll', updateSelectionToolbar);
+    
+    // Highlight functionality
+    function addHighlight() {
+      if (!lastSelectionRange || lastSelectionRange.collapsed) return;
+      const span = document.createElement('span');
+      span.className = 'hl';
+      try {
+        lastSelectionRange.surroundContents(span);
+      } catch (e) {
+        const wrap = document.createElement('span');
+        wrap.className = 'hl';
+        wrap.appendChild(lastSelectionRange.cloneContents());
+        lastSelectionRange.deleteContents();
+        lastSelectionRange.insertNode(wrap);
+      }
+      selbar.style.display = 'none';
+      showToast('Highlight added');
+    }
+    
+    function removeHighlight() {
+      if (currentHighlight) {
+        const parent = currentHighlight.parentNode;
+        while (currentHighlight.firstChild) {
+          parent.insertBefore(currentHighlight.firstChild, currentHighlight);
+        }
+        parent.removeChild(currentHighlight);
+        currentHighlight = null;
+      } else if (lastSelectionRange) {
+        const highlights = document.querySelectorAll('.hl');
+        highlights.forEach(hl => {
+          const rect = hl.getBoundingClientRect();
+          const selRect = lastSelectionRange.getBoundingClientRect();
+          if (!(rect.right < selRect.left || rect.left > selRect.right || rect.bottom < selRect.top || rect.top > selRect.bottom)) {
+            const parent = hl.parentNode;
+            while (hl.firstChild) {
+              parent.insertBefore(hl.firstChild, hl);
+            }
+            parent.removeChild(hl);
+          }
+        });
+      }
+      selbar.style.display = 'none';
+      showToast('Highlight removed');
+    }
+    
+    btnHL.addEventListener('click', addHighlight);
+    btnUH.addEventListener('click', removeHighlight);
+    
+    // Notes functionality
+    const notesPanel = document.getElementById('notes');
+    const noteArea = document.getElementById('noteArea');
+    const btnCopy = document.getElementById('btnCopy');
+    const btnClose = document.getElementById('btnClose');
+    
+    function toggleNotes() {
+      notesPanel.style.display = notesPanel.style.display === 'flex' ? 'none' : 'flex';
+    }
+    
+    btnClose.addEventListener('click', toggleNotes);
+    btnNote.addEventListener('click', () => {
+      if (lastSelectionRange) {
+        const selectedText = lastSelectionRange.toString().trim();
+        if (selectedText) {
+          noteArea.value = `${noteArea.value || ''}\n> ${selectedText}\n`;
+        }
+      }
+      toggleNotes();
+      selbar.style.display = 'none';
+    });
+    
+    btnCopy.addEventListener('click', async () => {
+      await navigator.clipboard.writeText(noteArea.value);
+      showToast('Notes copied');
+    });
+    
+    // Toast notification
+    const toast = document.getElementById('toast');
+    function showToast(message) {
+      toast.textContent = message;
+      toast.style.display = 'block';
+      setTimeout(() => {
+        toast.style.display = 'none';
+      }, 1200);
+    }
+    
+    // Question navigation
+    function scrollToElement(questionId) {
+      const question = document.querySelector(`input[name="${questionId}"]`).closest('tr, p');
+      if (question) {
+        question.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      // Highlight nav item
+      document.querySelectorAll('.q-item').forEach(item => item.classList.remove('active'));
+      document.getElementById(`${questionId}-nav`).classList.add('active');
+      setTimeout(() => {
+        document.getElementById(`${questionId}-nav`).classList.remove('active');
+      }, 800);
+    }
+    
+    // Show results screen with detailed scoring
+    function showResults() {
+      // Stop timer
+      clearInterval(timerInterval);
+      
+      // Collect user answers
+      collectUserAnswers();
+      
+      // Calculate score
+      let score = calculateScore();
+      
+      // Update results screen
+      document.getElementById('finalScore').textContent = `${score}/13`;
+      document.getElementById('timeSpent').textContent = timerEl.textContent;
+      
+      // Insert reading passage into results screen
+      document.getElementById('passageContent').innerHTML = document.querySelector('#left').innerHTML;
+      
+      // Generate answer summary list
+      generateAnswerSummary();
+      
+      // Show first question details by default
+      showQuestionDetails('q1');
+      
+      // Switch screens
+      document.getElementById('practiceScreen').classList.remove('active');
+      document.getElementById('resultsScreen').classList.add('active');
+    }
+    
+    // Collect user answers
+    function collectUserAnswers() {
+      Object.keys(answerKey).forEach(q => {
+        const input = document.querySelector(`input[name="${q}"]`);
+        if (input.type === 'radio') {
+          userAnswers[q] = document.querySelector(`input[name="${q}"]:checked`)?.value || '';
+        } else if (input.type === 'text') {
+          userAnswers[q] = input.value.trim();
+        }
+      });
+    }
+    
+    // Calculate score
+    function calculateScore() {
+      let score = 0;
+      Object.keys(answerKey).forEach(q => {
+        let userAnswer = userAnswers[q] || '';
+        let correctAnswer = answerKey[q];
+        let isCorrect = false;
+        
+        if (q.startsWith('q') && parseInt(q.substring(1)) <= 6) {
+          // Radio questions - exact match
+          isCorrect = userAnswer === correctAnswer;
+        } else {
+          // Text questions - case-insensitive match
+          isCorrect = userAnswer.toLowerCase() === correctAnswer.toLowerCase();
+        }
+        
+        if (isCorrect) score++;
+      });
+      return score;
+    }
+    
+    // Generate answer summary list
+    function generateAnswerSummary() {
+      const summaryList = document.getElementById('answerSummary');
+      summaryList.innerHTML = '';
+      
+      Object.keys(answerKey).forEach(q => {
+        const questionNum = q.substring(1);
+        const userAnswer = userAnswers[q] || 'No answer';
+        const correctAnswer = answerKey[q];
+        let isCorrect = false;
+        
+        if (q.startsWith('q') && parseInt(questionNum) <= 6) {
+          isCorrect = userAnswer === correctAnswer;
+        } else {
+          isCorrect = userAnswer.toLowerCase() === correctAnswer.toLowerCase();
+        }
+        
+        const listItem = document.createElement('li');
+        listItem.className = `answer-item ${isCorrect ? 'correct' : 'incorrect'}`;
+        listItem.dataset.question = q;
+        
+        listItem.innerHTML = `
+          <div class="answer-header">
+            <span class="question-number">${questionNum}</span>
+            <span class="question-text-short">${questionData[q].text.substring(0, 50)}${questionData[q].text.length > 50 ? '...' : ''}</span>
+          </div>
+          <div class="result-indicator ${isCorrect ? 'result-correct' : 'result-incorrect'}">
+            ${isCorrect ? '✓' : '✗'}
+          </div>
+        `;
+        
+        listItem.addEventListener('click', () => {
+          // Remove active class from all items
+          document.querySelectorAll('.answer-item').forEach(item => {
+            item.classList.remove('active');
+          });
+          
+          // Add active class to clicked item
+          listItem.classList.add('active');
+          
+          // Show details for this question
+          showQuestionDetails(q);
+        });
+        
+        summaryList.appendChild(listItem);
+      });
+    }
+    
+    // Show question details
+    function showQuestionDetails(questionId) {
+      const questionContainer = document.getElementById('questionContent');
+      const explanationContainer = document.getElementById('explanationContent');
+      const questionNum = questionId.substring(1);
+      const userAnswer = userAnswers[questionId] || 'No answer';
+      const correctAnswer = answerKey[questionId];
+      const question = questionData[questionId];
+      
+      let isCorrect = false;
+      if (parseInt(questionNum) <= 6) {
+        isCorrect = userAnswer === correctAnswer;
+      } else {
+        isCorrect = userAnswer.toLowerCase() === correctAnswer.toLowerCase();
+      }
+      
+      // Update question section
+      questionContainer.innerHTML = `
+        <h3>Question ${questionNum}</h3>
+        <div class="question-text">
+          <p>${question.text}</p>
+        </div>
+        <div class="answer-comparison">
+          <div class="answer-card">
+            <h4>Your Answer</h4>
+            <p>${userAnswer}</p>
+          </div>
+          <div class="answer-card">
+            <h4>Correct Answer</h4>
+            <p>${correctAnswer}</p>
+          </div>
+        </div>
+        <div class="result-indicator ${isCorrect ? 'result-correct' : 'result-incorrect'}" style="margin: 10px 0; width: auto; padding: 5px 10px; border-radius: 4px;">
+          ${isCorrect ? '✓ Correct' : '✗ Incorrect'}
+        </div>
+      `;
+      
+      // Update explanation section
+      let passageRefHtml = '';
+      if (question.passageRef) {
+        passageRefHtml = `
+          <div class="passage-reference">
+            <h4>原文定位</h4>
+            <p>${question.passageRef}</p>
+          </div>
+        `;
+      }
+      
+      explanationContainer.innerHTML = `
+        <div class="chinese-translation">
+          <h4>中文翻译</h4>
+          <p>${question.chinese}</p>
+        </div>
+        ${passageRefHtml}
+        <div class="explanation">
+          <h4>解析</h4>
+          <p>${question.explanation}</p>
+        </div>
+      `;
+    }
+    
+    // Reset form
+    function resetForm() {
+      document.querySelectorAll('input[type="radio"]').forEach(radio => radio.checked = false);
+      document.querySelectorAll('input[type="text"]').forEach(input => input.value = '');
+      document.getElementById('results').innerHTML = '';
+      document.querySelectorAll('.q-item').forEach(item => item.classList.remove('answered'));
+      noteArea.value = '';
+      userAnswers = {};
+    }
+    
+    // Restart practice
+    function restartPractice() {
+      // Reset timer
+      clearInterval(timerInterval);
+      timerSeconds = 0;
+      timerEl.textContent = '00:00';
+      startTimer();
+      
+      // Reset form
+      resetForm();
+      
+      // Switch back to practice screen
+      document.getElementById('resultsScreen').classList.remove('active');
+      document.getElementById('practiceScreen').classList.add('active');
+    }
+    
+    // Mark answered questions
+    document.querySelectorAll('input').forEach(input => {
+      input.addEventListener('change', () => {
+        const qName = input.name;
+        document.getElementById(`${qName}-nav`).classList.add('answered');
+      });
+      if (input.type === 'text') {
+        input.addEventListener('input', () => {
+          const qName = input.name;
+          document.getElementById(`${qName}-nav`).classList.add('answered');
+        });
+      }
+    });
+  </script>
+
+
+</body></html>
