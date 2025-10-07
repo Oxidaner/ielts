@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Keeping the water away - New approaches to flood control</title>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<style>
+  :root { 
+    --line:#e5e7eb; 
+    --bg:#f6f7fb; 
+    --panel:#fff; 
+    --accent:#3b82f6; 
+    --muted:#6b7280; 
+    --shadow:0 6px 20px rgba(0,0,0,.12); 
+    --font-size: 16px; /* Regular - base font size */
+  }
+  * { box-sizing: border-box; }
+  html,body { height:100%; font-size: var(--font-size); }
+  body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background:var(--bg); }
+  /* Font size inheritance for all elements */
+  h2 { font-size: calc(var(--font-size) * 1.5); }
+  h3 { font-size: calc(var(--font-size) * 1.3); }
+  h4 { font-size: calc(var(--font-size) * 1.15); }
+  p, label, li, button, input, textarea, .q-item, .badge, .droplabel, .tag, table th, table td { font-size: var(--font-size); }
+  
+  #timer { position: static; display: inline-block; margin-left: 8px; background:#fff; border:1px solid var(--line); border-radius:10px; padding:2px 8px; vertical-align: middle; }
+  /* Settings button & panel */
+  #settingsBtn { margin-left: 10px; padding:2px 8px; border:1px solid var(--line); border-radius:10px; background:#fff; cursor:pointer; vertical-align: middle; }
+  #settingsPanel { position: absolute; top: 40px; right: 20px; background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:10px; box-shadow:var(--shadow); display:none; z-index: 1000; }
+  .font-size-option { margin:8px 0; cursor:pointer; padding:4px 6px; border-radius:6px; }
+  .font-size-option:hover { background:#f1f5f9; }
+  .font-size-option.active { background:#e0e7ff; color:var(--accent); border:1px solid var(--accent); }
+  
+  .shell { display:flex; height:100vh; width:100%; }
+  .pane { background:var(--panel); overflow:auto; padding:20px; }
+  #left { flex: 0 0 50%; min-width: 280px; }
+  #right { flex: 1 1 auto; min-width: 320px; background:#fbfbff; border-left:1px solid var(--line); }
+  #divider { flex: 0 0 8px; background: linear-gradient(90deg,#e5e7eb,#d1d5db); cursor: ew-resize; position:relative; z-index: 5; user-select:none; }
+  
+  h2,h3,h4 { margin:0 0 10px; }
+  #left p { margin: 0 0 12px; line-height: 1.6; word-break: normal; overflow-wrap: normal; hyphens: none; }
+  .group { background:#fff; border:1px solid var(--line); border-radius:10px; padding:12px; margin-bottom:14px; }
+  table { border-collapse: collapse; width:100%; }
+  th, td { border:1px solid var(--line); padding:6px; text-align:center; }
+  th:first-child, td:first-child { width:92px; }
+  button { padding:8px 12px; border:1px solid var(--line); border-radius:10px; background:#fff; cursor:pointer; }
+  button.primary { background:var(--accent); color:#fff; border-color:#3b82f6; }
+  
+  #results { background:#fff; border:1px solid var(--line); border-radius:10px; padding:10px; margin-top:10px; }
+  .hl { background:#fff3a3; box-shadow: inset 0 -2px 0 rgba(0,0,0,.05); cursor: pointer; }
+  .hl:hover { filter: brightness(0.98); }
+  
+  #selbar { position: absolute; display:none; z-index: 6000; background:#111; color:#fff; border-radius: 8px; padding: 6px; box-shadow: var(--shadow); gap:6px; align-items: center; }
+  #selbar button { background: transparent; color:#fff; border: 1px solid rgba(255,255,255,.25); padding: 4px 8px; border-radius: 6px; cursor:pointer; }
+  #selbar button:hover { border-color:#fff; }
+  
+  #notes { position: fixed; right: 12px; bottom: 12px; width: 320px; height: 42vh; background:#fff; border:1px solid var(--line); border-radius: 12px; display:none; flex-direction: column; z-index:1500; box-shadow: var(--shadow); }
+  #notes header { display:flex; align-items:center; justify-content: space-between; padding:8px 10px; border-bottom:1px solid var(--line); }
+  #notes textarea { flex:1; border:0; padding:10px; resize:none; line-height:1.5; }
+  
+  #toast { position: fixed; left:50%; transform: translateX(-50%); bottom: 24px; background:#111; color:#fff; padding:8px 12px; border-radius: 8px; display:none; z-index:2500; }
+  
+  .dropzone { border:2px dashed #cbd5e1; background:#f8fafc; border-radius:10px; min-height:54px; padding:8px; display:flex; align-items:center; justify-content:space-between; gap:8px; }
+  .droplabel { color:#64748b; }
+  .cardpool { background:#f1f5f9; border-radius:10px; padding:12px; display:grid; gap:8px; }
+  .pool-slot { min-height:40px; }
+  .card { background:#fff; border:1px solid #e5e7eb; border-radius:8px; padding:8px 10px; display:inline-flex; gap:8px; align-items:center; cursor:grab; box-shadow:0 1px 0 rgba(0,0,0,.03); }
+  .card:active { cursor:grabbing; }
+  .tag { background:#eef2ff; color:#4338ca; padding:2px 8px; border-radius:999px; font-size: calc(var(--font-size) * 0.85); }
+  .btn-clear { border:1px solid #e5e7eb; background:#fff; border-radius:8px; padding:6px 8px; cursor:pointer; }
+  .ghost { opacity: .5; }
+  .over { outline:2px dashed #3b82f6; }
+  
+  details.answerbox summary { cursor: pointer; user-select:none; list-style: none; padding:8px 0; }
+  details.answerbox { border:1px dashed var(--line); border-radius:10px; padding:8px 10px; background:#fff; margin-top:10px; }
+  .badge { display:inline-block; background:#eef2ff; color:#4338ca; padding:2px 8px; border-radius:999px; font-size: calc(var(--font-size) * 0.85); margin-left:6px; }
+  
+  body { padding-bottom: 82px; }
+  .practice-nav { background:#fff; border-bottom:2px solid var(--line); padding:12px 20px; display:flex; align-items:center; gap:20px; box-shadow:0 2px 4px rgba(0,0,0,.05); flex-wrap:wrap; position:fixed; left:0; right:0; bottom:0; border-top:2px solid var(--line); border-bottom:0; z-index:4000; }
+  .practice-nav .title { font-weight:600; color:var(--muted); }
+  .practice-nav .questions { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .practice-nav .q-item { padding:6px 10px; border:1px solid var(--line); border-radius:6px; background:#fff; cursor:pointer; transition:all 0.2s; min-width:36px; text-align:center; }
+  .practice-nav .q-item:hover { background:#f1f5f9; border-color:var(--accent); }
+  .practice-nav .q-item.answered { background:#e0e7ff; border-color:var(--accent); color:var(--accent); font-weight:500; }
+  .practice-nav .q-item.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+  
+  /* Multiple choice checkbox style */
+  .multi-checkbox { margin:8px 0; }
+  /* Sentence completion input style */
+  .fill-input { width: 180px; padding:4px 6px; border:1px solid var(--line); border-radius:6px; margin:0 4px; }
+</style>
+</head>
+<body>
+<!-- Settings Panel -->
+<div id="settingsPanel">
+  <h4 style="margin-bottom:8px;">Font Size</h4>
+  <div class="font-size-option active" data-size="16px">Regular (Default)</div>
+  <div class="font-size-option" data-size="18px">Moderate (Larger)</div>
+  <div class="font-size-option" data-size="20px">Large (Largest)</div>
+</div>
+
+<div class="practice-nav">
+  <div class="title">Questions</div>
+  <div class="questions">
+    <div class="q-item" id="q14-nav" onclick="scrollToElement('q14-anchor')">14</div>
+    <div class="q-item" id="q15-nav" onclick="scrollToElement('q15-anchor')">15</div>
+    <div class="q-item" id="q16-nav" onclick="scrollToElement('q16-anchor')">16</div>
+    <div class="q-item" id="q17-nav" onclick="scrollToElement('q17-anchor')">17</div>
+    <div class="q-item" id="q18-nav" onclick="scrollToElement('q18-anchor')">18</div>
+    <div class="q-item" id="q19-nav" onclick="scrollToElement('q19-anchor')">19</div>
+    <div class="q-item" id="q20-nav" onclick="scrollToElement('q20-anchor')">20</div>
+    <div class="q-item" id="q21-nav" onclick="scrollToElement('q21-anchor')">21</div>
+    <div class="q-item" id="q22-nav" onclick="scrollToElement('q22-anchor')">22</div>
+    <div class="q-item" id="q23-nav" onclick="scrollToElement('q23-anchor')">23</div>
+    <div class="q-item" id="q24-nav" onclick="scrollToElement('q24-anchor')">24</div>
+    <div class="q-item" id="q25-nav" onclick="scrollToElement('q25-anchor')">25</div>
+    <div class="q-item" id="q26-nav" onclick="scrollToElement('q26-anchor')">26</div>
+  </div>
+</div>
+
+<div class="shell">
+<section class="pane" id="left">
+  <h2>READING PASSAGE 2 <span id="timer">00:00</span>
+    <button id="settingsBtn">Settings</button>
+  </h2>
+  <p>You should spend about 20 minutes on Questions 14–26, which are based on Reading Passage 2 below.</p>
+  <h3>Keeping the water away - New approaches to flood control</h3>
+  
+  <h4>Paragraph A</h4>
+  <p>Recently, winter floods on the rivers of central Europe have been among the worst for 600 to 700 years, and dams and dykes (protective sea walls) have failed to solve the problem. Traditionally, river engineers have tried to get rid of the water quickly, draining it off the land and down to the sea in rivers reengineered as high-performance drains. But however high they build the artificial riverbanks, the floods keep coming back. And when they come, they seem to be worse than ever.</p>
+  
+  <h4>Paragraph B</h4>
+  <p>Engineers are now turning to a different plan: to sap the water’s destructive strength by dispersing it into fields, forgotten lakes and flood plains. They are reviving river bends and marshes to curb the flow, and even plugging city drains to encourage floodwater to use other means to go underground. Back in the days when rivers took a winding path to the sea, floodwaters lost force and volume while meandering across flood plains and inland deltas, but today the water tends to have a direct passage to the sea. This means that, when it rains in the uplands, the water comes down all at once.</p>
+  
+  <h4>Paragraph C</h4>
+  <p>Worse, when the flood plains are closed off, the river’s flow downstream becomes more violent and uncontrollable; by turning complex river systems into the simple mechanics of a water pipe, engineers have often created danger where they promised safety. The Rhine, Europe’s most engineered river, is a good example. For a long time engineers have erased its backwaters and cut it off from its plain. The aim was partly to improve navigation, and partly to speed floodwaters out of the Alps and down to the North Sea. Now, when it rains in the Alps, the peak flows from several branches of the Rhine coincide where once they arrived separately, and with four-fifths of the Lower Rhine’s flood plain barricaded off, the waters rise. The result is more frequent flooding and greater damage. The same thing has happened in the US on the Mississippi River, which drains the world’s second-largest river catchment into the Gulf of Mexico. Despite some $7 billion spent over the last century on levees (embankments), the situation is growing worse.</p>
+  
+  <h4>Paragraph D</h4>
+  <p>Specialists in water control now say that a new approach is needed - one which takes the whole landscape into consideration. To help keep London’s feet dry, the UK Environment Agency is reflooding 10 square kilometres of the ancient flood plain of the River Thames outside Oxford. Nearer to London, it has spent £100 million creating new wetlands and a relief channel across 16 kilometres of flood plain. Similar ideas are being tested in Austria, in one of Europe’s largest river restorations to date. The engineers calculate that the restored flood plain of the Drava River can now store up to 10 million cubic metres of floodwater, and slow down storm surges coming out of the Alps by more than an hour, protecting towns not only in Austria, but as far downstream as Slovenia and Croatia.</p>
+  
+  <h4>Paragraph E</h4>
+  <p>The Dutch, for whom preventing floods is a matter of survival, have gone furthest. This nation, built largely on drained marshes and seabed, has had several severe shocks in the last two decades, when very large numbers of people have had to be evacuated. Since that time, the Dutch have broken one of their most enduring national stereotypes by allowing engineers to punch holes in dykes. They plan to return up to a sixth of the country to its former waterlogged state in order to better protect the rest.</p>
+  
+  <h4>Paragraph F</h4>
+  <p>Water use in cities also needs to change. At the moment, cities seem to create floods; they are concreted and paved so that rains flow quickly into rivers. A new breed of ‘soft engineers’ wants cities to be porous; Berlin is one place where this is being done. Tough new rules for new developments mean that drains will be prevented from becoming overloaded after heavy rains. Architects of new urban buildings are diverting rainwater from the roofs for use in toilets and the irrigation of roof gardens, while water falling onto the ground is collected in ponds, or passes underground through porous paving. One high-tech urban development can store a sixth of its annual rainfall, and reuse most of the rest.</p>
+  
+  <h4>Paragraph G</h4>
+  <p>Could this be expanded to protect a whole city? The test case could be Los Angeles. With non-porous surfaces covering 70% of the city, drainage is a huge challenge. Billions of dollars have been spent digging huge drains and concreting riverbeds, but many communities still flood regularly. Meanwhile, this desert city ships water from hundreds of kilometres away to fill its taps and swimming pool. Los Angeles has recently launched a new scheme to utilise floodwater in the Sun Valley section of the city. The plan is to catch the rain that falls on thousands of driveways, parking lots and rooftops in the valley. Trees will soak up water from parking lots; houses and public buildings will capture roof water to irrigate gardens and parks, and road drains will empty into old gravel pits to recharge the city’s underground water reserves. Result: less flooding and more water for the city. It may sound expensive, until we realise how much is spent trying to drain cities and protect areas from flooding, and how little this method achieves.</p>
+  
+  <p>&nbsp;</p>
+  <p>&nbsp;</p>
+  <p>&nbsp;</p>
+</section>
+
+<div id="divider" title="Drag to resize"></div>
+
+<section class="pane" id="right">
+  <h3>Questions</h3>
+  
+  <!-- Questions 14-19: Paragraph Matching -->
+  <div class="group">
+    <h4>Questions 14–19</h4>
+    <p>Reading Passage 2 has seven paragraphs, A–G.</p>
+    <p>Which paragraph contains the following information?</p>
+    <p>Write the correct letter, A–G, in boxes 14–19 on your answer sheet.</p>
+    
+    <a id="q14-anchor"></a>
+    <div id="q14-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+      <p>14 how legislation has forced building designers to improve water use</p>
+      <div style="display:flex; flex-wrap:wrap; gap:10px; margin:4px 0;">
+        <label style="margin:0;"><input name="q14" type="radio" value="A"> A</label>
+        <label style="margin:0;"><input name="q14" type="radio" value="B"> B</label>
+        <label style="margin:0;"><input name="q14" type="radio" value="C"> C</label>
+        <label style="margin:0;"><input name="q14" type="radio" value="D"> D</label>
+        <label style="margin:0;"><input name="q14" type="radio" value="E"> E</label>
+        <label style="margin:0;"><input name="q14" type="radio" value="F"> F</label>
+        <label style="margin:0;"><input name="q14" type="radio" value="G"> G</label>
+      </div>
+    </div>
+    
+    <a id="q15-anchor"></a>
+    <div id="q15-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+      <p>15 two reasons why one river was isolated from its flood plain</p>
+      <div style="display:flex; flex-wrap:wrap; gap:10px; margin:4px 0;">
+        <label style="margin:0;"><input name="q15" type="radio" value="A"> A</label>
+        <label style="margin:0;"><input name="q15" type="radio" value="B"> B</label>
+        <label style="margin:0;"><input name="q15" type="radio" value="C"> C</label>
+        <label style="margin:0;"><input name="q15" type="radio" value="D"> D</label>
+        <label style="margin:0;"><input name="q15" type="radio" value="E"> E</label>
+        <label style="margin:0;"><input name="q15" type="radio" value="F"> F</label>
+        <label style="margin:0;"><input name="q15" type="radio" value="G"> G</label>
+      </div>
+    </div>
+    
+    <a id="q16-anchor"></a>
+    <div id="q16-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+      <p>16 how natural watercourses in the past assisted flood control</p>
+      <div style="display:flex; flex-wrap:wrap; gap:10px; margin:4px 0;">
+        <label style="margin:0;"><input name="q16" type="radio" value="A"> A</label>
+        <label style="margin:0;"><input name="q16" type="radio" value="B"> B</label>
+        <label style="margin:0;"><input name="q16" type="radio" value="C"> C</label>
+        <label style="margin:0;"><input name="q16" type="radio" value="D"> D</label>
+        <label style="margin:0;"><input name="q16" type="radio" value="E"> E</label>
+        <label style="margin:0;"><input name="q16" type="radio" value="F"> F</label>
+        <label style="margin:0;"><input name="q16" type="radio" value="G"> G</label>
+      </div>
+    </div>
+    
+    <a id="q17-anchor"></a>
+    <div id="q17-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+      <p>17 an example of flood control on one river, affecting three countries</p>
+      <div style="display:flex; flex-wrap:wrap; gap:10px; margin:4px 0;">
+        <label style="margin:0;"><input name="q17" type="radio" value="A"> A</label>
+        <label style="margin:0;"><input name="q17" type="radio" value="B"> B</label>
+        <label style="margin:0;"><input name="q17" type="radio" value="C"> C</label>
+        <label style="margin:0;"><input name="q17" type="radio" value="D"> D</label>
+        <label style="margin:0;"><input name="q17" type="radio" value="E"> E</label>
+        <label style="margin:0;"><input name="q17" type="radio" value="F"> F</label>
+        <label style="margin:0;"><input name="q17" type="radio" value="G"> G</label>
+      </div>
+    </div>
+    
+    <a id="q18-anchor"></a>
+    <div id="q18-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+      <p>18 a country which has partly destroyed one of its most typical features in order to control water</p>
+      <div style="display:flex; flex-wrap:wrap; gap:10px; margin:4px 0;">
+        <label style="margin:0;"><input name="q18" type="radio" value="A"> A</label>
+        <label style="margin:0;"><input name="q18" type="radio" value="B"> B</label>
+        <label style="margin:0;"><input name="q18" type="radio" value="C"> C</label>
+        <label style="margin:0;"><input name="q18" type="radio" value="D"> D</label>
+        <label style="margin:0;"><input name="q18" type="radio" value="E"> E</label>
+        <label style="margin:0;"><input name="q18" type="radio" value="F"> F</label>
+        <label style="margin:0;"><input name="q18" type="radio" value="G"> G</label>
+      </div>
+    </div>
+    
+    <a id="q19-anchor"></a>
+    <div id="q19-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+      <p>19 the writer’s comment on the comparative cost-effectiveness of traditional flood control and newer methods</p>
+      <div style="display:flex; flex-wrap:wrap; gap:10px; margin:4px 0;">
+        <label style="margin:0;"><input name="q19" type="radio" value="A"> A</label>
+        <label style="margin:0;"><input name="q19" type="radio" value="B"> B</label>
+        <label style="margin:0;"><input name="q19" type="radio" value="C"> C</label>
+        <label style="margin:0;"><input name="q19" type="radio" value="D"> D</label>
+        <label style="margin:0;"><input name="q19" type="radio" value="E"> E</label>
+        <label style="margin:0;"><input name="q19" type="radio" value="F"> F</label>
+        <label style="margin:0;"><input name="q19" type="radio" value="G"> G</label>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Questions 20-21: Multiple Choice (Two Answers) -->
+  <div class="group">
+    <h4>Questions 20 and 21</h4>
+    <p>Choose TWO letters A–E.</p>
+    <p>Write the correct letters in boxes 20 and 21 on your answer sheet.</p>
+    <p>According to the article, which TWO of these statements are true of the new approach to flood control?</p>
+    
+    <a id="q20-anchor"></a>
+    <div id="q20-section" class="multi-checkbox" style="padding:8px 0;border-top:1px dashed var(--line);">
+      <label style="display:block;margin:4px 0;"><input name="q20-21" type="checkbox" value="A"/> A It aims to slow the movement of water to the sea.</label>
+      <label style="display:block;margin:4px 0;"><input name="q20-21" type="checkbox" value="B"/> B It aims to channel water more directly into rivers.</label>
+      <label style="display:block;margin:4px 0;"><input name="q20-21" type="checkbox" value="C"/> C It will cost more than twice as much as former measures.</label>
+      <label style="display:block;margin:4px 0;"><input name="q20-21" type="checkbox" value="D"/> D It will involve the loss of some areas of land.</label>
+      <label style="display:block;margin:4px 0;"><input name="q20-21" type="checkbox" value="E"/> E It has been tested only in the Netherlands.</label>
+    </div>
+    <a id="q21-anchor" style="visibility:hidden;">21</a>
+  </div>
+  
+  <!-- Questions 22-26: Sentence Completion -->
+  <div class="group">
+    <h4>Questions 22–26</h4>
+    <p>Complete the sentences below.</p>
+    <p>Choose NO MORE THAN TWO WORDS from the passage for each answer.</p>
+    <p>Write your answers in boxes 22–26 on your answer sheet.</p>
+    
+    <a id="q22-anchor"></a>
+    <div id="q22-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+      <p>22 Some of the most severe floods for many centuries have recently occurred in parts of <input type="text" name="q22" class="fill-input" id="q22-input"></p>
+    </div>
+    
+    <a id="q23-anchor"></a>
+    <div id="q23-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+      <p>23 The Rhine and the <input type="text" name="q23" class="fill-input" id="q23-input"> river have experienced similar problems with water control.</p>
+    </div>
+    
+    <a id="q24-anchor"></a>
+    <div id="q24-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+      <p>24 An area near Oxford will be flooded to protect the city of <input type="text" name="q24" class="fill-input" id="q24-input">.</p>
+    </div>
+    
+    <a id="q25-anchor"></a>
+    <div id="q25-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+      <p>25 Planners who wish to allow water to pass more freely through city surfaces are called <input type="text" name="q25" class="fill-input" id="q25-input">.</p>
+    </div>
+    
+    <a id="q26-anchor"></a>
+    <div id="q26-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+      <p>26 A proposal for part of the city of <input type="text" name="q26" class="fill-input" id="q26-input"> could show whether small-scale water projects could be applied on a large scale.</p>
+    </div>
+  </div>
+  
+  <div style="display:flex;gap:8px;margin-bottom:10px;">
+    <button class="primary" onclick="grade()">Submit</button>
+    <button onclick="resetForm()">Reset</button>
+    <button onclick="toggleNotes()">Notes</button>
+  </div>
+  
+  <div id="results"></div>
+  
+  <details class="answerbox" id="answerBox">
+    <summary>Show answers (click to toggle) <span class="badge">hidden</span></summary>
+    <div id="answerContent">
+      <ol>
+        <li>14 → F (Paragraph F: "Tough new rules for new developments mean that drains will be prevented from becoming overloaded... Architects of new urban buildings are diverting rainwater")</li>
+        <li>15 → C (Paragraph C: "The aim was partly to improve navigation, and partly to speed floodwaters out of the Alps and down to the North Sea" - two reasons for isolating the Rhine from its flood plain)</li>
+        <li>16 → B (Paragraph B: "Back in the days when rivers took a winding path to the sea, floodwaters lost force and volume while meandering across flood plains and inland deltas")</li>
+        <li>17 → D (Paragraph D: "the restored flood plain of the Drava River... protecting towns not only in Austria, but as far downstream as Slovenia and Croatia" - three countries affected)</li>
+        <li>18 → E (Paragraph E: "the Dutch have broken one of their most enduring national stereotypes by allowing engineers to punch holes in dykes" - dykes are a typical Dutch feature)</li>
+        <li>19 → G (Paragraph G: "It may sound expensive, until we realise how much is spent trying to drain cities and protect areas from flooding, and how little this method achieves" - cost-effectiveness comparison)</li>
+        <li>20 → A (Correct: Paragraph B/D - new approach slows water flow; Paragraph G - captures water to reduce direct sea flow)</li>
+        <li>21 → D (Correct: Paragraph D - "reflooding 10 square kilometres of the ancient flood plain"; Paragraph E - "return up to a sixth of the country to its former waterlogged state" - land loss for flood control)</li>
+        <li>22 → central Europe (Paragraph A: "winter floods on the rivers of central Europe have been among the worst for 600 to 700 years")</li>
+        <li>23 → Mississippi (Paragraph C: "The same thing has happened in the US on the Mississippi River")</li>
+        <li>24 → London (Paragraph D: "To help keep London’s feet dry, the UK Environment Agency is reflooding... outside Oxford")</li>
+        <li>25 → soft engineers (Paragraph F: "A new breed of ‘soft engineers’ wants cities to be porous")</li>
+        <li>26 → Los Angeles (Paragraph G: "Could this be expanded to protect a whole city? The test case could be Los Angeles")</li>
+      </ol>
+      <p><strong>Note on Q20-21 incorrect options:</strong><br>
+      B: Contradicts (traditional approach channels water directly; new approach disperses it)<br>
+      C: No evidence (text suggests new methods are more cost-effective long-term)<br>
+      E: Contradicts (tested in UK, Austria, Berlin, Los Angeles - not only Netherlands)</p>
+    </div>
+  </details>
+</section>
+</div>
+
+<!-- Selection Toolbar -->
+<div aria-label="Selection tools" id="selbar" role="toolbar">
+  <button id="btnHL">Highlight</button>
+  <button id="btnUH">Remove Highlight</button>
+  <button id="btnNote">Add to Notes</button>
+</div>
+
+<!-- Notes Panel -->
+<div id="notes">
+  <header>
+    <strong>Notes</strong>
+    <div>
+      <button id="btnCopy">Copy Notes</button>
+      <button id="btnClose">Close</button>
+    </div>
+  </header>
+  <textarea id="noteArea" placeholder="Type your notes here..."></textarea>
+</div>
+
+<!-- Toast Notification -->
+<div id="toast"></div>
+
+<script>
+// Timer (with stop on submit)
+let _t = 0; 
+const _timerEl = document.getElementById('timer');
+let timerInterval = setInterval(function(){ 
+  _t++; 
+  const m = String(Math.floor(_t/60)).padStart(2,'0'); 
+  const s = String(_t%60).padStart(2,'0'); 
+  _timerEl.textContent = m + ':' + s; 
+}, 1000);
+
+// Settings: Font Size Control
+const settingsBtn = document.getElementById('settingsBtn');
+const settingsPanel = document.getElementById('settingsPanel');
+const fontSizeOptions = document.querySelectorAll('.font-size-option');
+const root = document.documentElement;
+
+// Toggle settings panel
+settingsBtn.addEventListener('click', function(e) {
+  e.stopPropagation();
+  settingsPanel.style.display = settingsPanel.style.display === 'block' ? 'none' : 'block';
+});
+
+// Close settings panel when clicking outside
+document.addEventListener('click', function(e) {
+  if (!settingsPanel.contains(e.target) && e.target !== settingsBtn) {
+    settingsPanel.style.display = 'none';
+  }
+});
+
+// Change font size
+fontSizeOptions.forEach(option => {
+  option.addEventListener('click', function() {
+    // Remove active class from all options
+    fontSizeOptions.forEach(opt => opt.classList.remove('active'));
+    // Add active class to selected option
+    this.classList.add('active');
+    // Update root font size
+    const size = this.getAttribute('data-size');
+    root.style.setProperty('--font-size', size);
+    // Close panel after selection
+    settingsPanel.style.display = 'none';
+  });
+});
+
+// Drag Divider (Resize Panes)
+const divider = document.getElementById('divider');
+const leftPane = document.getElementById('left');
+const rightPane = document.getElementById('right');
+let dragging = false;
+
+function startDrag(e) { 
+  dragging = true; 
+  document.body.style.cursor = 'ew-resize'; 
+  if (e.preventDefault) e.preventDefault(); 
+}
+
+function endDrag() { 
+  dragging = false; 
+  document.body.style.cursor = ''; 
+}
+
+function onMove(clientX) {
+  const container = document.querySelector('.shell').getBoundingClientRect();
+  let x = clientX - container.left;
+  // Set min/max widths for panes
+  x = Math.max(280, Math.min(container.width - 320, x));
+  leftPane.style.flex = `0 0 ${x}px`;
+  rightPane.style.flex = '1 1 auto';
+}
+
+// Mouse events for divider
+divider.addEventListener('mousedown', startDrag);
+window.addEventListener('mousemove', (e) => { if (dragging) onMove(e.clientX); });
+window.addEventListener('mouseup', endDrag);
+
+// Touch events for mobile support
+divider.addEventListener('touchstart', (e) => { startDrag(e.touches[0]); }, { passive: false });
+window.addEventListener('touchmove', (e) => { if (dragging) onMove(e.touches[0].clientX); }, { passive: false });
+window.addEventListener('touchend', endDrag);
+
+// Text Highlight Functionality
+const selbar = document.getElementById('selbar');
+const btnHL = document.getElementById('btnHL');
+const btnUH = document.getElementById('btnUH');
+const btnNote = document.getElementById('btnNote');
+let lastRange = null;
+let currentHlNode = null;
+let keepToolbar = false;
+
+// Position highlight toolbar
+function positionSelbarForRect(rect) {
+  selbar.style.display = 'flex';
+  requestAnimationFrame(() => {
+    let top = window.scrollY + rect.top - selbar.offsetHeight - 8;
+    const leftPos = window.scrollX + rect.left + rect.width/2 - selbar.offsetWidth/2;
+    // Adjust top if toolbar goes off screen
+    if (top < 0) top = window.scrollY + rect.bottom + 8;
+    selbar.style.top = `${top}px`;
+    selbar.style.left = `${Math.max(8, leftPos)}px`;
+  });
+}
+
+// Update toolbar position based on selection
+function updateSelbar() {
+  const selection = window.getSelection();
+  if (!selection || selection.rangeCount === 0 || selection.isCollapsed) { 
+    selbar.style.display = 'none'; 
+    currentHlNode = null; 
+    return; 
+  }
+  const range = selection.getRangeAt(0);
+  lastRange = range.cloneRange();
+  currentHlNode = null;
+  positionSelbarForRect(range.getBoundingClientRect());
+}
+
+// Listen for selection changes
+document.getElementById('left').addEventListener('mouseup', updateSelbar);
+document.getElementById('right').addEventListener('mouseup', updateSelbar);
+document.addEventListener('selectionchange', () => {
+  const selection = window.getSelection();
+  if (!selection || selection.rangeCount === 0 || selection.isCollapsed) {
+    if (!keepToolbar && !currentHlNode) selbar.style.display = 'none';
+  }
+});
+
+// Update toolbar on scroll
+document.addEventListener('scroll', () => {
+  if (selbar.style.display === 'flex') updateSelbar();
+});
+
+// Keep toolbar open when clicking highlighted text
+document.addEventListener('mousedown', (e) => {
+  keepToolbar = e.target.classList && e.target.classList.contains('hl');
+}, true);
+
+// Handle click on highlighted text
+document.addEventListener('click', (e) => {
+  if (e.target.classList && e.target.classList.contains('hl')) {
+    currentHlNode = e.target;
+    lastRange = null;
+    positionSelbarForRect(e.target.getBoundingClientRect());
+    const selection = window.getSelection();
+    if (selection) selection.removeAllRanges();
+    setTimeout(() => { keepToolbar = false; }, 0);
+  }
+}, true);
+
+// Add highlight
+function doHighlight() {
+  if (currentHlNode) return;
+  if (!lastRange || lastRange.collapsed) return;
+  
+  const span = document.createElement('span');
+  span.className = 'hl';
+  
+  try {
+    lastRange.surroundContents(span);
+  } catch (e) {
+    // Fallback for partial text nodes
+    const wrap = document.createElement('span');
+    wrap.className = 'hl';
+    wrap.appendChild(lastRange.cloneContents());
+    lastRange.deleteContents();
+    lastRange.insertNode(wrap);
+  }
+  
+  selbar.style.display = 'none';
+  showToast('Text highlighted');
+}
+
+// Remove highlight
+function removeHighlight() {
+  if (currentHlNode) {
+    // Unwrap highlighted text
+    const parent = currentHlNode.parentNode;
+    while (currentHlNode.firstChild) {
+      parent.insertBefore(currentHlNode.firstChild, currentHlNode);
+    }
+    parent.removeChild(currentHlNode);
+    parent.normalize();
+    currentHlNode = null;
+    selbar.style.display = 'none';
+    showToast('Highlight removed');
+    return;
+  }
+  
+  if (!lastRange) return;
+  
+  // Remove highlights in selection range
+  const selRect = lastRange.getBoundingClientRect();
+  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_ELEMENT);
+  const toRemove = [];
+  
+  while (walker.nextNode()) {
+    const node = walker.currentNode;
+    if (node.classList && node.classList.contains('hl')) {
+      const rect = node.getBoundingClientRect();
+      // Check if highlight overlaps with selection
+      if (!(rect.right < selRect.left || rect.left > selRect.right || rect.bottom < selRect.top || rect.top > selRect.bottom)) {
+        toRemove.push(node);
+      }
+    }
+  }
+  
+  // Unwrap all selected highlights
+  toRemove.forEach(el => {
+    const parent = el.parentNode;
+    while (el.firstChild) parent.insertBefore(el.firstChild, el);
+    parent.removeChild(el);
+    parent.normalize();
+  });
+  
+  selbar.style.display = 'none';
+  showToast('Highlights removed');
+}
+
+// Highlight button events
+btnHL.addEventListener('click', doHighlight);
+btnUH.addEventListener('click', removeHighlight);
+
+// Notes Functionality
+const notesPanel = document.getElementById('notes');
+const noteArea = document.getElementById('noteArea');
+const btnCopy = document.getElementById('btnCopy');
+const btnClose = document.getElementById('btnClose');
+
+// Toggle notes panel
+function toggleNotes() {
+  notesPanel.style.display = notesPanel.style.display === 'flex' ? 'none' : 'flex';
+  if (notesPanel.style.display === 'flex') noteArea.focus();
+}
+
+// Close notes
+btnClose.addEventListener('click', toggleNotes);
+
+// Copy notes to clipboard
+btnCopy.addEventListener('click', async () => {
+  await navigator.clipboard.writeText(noteArea.value || '');
+  showToast('Notes copied to clipboard');
+});
+
+// Add selected text to notes
+btnNote.addEventListener('click', () => {
+  let text = '';
+  if (currentHlNode) {
+    text = currentHlNode.textContent.trim();
+  } else if (lastRange) {
+    const frag = lastRange.cloneContents();
+    text = frag.textContent.trim();
+  }
+  
+  toggleNotes();
+  if (text) {
+    noteArea.value = noteArea.value ? `${noteArea.value}\n> ${text}\n` : `> ${text}\n`;
+    noteArea.scrollTop = noteArea.scrollHeight;
+  }
+  
+  selbar.style.display = 'none';
+});
+
+// Toast Notification
+const toastEl = document.getElementById('toast');
+function showToast(message) {
+  toastEl.textContent = message;
+  toastEl.style.display = 'block';
+  setTimeout(() => { toastEl.style.display = 'none'; }, 1500);
+}
+
+// Grading & Answer Checking
+const answers = {
+  "q14": "F", 
+  "q15": "C", 
+  "q16": "B", 
+  "q17": "D", 
+  "q18": "E", 
+  "q19": "G",
+  "q20-21-correct": ["A", "D"], // Correct options for Q20-21
+  "q22": "central Europe", 
+  "q23": "Mississippi", 
+  "q24": "London", 
+  "q25": "soft engineers", 
+  "q26": "Los Angeles"
+};
+
+function grade() {
+  // Stop timer first
+  clearInterval(timerInterval);
+  
+  let total = 13;
+  let correct = 0;
+  const results = [];
+  
+  // Check Questions 14-19 (Paragraph Matching)
+  for (let i = 14; i <= 19; i++) {
+    const name = `q${i}`;
+    const selected = document.querySelector(`input[name="${name}"]:checked`);
+    const userAnswer = selected ? selected.value : "No answer";
+    const isCorrect = userAnswer === answers[name];
+    
+    if (isCorrect) correct++;
+    results.push(`${name.toUpperCase()}: ${userAnswer} ${isCorrect ? '✅' : '❌'} (Correct: ${answers[name]})`);
+  }
+  
+  // Check Questions 20-21 (Multiple Choice - Two Correct)
+  const selectedCheckboxes = document.querySelectorAll('input[name="q20-21"]:checked');
+  const userSelected = Array.from(selectedCheckboxes).map(cb => cb.value);
+  const correctSelected = answers["q20-21-correct"];
+  const isQ20Correct = userSelected.includes(correctSelected[0]);
+  const isQ21Correct = userSelected.includes(correctSelected[1]);
+  
+  // Count correct selections (max 2 points)
+  if (isQ20Correct) correct++;
+  if (isQ21Correct) correct++;
+  
+  results.push(`Q20-21: Selected [${userSelected.join(', ')}] ${(isQ20Correct && isQ21Correct) ? '✅' : '❌'} (Correct: ${correctSelected.join(', ')})`);
+  
+  // Check Questions 22-26 (Sentence Completion)
+  for (let i = 22; i <= 26; i++) {
+    const name = `q${i}`;
+    const input = document.querySelector(`input[name="${name}"]`);
+    const userAnswer = input ? input.value.trim().toLowerCase() : "No answer";
+    const correctAnswer = answers[name].toLowerCase();
+    const isCorrect = userAnswer === correctAnswer;
+    
+    if (isCorrect) correct++;
+    results.push(`${name.toUpperCase()}: ${userAnswer || 'No answer'} ${isCorrect ? '✅' : '❌'} (Correct: ${answers[name]})`);
+  }
+  
+  // Calculate accuracy
+  const accuracy = Math.round((correct / total) * 100);
+  
+  // Display results
+  const resultsEl = document.getElementById('results');
+  resultsEl.innerHTML = `
+    <p><strong>Score: ${correct}/${total} (Accuracy: ${accuracy}%)</strong></p>
+    <pre>${results.join('\n')}</pre>
+  `;
+  
+  // Show answer box
+  const answerBox = document.getElementById('answerBox');
+  answerBox.open = true;
+  document.querySelector('#answerBox .badge').textContent = 'shown';
+  
+  // Mark answered questions in navigation
+  updateAnsweredNav();
+}
+
+// Reset form
+function resetForm() {
+  // Reset radio buttons
+  document.querySelectorAll('input[type="radio"]').forEach(el => el.checked = false);
+  // Reset checkboxes
+  document.querySelectorAll('input[name="q20-21"]').forEach(el => el.checked = false);
+  // Reset text inputs
+  document.querySelectorAll('input[type="text"]').forEach(el => el.value = '');
+  // Clear results and answer box
+  document.getElementById('results').innerHTML = '';
+  document.getElementById('answerBox').open = false;
+  document.querySelector('#answerBox .badge').textContent = 'hidden';
+  // Reset highlighted text
+  document.querySelectorAll('.hl').forEach(el => {
+    const parent = el.parentNode;
+    while (el.firstChild) parent.insertBefore(el.firstChild, el);
+    parent.removeChild(el);
+    parent.normalize();
+  });
+  // Reset notes
+  document.getElementById('noteArea').value = '';
+  // Reset navigation
+  document.querySelectorAll('.q-item').forEach(item => item.classList.remove('answered'));
+  // Restart timer
+  clearInterval(timerInterval);
+  _t = 0;
+  _timerEl.textContent = '00:00';
+  timerInterval = setInterval(() => {
+    _t++;
+    const m = String(Math.floor(_t/60)).padStart(2,'0');
+    const s = String(_t%60).padStart(2,'0');
+    _timerEl.textContent = `${m}:${s}`;
+  }, 1000);
+}
+
+// Scroll to question anchor
+function scrollToElement(id) {
+  const el = document.getElementById(id);
+  if (el) {
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  // Highlight navigation item temporarily
+  const navs = document.querySelectorAll('.practice-nav .q-item');
+  navs.forEach(n => n.classList.remove('active'));
+  const btn = document.getElementById(id.replace('-anchor', '-nav'));
+  if (btn) {
+    btn.classList.add('active');
+    setTimeout(() => btn.classList.remove('active'), 800);
+  }
+}
+
+// Update answered status in navigation
+function updateAnsweredNav() {
+  // Q14-Q19 (Radio buttons)
+  for (let i = 14; i <= 19; i++) {
+    const navItem = document.getElementById(`q${i}-nav`);
+    const isAnswered = !!document.querySelector(`input[name="q${i}"]:checked`);
+    navItem.classList.toggle('answered', isAnswered);
+  }
+  
+  // Q20-Q21 (Checkboxes)
+  const q20Nav = document.getElementById('q20-nav');
+  const q21Nav = document.getElementById('q21-nav');
+  const selectedCheckboxes = document.querySelectorAll('input[name="q20-21"]:checked');
+  const isQ20Answered = selectedCheckboxes.length > 0;
+  q20Nav.classList.toggle('answered', isQ20Answered);
+  q21Nav.classList.toggle('answered', isQ20Answered); // Mark both as answered if any checkbox is selected
+  
+  // Q22-Q26 (Text inputs)
+  for (let i = 22; i <= 26; i++) {
+    const navItem = document.getElementById(`q${i}-nav`);
+    const input = document.querySelector(`input[name="q${i}"]`);
+    const isAnswered = !!input && input.value.trim() !== '';
+    navItem.classList.toggle('answered', isAnswered);
+  }
+}
+
+// Initial setup for answered nav
+(function() {
+  // Q14-Q19 radio buttons
+  for (let i = 14; i <= 19; i++) {
+    document.querySelectorAll(`input[name="q${i}"]`).forEach(input => {
+      input.addEventListener('change', updateAnsweredNav);
+    });
+  }
+  
+  // Q20-Q21 checkboxes
+  document.querySelectorAll('input[name="q20-21"]').forEach(checkbox => {
+    checkbox.addEventListener('change', updateAnsweredNav);
+  });
+  
+  // Q22-Q26 text inputs
+  for (let i = 22; i <= 26; i++) {
+    document.querySelector(`input[name="q${i}"]`).addEventListener('input', updateAnsweredNav);
+  }
+  
+  // Initial check
+  updateAnsweredNav();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>P1 – The Slow Food Organization</title>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<style>
+  :root { 
+    --line:#e5e7eb; 
+    --bg:#f6f7fb; 
+    --panel:#fff; 
+    --accent:#3b82f6; 
+    --muted:#6b7280; 
+    --shadow:0 6px 20px rgba(0,0,0,.12); 
+    /* 基础字体大小变量，默认regular */
+    --font-size-regular: 16px;
+    --font-size-moderate: 18px;
+    --font-size-large: 20px;
+  }
+  /* 全局字体大小控制，默认regular */
+  * { 
+    box-sizing: border-box; 
+    font-size: var(--font-size-regular);
+  }
+  html,body { height:100%; }
+  body { 
+    margin:0; 
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; 
+    background:var(--bg); 
+  }
+  /* 计时器和设置按钮容器 */
+  .timer-settings {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  #timer { 
+    position: static; 
+    display: inline-block; 
+    background:#fff; 
+    border:1px solid var(--line); 
+    border-radius:10px; 
+    padding:2px 8px; 
+    font-size:14px; 
+    vertical-align: middle; 
+  }
+  /* 设置按钮样式 */
+  #settingsBtn {
+    padding:2px 8px;
+    border:1px solid var(--line);
+    border-radius:10px;
+    background:#fff;
+    cursor:pointer;
+    font-size:14px;
+    vertical-align: middle;
+  }
+  #settingsBtn:hover {
+    background:#f1f5f9;
+    border-color:var(--accent);
+  }
+  /* 设置弹窗样式 */
+  #settingsModal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:16px;
+    box-shadow:var(--shadow);
+    z-index: 10000;
+    display: none;
+    min-width: 240px;
+  }
+  #settingsModal h4 {
+    margin-top:0;
+    font-size:18px;
+    color:var(--accent);
+  }
+  .font-size-option {
+    margin:8px 0;
+    cursor:pointer;
+    padding:4px 8px;
+    border-radius:6px;
+  }
+  .font-size-option:hover {
+    background:#f1f5f9;
+  }
+  .font-size-option.active {
+    background:#e0e7ff;
+    border:1px solid var(--accent);
+  }
+  #closeSettings {
+    margin-top:12px;
+    padding:6px 12px;
+    background:var(--accent);
+    color:#fff;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+  }
+  #closeSettings:hover {
+    background:#2563eb;
+  }
+  /* 遮罩层 */
+  #overlay {
+    position: fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,0.3);
+    z-index: 9999;
+    display: none;
+  }
+
+  .shell { display:flex; height:100vh; width:100%; }
+  .pane { background:var(--panel); overflow:auto; padding:20px; }
+  #left { flex: 0 0 50%; min-width: 280px; }
+  #right { flex: 1 1 auto; min-width: 320px; background:#fbfbff; border-left:1px solid var(--line); }
+  #divider { flex: 0 0 8px; background: linear-gradient(90deg,#e5e7eb,#d1d5db); cursor: ew-resize; position:relative; z-index: 5; user-select:none; }
+  h2,h3,h4 { margin:0 0 10px; }
+  h2 { font-size: 24px; }
+  h3 { font-size: 20px; }
+  h4 { font-size: 18px; }
+  #left p { margin: 0 0 12px; line-height: 1.6; word-break: normal; overflow-wrap: normal; hyphens: none; }
+  .group { background:#fff; border:1px solid var(--line); border-radius:10px; padding:12px; margin-bottom:14px; }
+  table { border-collapse: collapse; width:100%; }
+  th, td { border:1px solid var(--line); padding:8px; text-align:center; font-size:14px; }
+  th { background:#f1f5f9; font-weight:600; }
+  .fill-blank-input {
+    width: 120px;
+    padding:4px 6px;
+    border:1px solid var(--line);
+    border-radius:6px;
+    margin:0 4px;
+    text-align:center;
+  }
+  .question-section { padding:8px 0; border-top:1px dashed var(--line); }
+  .question-section p { margin:4px 0; }
+  button { padding:8px 12px; border:1px solid var(--line); border-radius:10px; background:#fff; cursor:pointer; }
+  button.primary { background:var(--accent); color:#fff; border-color:#3b82f6; }
+  #results { background:#fff; border:1px solid var(--line); border-radius:10px; padding:10px; }
+  .hl { background:#fff3a3; box-shadow: inset 0 -2px 0 rgba(0,0,0,.05); cursor: pointer; }
+  .hl:hover { filter: brightness(0.98); }
+  #selbar { position: absolute; display:none; z-index: 6000; background:#111; color:#fff; border-radius: 8px; padding: 6px; box-shadow: var(--shadow); font-size: 13px; gap:6px; align-items: center; }
+  #selbar button { background: transparent; color:#fff; border: 1px solid rgba(255,255,255,.25); padding: 4px 8px; border-radius: 6px; cursor:pointer; }
+  #selbar button:hover { border-color:#fff; }
+  #notes { position: fixed; right: 12px; bottom: 12px; width: 320px; height: 42vh; background:#fff; border:1px solid var(--line); border-radius: 12px; display:none; flex-direction: column; z-index:1500; box-shadow: var(--shadow); }
+  #notes header { display:flex; align-items:center; justify-content: space-between; padding:8px 10px; border-bottom:1px solid var(--line); }
+  #notes textarea { flex:1; border:0; padding:10px; resize:none; font-size:14px; line-height:1.5; }
+  #toast { position: fixed; left:50%; transform: translateX(-50%); bottom: 24px; background:#111; color:#fff; padding:8px 12px; border-radius: 8px; display:none; z-index:2500; }
+  .badge { display:inline-block; background:#eef2ff; color:#4338ca; padding:2px 8px; border-radius:999px; font-size:12px; margin-left:6px; }
+  body { padding-bottom: 82px; }
+  .practice-nav { background:#fff; border-bottom:2px solid var(--line); padding:12px 20px; display:flex; align-items:center; gap:20px; box-shadow:0 2px 4px rgba(0,0,0,.05); flex-wrap:wrap; position:fixed; left:0; right:0; bottom:0; border-top:2px solid var(--line); border-bottom:0; z-index:4000; }
+  .practice-nav .title { font-weight:600; color:var(--muted); }
+  .practice-nav .questions { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .practice-nav .q-item { padding:6px 10px; border:1px solid var(--line); border-radius:6px; background:#fff; cursor:pointer; font-size:14px; transition:all 0.2s; min-width:36px; text-align:center; }
+  .practice-nav .q-item:hover { background:#f1f5f9; border-color:var(--accent); }
+  .practice-nav .q-item.answered { background:#e0e7ff; border-color:var(--accent); color:var(--accent); font-weight:500; }
+  .practice-nav .q-item.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+</style>
+</head>
+<body>
+<!-- 设置弹窗和遮罩层 -->
+<div id="overlay"></div>
+<div id="settingsModal">
+  <h4>Font Size Settings</h4>
+  <div class="font-size-option active" data-size="regular">
+    Regular (Default)
+  </div>
+  <div class="font-size-option" data-size="moderate">
+    Moderate (Larger than Regular)
+  </div>
+  <div class="font-size-option" data-size="large">
+    Large (Larger than Moderate)
+  </div>
+  <button id="closeSettings">Save</button>
+</div>
+
+<div class="practice-nav">
+  <div class="title">Questions</div>
+  <div class="questions">
+    <div class="q-item" id="q1-nav" onclick="scrollToElement('q1-anchor')">1</div>
+    <div class="q-item" id="q2-nav" onclick="scrollToElement('q2-anchor')">2</div>
+    <div class="q-item" id="q3-nav" onclick="scrollToElement('q3-anchor')">3</div>
+    <div class="q-item" id="q4-nav" onclick="scrollToElement('q4-anchor')">4</div>
+    <div class="q-item" id="q5-nav" onclick="scrollToElement('q5-anchor')">5</div>
+    <div class="q-item" id="q6-nav" onclick="scrollToElement('q6-anchor')">6</div>
+    <div class="q-item" id="q7-nav" onclick="scrollToElement('q7-anchor')">7</div>
+    <div class="q-item" id="q8-nav" onclick="scrollToElement('q8-anchor')">8</div>
+    <div class="q-item" id="q9-nav" onclick="scrollToElement('q9-anchor')">9</div>
+    <div class="q-item" id="q10-nav" onclick="scrollToElement('q10-anchor')">10</div>
+    <div class="q-item" id="q11-nav" onclick="scrollToElement('q11-anchor')">11</div>
+    <div class="q-item" id="q12-nav" onclick="scrollToElement('q12-anchor')">12</div>
+    <div class="q-item" id="q13-nav" onclick="scrollToElement('q13-anchor')">13</div>
+  </div>
+</div>
+<div class="shell">
+<section class="pane" id="left">
+  <h2>READING PASSAGE 1 
+    <div class="timer-settings">
+      <span id="timer">00:00</span>
+      <button id="settingsBtn">Settings</button>
+    </div>
+  </h2>
+  <p>You should spend about 20 minutes on Questions 1–13, which are based on Reading Passage 1 below.</p>
+  <h3>The Slow Food Organization</h3>
+  
+  <h4>Taking time with food</h4>
+  <p>Slow Food began when Carlo Petrini, an Italian journalist, was dismayed by the opening of a fast food restaurant on the famous Piazza di Spagna in Rome. He decided it was time to celebrate the fast-disappearing virtues of the slow production, preparation and eating of food. What he had in mind when he began the Slow Food organization were local foods which were prepared in their traditional manner and eaten at leisurely meals with family and friends. Slow Food is the antithesis of everything fast food stands for, and it is now a thriving international organization with members in 45 countries, a successful publishing operation and a biannual trade show. In addition, Slow Food has launched a project called the ‘Ark of Taste’ and a concept called ‘virtuous globalization’.</p>
+  
+  <p>The Ark of Taste is the catalog of endangered food plant and animal species that Slow Food has resolved to protect against the rising global tide of fast food. Some examples of the biodiversity promoted by the Ark of Taste include Iroquois white corn and the Narragansett turkey, both of which are old, or heritage, foods in North America. Biodiversity is a term commonly associated with discussions of threats to wild species, but according to Slow Food the biodiversity of the domesticated species people have depended on for centuries is no less important. For example, when the latest patented hybrid variety of plant proves unable to withstand fungal or bacterial disease, plant breeders will need the disease-resistant genes which can be obtained from heritage plant varieties. If Iroquois white corn had fallen out of production, as it very nearly did two decades ago due to the commercial launch of a new hybrid corn, irreplaceable and possibly crucial sets of corn genes would have been lost forever.</p>
+  
+  <p>For some time, plant-saver groups have been preserving heritage plant varieties, but Slow Food takes that project a step further. The movement understands that all the food and plant species in its Ark of Taste carry not only information about genetic traits but they also embody a set of social practices, and in some cases even a way of life of previous generations. Slow Food teaches that when a variety of food or breed of animal disappears, something greater also disappears: a specific, irreplaceable mode of life that a particular people have devised for living in a particular part of the Earth. An example of this is the Iroquois white corn. By working to find new markets for this ancient variety of corn, Slow Food is ensuring a source of income for the Native Americans who grow, roast, and grind this corn and, at the same time, helping to preserve the specific cookery and religious uses that the corn has been selected to support over hundreds of years.</p>
+  
+  <p>Slow Food has moved away from the traditional locations for preserving rare animal and plant species. For example, instead of zoos for rare animals and botanic gardens for rare plants, Slow Food maintains that its plants and animals are best preserved on the dishes and plates of discerning customers. To this end, Slow Food has introduced the concept of virtuous globalization, which recognizes that the best way to ensure a safe future for distinctive local products and practices is to find a global market for them. In this way, local producers will be able to continue producing the food which for many years has been a defining factor of their cultural identity. The characteristics of the virtuous globalization of Slow Foods show how different the concept is from the globalization of fast foods. Whereas global fast food companies aim to sell food that has an unchanging taste wherever in the world it is eaten, the taste of a recognized Slow Food is unique to that food. Another aspect is the quantities sold of these two types of food. In the case of fast food, these are enormous, but the quantities of Slow Food products which are available for selling are limited, due to the rarity of the plants or animals. The customers of virtuous globalization Slow Foods are affluent people who value novelty and are undeterred by the costs, which are high when compared to fast food.</p>
+  
+  <p>Some years ago, a network of farmers in the USA volunteered to take part in a national Slow Food project. The project was for the farmers to raise a total of 5,000 turkeys from eggs which had been selected from four varieties of endangered turkey. The farmers had to begin by hatching the eggs they had been supplied with, then raising the young turkeys to adults. They were promised a guaranteed price per pound for the adult turkeys. The object of the enterprise was to raise heritage turkeys for the North American holiday of Thanksgiving. Although chefs in some restaurants where the turkeys were on the menu complained that the Slow Food turkeys were smaller than industrially produced turkeys, the distinctive flavors were very well received by consumers. By the following year, the world population of these turkeys had nearly doubled.</p>
+  
+  <p>It may seem strange that taking pleasure in eating could be a strategy for preserving biodiversity because pleasure is not normally associated with environmentalism. However, pleasure is part of what Slow Food aims to bring back, by demonstrating that, at least when it comes to the politics of food, the best choice is often the one that provides the most enjoyment.</p>
+  
+  <p>&nbsp;</p> <!-- 空白行防止加载不完全 -->
+  <p>&nbsp;</p> <!-- 额外空白行增强稳定性 -->
+</section>
+<div id="divider" title="Drag to resize"></div>
+<section class="pane" id="right">
+  <h3>Questions</h3>
+  
+  <!-- 判断题部分 -->
+  <div class="group">
+    <h4>Questions 1–6</h4>
+    <p>Do the following statements agree with the information in Reading Passage 1?</p>
+    <p>In boxes 1–6 on your answer sheet, write:</p>
+    <table style="width:100%; margin:8px 0;">
+      <tr>
+        <td style="border:1px solid var(--line); padding:4px; text-align:center;"><strong>TRUE</strong></td>
+        <td style="border:1px solid var(--line); padding:4px;">if the statement agrees with the information</td>
+      </tr>
+      <tr>
+        <td style="border:1px solid var(--line); padding:4px; text-align:center;"><strong>FALSE</strong></td>
+        <td style="border:1px solid var(--line); padding:4px;">if the statement contradicts the information</td>
+      </tr>
+      <tr>
+        <td style="border:1px solid var(--line); padding:4px; text-align:center;"><strong>NOT GIVEN</strong></td>
+        <td style="border:1px solid var(--line); padding:4px;">if there is no information about this</td>
+      </tr>
+    </table>
+    
+    <a id="q1-anchor"></a>
+    <div id="q1-section" class="question-section">
+      <p>1 The Ark of Taste lists food plant and animal species in danger of extinction.</p>
+      <div style="display:flex; flex-wrap:wrap; gap:10px; margin:4px 0;">
+        <label style="margin:0;"><input name="q1" type="radio" value="TRUE"> TRUE</label>
+        <label style="margin:0;"><input name="q1" type="radio" value="FALSE"> FALSE</label>
+        <label style="margin:0;"><input name="q1" type="radio" value="NOT GIVEN"> NOT GIVEN</label>
+      </div>
+    </div>
+    
+    <a id="q2-anchor"></a>
+    <div id="q2-section" class="question-section">
+      <p>2 Slow Food considers that the term ‘biodiversity’ should be restricted to wild species.</p>
+      <div style="display:flex; flex-wrap:wrap; gap:10px; margin:4px 0;">
+        <label style="margin:0;"><input name="q2" type="radio" value="TRUE"> TRUE</label>
+        <label style="margin:0;"><input name="q2" type="radio" value="FALSE"> FALSE</label>
+        <label style="margin:0;"><input name="q2" type="radio" value="NOT GIVEN"> NOT GIVEN</label>
+      </div>
+    </div>
+    
+    <a id="q3-anchor"></a>
+    <div id="q3-section" class="question-section">
+      <p>3 The genes of heritage plants may be of vital importance to modern plant breeders.</p>
+      <div style="display:flex; flex-wrap:wrap; gap:10px; margin:4px 0;">
+        <label style="margin:0;"><input name="q3" type="radio" value="TRUE"> TRUE</label>
+        <label style="margin:0;"><input name="q3" type="radio" value="FALSE"> FALSE</label>
+        <label style="margin:0;"><input name="q3" type="radio" value="NOT GIVEN"> NOT GIVEN</label>
+      </div>
+    </div>
+    
+    <a id="q4-anchor"></a>
+    <div id="q4-section" class="question-section">
+      <p>4 Countries can sell the genes of their heritage plant varieties internationally.</p>
+      <div style="display:flex; flex-wrap:wrap; gap:10px; margin:4px 0;">
+        <label style="margin:0;"><input name="q4" type="radio" value="TRUE"> TRUE</label>
+        <label style="margin:0;"><input name="q4" type="radio" value="FALSE"> FALSE</label>
+        <label style="margin:0;"><input name="q4" type="radio" value="NOT GIVEN"> NOT GIVEN</label>
+      </div>
+    </div>
+    
+    <a id="q5-anchor"></a>
+    <div id="q5-section" class="question-section">
+      <p>5 Slow Food maintains that food and culture exist independently of each other.</p>
+      <div style="display:flex; flex-wrap:wrap; gap:10px; margin:4px 0;">
+        <label style="margin:0;"><input name="q5" type="radio" value="TRUE"> TRUE</label>
+        <label style="margin:0;"><input name="q5" type="radio" value="FALSE"> FALSE</label>
+        <label style="margin:0;"><input name="q5" type="radio" value="NOT GIVEN"> NOT GIVEN</label>
+      </div>
+    </div>
+    
+    <a id="q6-anchor"></a>
+    <div id="q6-section" class="question-section">
+      <p>6 Some Native Americans are now giving cookery classes featuring Iroquois white corn.</p>
+      <div style="display:flex; flex-wrap:wrap; gap:10px; margin:4px 0;">
+        <label style="margin:0;"><input name="q6" type="radio" value="TRUE"> TRUE</label>
+        <label style="margin:0;"><input name="q6" type="radio" value="FALSE"> FALSE</label>
+        <label style="margin:0;"><input name="q6" type="radio" value="NOT GIVEN"> NOT GIVEN</label>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 表格填空题部分 -->
+  <div class="group">
+    <a id="q7-anchor"></a>
+    <h4>Questions 7–9</h4>
+    <p>Complete the table below.</p>
+    <p>Choose ONE WORD ONLY from the passage for each answer.</p>
+    <p>Write your answers in boxes 7–9 on your answer sheet.</p>
+    
+    <table style="width:100%; margin:10px 0;">
+      <tr>
+        <th></th>
+        <th>Taste</th>
+        <th>Quantities sold</th>
+        <th>Cost</th>
+      </tr>
+      <tr>
+        <td style="font-weight:500;">Slow food</td>
+        <td><input type="text" name="q7" class="fill-blank-input" id="q7-input" placeholder="Q7"></td>
+        <td><input type="text" name="q8" class="fill-blank-input" id="q8-input" placeholder="Q8"></td>
+        <td>high</td>
+      </tr>
+      <tr>
+        <td style="font-weight:500;">Fast food</td>
+        <td><input type="text" name="q9" class="fill-blank-input" id="q9-input" placeholder="Q9"></td>
+        <td>enormous</td>
+        <td>low</td>
+      </tr>
+    </table>
+  </div>
+  
+  <!-- 简答题部分 -->
+  <div class="group">
+    <a id="q10-anchor"></a>
+    <h4>Questions 10–13</h4>
+    <p>Answer the questions below.</p>
+    <p>Choose ONE WORD AND/OR A NUMBER from the passage for each answer.</p>
+    <p>Write your answers in boxes 10–13 on your answer sheet.</p>
+    
+    <div id="q10-section" class="question-section">
+      <p>10 What were farmers in the USA given so that they could raise endangered turkeys?</p>
+      <input type="text" name="q10" class="fill-blank-input" id="q10-input">
+    </div>
+    
+    <a id="q11-anchor"></a>
+    <div id="q11-section" class="question-section">
+      <p>11 How many varieties of endangered turkey benefited from the project?</p>
+      <input type="text" name="q11" class="fill-blank-input" id="q11-input">
+    </div>
+    
+    <a id="q12-anchor"></a>
+    <div id="q12-section" class="question-section">
+      <p>12 Who was not happy with the size of the turkeys?</p>
+      <input type="text" name="q12" class="fill-blank-input" id="q12-input">
+    </div>
+    
+    <a id="q13-anchor"></a>
+    <div id="q13-section" class="question-section">
+      <p>13 Who liked the taste of the endangered turkeys?</p>
+      <input type="text" name="q13" class="fill-blank-input" id="q13-input">
+    </div>
+  </div>
+  
+  <div style="display:flex;gap:8px;margin-bottom:10px;">
+    <button class="primary" onclick="grade()">Submit</button>
+    <button onclick="resetForm()">Reset</button>
+    <button onclick="toggleNotes()">Notes</button>
+  </div>
+  <div id="results"></div>
+  <details class="answerbox" id="answerBox">
+    <summary>Show answers (click to toggle) <span class="badge">hidden</span></summary>
+    <div id="answerContent"></div>
+  </details>
+</section>
+</div>
+<div aria-label="Selection tools" id="selbar" role="toolbar">
+  <button id="btnHL">Highlight</button>
+  <button id="btnUH">Remove</button>
+  <button id="btnNote">Note</button>
+</div>
+<div id="notes">
+  <header>
+    <strong>Notes</strong>
+    <div>
+      <button id="btnCopy">Copy</button>
+      <button id="btnClose">Close</button>
+    </div>
+  </header>
+  <textarea id="noteArea" placeholder="Type your notes here..."></textarea>
+</div>
+<div id="toast"></div>
+<script>
+// 计时器变量（添加timerInterval用于控制停止）
+let _t=0; 
+const _timerEl=document.getElementById('timer');
+let timerInterval = setInterval(updateTimer, 1000);
+
+// 计时器更新函数
+function updateTimer(){ 
+  _t++; 
+  var m=String(Math.floor(_t/60)).padStart(2,'0'); 
+  var s=String(_t%60).padStart(2,'0'); 
+  _timerEl.textContent=m+':'+s; 
+}
+
+// 拖动分隔线功能
+var divider = document.getElementById('divider');
+var left = document.getElementById('left');
+var right = document.getElementById('right');
+var dragging=false;
+function startDrag(e){ 
+  dragging=true; 
+  document.body.style.cursor='ew-resize'; 
+  if(e.preventDefault) e.preventDefault(); 
+}
+function endDrag(){ 
+  dragging=false; 
+  document.body.style.cursor=''; 
+}
+function onMove(clientX){
+  var container = document.querySelector('.shell').getBoundingClientRect();
+  var x = clientX - container.left;
+  x = Math.max(280, Math.min(container.width-320, x));
+  left.style.flex = '0 0 ' + x + 'px';
+  right.style.flex = '1 1 auto';
+}
+divider.addEventListener('mousedown', function(e){ startDrag(e); });
+window.addEventListener('mousemove', function(e){ if(dragging) onMove(e.clientX); });
+window.addEventListener('mouseup', endDrag);
+divider.addEventListener('touchstart', function(e){ startDrag(e.touches[0]); }, {passive:false});
+window.addEventListener('touchmove', function(e){ if(dragging) onMove(e.touches[0].clientX); }, {passive:false});
+window.addEventListener('touchend', endDrag);
+
+// 文本高亮功能
+var selbar = document.getElementById('selbar');
+var btnHL = document.getElementById('btnHL');
+var btnUH = document.getElementById('btnUH');
+var btnNote = document.getElementById('btnNote');
+var lastRange=null;
+var currentHlNode=null;
+var keepToolbar=false;
+
+function positionSelbarForRect(rect){
+  selbar.style.display='flex';
+  requestAnimationFrame(function(){
+    var top = window.scrollY + rect.top - selbar.offsetHeight - 8;
+    var leftPos = window.scrollX + rect.left + rect.width/2 - selbar.offsetWidth/2;
+    selbar.style.top = ((top>0)?top:(window.scrollY + rect.bottom + 8)) + 'px';
+    selbar.style.left = Math.max(8, leftPos) + 'px';
+  });
+}
+
+function updateSelbar(){
+  var sel=window.getSelection();
+  if(!sel || sel.rangeCount===0 || sel.isCollapsed) { 
+    selbar.style.display='none'; 
+    currentHlNode=null; 
+    return; 
+  }
+  var range = sel.getRangeAt(0);
+  lastRange = range.cloneRange();
+  currentHlNode=null;
+  positionSelbarForRect(range.getBoundingClientRect());
+}
+
+document.getElementById('left').addEventListener('mouseup', updateSelbar);
+document.getElementById('right').addEventListener('mouseup', updateSelbar);
+document.addEventListener('selectionchange', function(){ 
+  var sel=window.getSelection(); 
+  if(!sel || sel.rangeCount===0 || sel.isCollapsed){ 
+    if(!keepToolbar && !currentHlNode){ 
+      selbar.style.display='none'; 
+    } 
+  } 
+});
+document.addEventListener('scroll', function(){ 
+  if(selbar.style.display==='flex') updateSelbar(); 
+});
+
+document.addEventListener('mousedown', function(e){
+  var t = e.target;
+  if(t.classList && t.classList.contains('hl')){
+    keepToolbar = true;
+  } else {
+    keepToolbar = false;
+  }
+}, true);
+
+document.addEventListener('click', function(e){
+  var target = e.target;
+  if(target.classList && target.classList.contains('hl')){
+    currentHlNode = target;
+    lastRange = null;
+    positionSelbarForRect(target.getBoundingClientRect());
+    var sel=window.getSelection();
+    if(sel) sel.removeAllRanges();
+    setTimeout(function(){ keepToolbar=false; }, 0);
+  }
+}, true);
+
+// 执行高亮
+function doHighlight(){
+  if(currentHlNode) return;
+  if(!lastRange || lastRange.collapsed) return;
+  var span=document.createElement('span'); 
+  span.className='hl';
+  try { 
+    lastRange.surroundContents(span); 
+  } catch(e){
+    var wrap=document.createElement('span'); 
+    wrap.className='hl';
+    wrap.appendChild(lastRange.cloneContents());
+    lastRange.deleteContents();
+    lastRange.insertNode(wrap);
+  }
+  selbar.style.display='none';
+  showToast('Highlighted');
+}
+
+// 移除高亮
+function removeHighlight(){
+  if(currentHlNode){
+    var p = currentHlNode.parentNode;
+    while(currentHlNode.firstChild) p.insertBefore(currentHlNode.firstChild, currentHlNode);
+    p.removeChild(currentHlNode); 
+    p.normalize();
+    currentHlNode = null;
+    selbar.style.display='none';
+    showToast('Highlight removed');
+    return;
+  }
+  if(!lastRange) return;
+  var selRect = lastRange.getBoundingClientRect();
+  var walker=document.createTreeWalker(document.body, NodeFilter.SHOW_ELEMENT);
+  var toRemove=[];
+  while(walker.nextNode()){
+    var n=walker.currentNode;
+    if(n.classList && n.classList.contains('hl')) {
+      var r = n.getBoundingClientRect();
+      if(!(r.right < selRect.left || r.left > selRect.right || r.bottom < selRect.top || r.top > selRect.bottom)) {
+        toRemove.push(n);
+      }
+    }
+  }
+  toRemove.forEach(function(el){ 
+    var p=el.parentNode; 
+    while(el.firstChild) p.insertBefore(el.firstChild, el); 
+    p.removeChild(el); 
+    p.normalize(); 
+  });
+  selbar.style.display='none';
+  showToast('Highlight removed');
+}
+
+btnHL.addEventListener('click', doHighlight);
+btnUH.addEventListener('click', removeHighlight);
+
+// 笔记功能
+var notes = document.getElementById('notes');
+var noteArea = document.getElementById('noteArea');
+var btnCopy=document.getElementById('btnCopy');
+var btnClose=document.getElementById('btnClose');
+
+function toggleNotes(){ 
+  notes.style.display = (notes.style.display==='flex'?'none':'flex'); 
+}
+window.toggleNotes = toggleNotes;
+
+btnClose.addEventListener('click', toggleNotes);
+btnCopy.addEventListener('click', async function(){ 
+  await navigator.clipboard.writeText(noteArea.value||''); 
+  showToast('Copied'); 
+});
+
+btnNote.addEventListener('click', function(){
+  var text = '';
+  if(currentHlNode){ 
+    text = (currentHlNode.textContent||'').trim(); 
+  } else if(lastRange){ 
+    var frag = lastRange.cloneContents(); 
+    text = (frag.textContent||'').trim(); 
+  }
+  toggleNotes();
+  if(text) {
+    noteArea.value = (noteArea.value? noteArea.value+'\n':'') + '> ' + text + '\n';
+    noteArea.scrollTop = noteArea.scrollHeight;
+  }
+  selbar.style.display='none';
+});
+
+// 提示框功能
+var toastEl=document.getElementById('toast');
+function showToast(msg){
+  toastEl.textContent=msg; 
+  toastEl.style.display='block';
+  setTimeout(function(){ toastEl.style.display='none'; }, 1200);
+}
+
+// 答案和评分功能
+var answers = {
+  "q1":"TRUE", "q2":"FALSE", "q3":"TRUE", "q4":"NOT GIVEN", "q5":"FALSE", "q6":"NOT GIVEN",
+  "q7":"unique", "q8":"limited", "q9":"unchanging",
+  "q10":"eggs", "q11":"4", "q12":"chefs", "q13":"consumers"
+};
+
+function grade(){
+  // 提交后停止计时器
+  clearInterval(timerInterval);
+  
+  var total=0, correct=0, lines=[];
+  
+  function push(q, ok, user){
+    total++; 
+    if(ok) correct++;
+    var status = ok ? '✅' : '❌';
+    lines.push(q.toUpperCase()+": "+(user||'None')+" "+status);
+  }
+  
+  // 判断题评分（1-6题）
+  for(var n=1;n<=6;n++){
+    var sel=document.querySelector('input[name="q'+n+'"]:checked');
+    var val=sel?sel.value:'';
+    var isCorrect = val === answers['q'+n];
+    push('q'+n, isCorrect, val);
+  }
+  
+  // 表格填空和简答题评分（7-13题）
+  for(var n=7;n<=13;n++){
+    var input=document.getElementById('q'+n+'-input');
+    var val=input?input.value.trim().toLowerCase():'');
+    var correctVal=answers['q'+n].toLowerCase();
+    // 第11题允许数字或文字（4/four）
+    if(n===11){
+      isCorrect = val === '4' || val === 'four';
+    } else {
+      isCorrect = val === correctVal;
+    }
+    push('q'+n, isCorrect, val);
+  }
+  
+  // 显示结果
+  const acc = total ? Math.round(100*correct/total) : 0;
+  var html = '<p><strong>Score:</strong> '+correct+'/'+total+' <span class="badge">Accuracy '+acc+'%</span></p>';
+  html += '<pre>'+lines.join('\n')+'</pre>';
+  document.getElementById('results').innerHTML = html;
+  
+  // 显示答案
+  document.getElementById('answerContent').innerHTML = `
+    <ol>
+      <li>1 → TRUE (The Ark of Taste is the catalog of endangered food plant and animal species)</li>
+      <li>2 → FALSE (Slow Food thinks domesticated species' biodiversity is no less important, not restricted to wild)</li>
+      <li>3 → TRUE (Heritage plants provide disease-resistant genes for modern breeders)</li>
+      <li>4 → NOT GIVEN (No info about international sale of heritage plant genes)</li>
+      <li>5 → FALSE (Slow Food links food to social practices and way of life, not independent)</li>
+      <li>6 → NOT GIVEN (No mention of Native Americans giving cookery classes)</li>
+      <li>7 → unique (The taste of recognized Slow Food is unique)</li>
+      <li>8 → limited (Quantities of Slow Food for sale are limited)</li>
+      <li>9 → unchanging (Fast food has unchanging taste worldwide)</li>
+      <li>10 → eggs (Farmers were supplied with eggs to hatch)</li>
+      <li>11 → 4/four (Eggs selected from four varieties of endangered turkey)</li>
+      <li>12 → chefs (Chefs complained the Slow Food turkeys were smaller)</li>
+      <li>13 → consumers (Distinctive flavors were well received by consumers)</li>
+    </ol>
+  `;
+  document.querySelector('#answerBox .badge').textContent='tap to view';
+}
+
+// 重置功能
+function resetForm(){
+  // 重置计时器
+  clearInterval(timerInterval);
+  _t=0;
+  updateTimer();
+  timerInterval = setInterval(updateTimer, 1000);
+  
+  // 重置选项和输入框
+  document.querySelectorAll('input[type="radio"]').forEach(el=>el.checked=false);
+  document.querySelectorAll('.fill-blank-input').forEach(el=>el.value='');
+  
+  // 重置结果和答案
+  document.getElementById('results').innerHTML='';
+  document.getElementById('answerContent').innerHTML='';
+  document.querySelector('#answerBox .badge').textContent = 'hidden';
+  
+  // 重置导航按钮状态
+  document.querySelectorAll('.q-item').forEach(item => {
+    item.classList.remove('answered');
+  });
+  
+  // 移除所有高亮
+  document.querySelectorAll('.hl').forEach(hl => {
+    var p = hl.parentNode;
+    while(hl.firstChild) p.insertBefore(hl.firstChild, hl);
+    p.removeChild(hl);
+    p.normalize();
+  });
+  
+  // 重置笔记
+  noteArea.value='';
+}
+
+// 滚动到题目功能
+function scrollToElement(id){
+  var el = document.getElementById(id);
+  if(el){ 
+    el.scrollIntoView({behavior:'smooth', block:'center'}); 
+  }
+  
+  // 更新导航按钮激活状态
+  var navs = document.querySelectorAll('.practice-nav .q-item');
+  navs.forEach(n => n.classList.remove('active'));
+  
+  var btn = document.getElementById(id.replace('-anchor','-nav'));
+  if(btn){ 
+    btn.classList.add('active'); 
+    setTimeout(() => btn.classList.remove('active'), 800); 
+  }
+}
+
+// 导航按钮状态更新（检测是否已答题）
+(function(){
+  function mark(qn){
+    var nav = document.getElementById('q'+qn+'-nav');
+    if(!nav) return;
+    
+    var isAnswered = false;
+    // 判断题检测（1-6题）
+    if(qn >=1 && qn <=6){
+      var radios = document.querySelectorAll('input[name="q'+qn+'"]:checked');
+      isAnswered = radios.length > 0;
+    }
+    // 填空/简答题检测（7-13题）
+    if(qn >=7 && qn <=13){
+      var input = document.getElementById('q'+qn+'-input');
+      isAnswered = input && input.value.trim() !== '';
+    }
+    
+    if(isAnswered){
+      nav.classList.add('answered');
+    } else {
+      nav.classList.remove('answered');
+    }
+  }
+  
+  // 为所有题目添加事件监听
+  for(var q=1;q<=6;q++){
+    (function(n){
+      document.querySelectorAll('input[name="q'+n+'"]').forEach(input => {
+        input.addEventListener('change', () => mark(n));
+      });
+    })(q);
+  }
+  
+  for(var q=7;q<=13;q++){
+    (function(n){
+      var input = document.getElementById('q'+n+'-input');
+      if(input){
+        input.addEventListener('input', () => mark(n));
+        input.addEventListener('change', () => mark(n));
+      }
+    })(q);
+  }
+  
+  // 初始检测
+  for(var q=1;q<=13;q++){
+    mark(q);
+  }
+})();
+
+// 字体大小设置功能
+document.getElementById('settingsBtn').addEventListener('click', function(){
+  document.getElementById('overlay').style.display='block';
+  document.getElementById('settingsModal').style.display='block';
+});
+
+document.getElementById('closeSettings').addEventListener('click', function(){
+  document.getElementById('overlay').style.display='none';
+  document.getElementById('settingsModal').style.display='none';
+});
+
+// 点击遮罩层关闭设置
+document.getElementById('overlay').addEventListener('click', function(){
+  document.getElementById('overlay').style.display='none';
+  document.getElementById('settingsModal').style.display='none';
+});
+
+// 字体大小选项切换
+document.querySelectorAll('.font-size-option').forEach(option => {
+  option.addEventListener('click', function(){
+    // 移除其他选项的active类
+    document.querySelectorAll('.font-size-option').forEach(opt => {
+      opt.classList.remove('active');
+    });
+    // 为当前选项添加active类
+    this.classList.add('active');
+    
+    // 获取选择的字体大小类型
+    var sizeType = this.getAttribute('data-size');
+    var root = document.documentElement;
+    
+    // 设置对应的字体大小变量
+    switch(sizeType){
+      case 'regular':
+        root.style.setProperty('--font-size-regular', '16px');
+        root.style.setProperty('--font-size-moderate', '18px');
+        root.style.setProperty('--font-size-large', '20px');
+        break;
+      case 'moderate':
+        root.style.setProperty('--font-size-regular', '18px');
+        root.style.setProperty('--font-size-moderate', '20px');
+        root.style.setProperty('--font-size-large', '22px');
+        break;
+      case 'large':
+        root.style.setProperty('--font-size-regular', '20px');
+        root.style.setProperty('--font-size-moderate', '22px');
+        root.style.setProperty('--font-size-large', '24px');
+        break;
+    }
+  });
+});
+</script>
+</body>
+</html>

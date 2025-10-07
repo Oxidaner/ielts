@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>P1 - The Early History of Olive Oil</title>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<style>
+  :root { 
+    --line:#e5e7eb; 
+    --bg:#f6f7fb; 
+    --panel:#fff; 
+    --accent:#3b82f6; 
+    --muted:#6b7280; 
+    --shadow:0 6px 20px rgba(0,0,0,.12); 
+    --font-size-regular: 16px; /* 基础字体大小 */
+    --font-size-moderate: 18px; /* 中等字体大小（比基础大1号） */
+    --font-size-large: 20px; /* 大字体大小（比中等大1号） */
+  }
+  * { box-sizing: border-box; }
+  html,body { 
+    height:100%; 
+    font-size: var(--font-size-regular); /* 默认使用基础字体大小 */
+  }
+  body { 
+    margin:0; 
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; 
+    background:var(--bg); 
+  }
+  /* 字体大小切换类 */
+  .font-regular { font-size: var(--font-size-regular) !important; }
+  .font-moderate { font-size: var(--font-size-moderate) !important; }
+  .font-large { font-size: var(--font-size-large) !important; }
+
+  #timer-container { display: inline-flex; align-items: center; gap: 8px; }
+  #timer { 
+    background:#fff; 
+    border:1px solid var(--line); 
+    border-radius:10px; 
+    padding:2px 8px; 
+    font-size: inherit; /* 继承父级字体大小 */
+    vertical-align: middle; 
+  }
+  #settings-btn { 
+    padding:2px 8px; 
+    border:1px solid var(--line); 
+    border-radius:10px; 
+    background:#fff; 
+    cursor:pointer; 
+    font-size: inherit; 
+    vertical-align: middle; 
+  }
+  #settings-btn:hover { background:var(--bg); }
+
+  /* 字体设置弹窗 */
+  #settings-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:16px;
+    box-shadow:var(--shadow);
+    z-index: 10000;
+    display: none;
+    flex-direction: column;
+    gap: 12px;
+  }
+  #settings-modal.active { display: flex; }
+  .modal-overlay {
+    position: fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,0.5);
+    z-index: 9999;
+    display: none;
+  }
+  .modal-overlay.active { display: block; }
+  .font-size-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .font-size-option input { cursor: pointer; }
+  .modal-buttons { display: flex; justify-content: flex-end; gap: 8px; }
+  .modal-btn {
+    padding:6px 12px;
+    border:1px solid var(--line);
+    border-radius:8px;
+    background:#fff;
+    cursor:pointer;
+    font-size: inherit;
+  }
+  .modal-btn.primary { background:var(--accent); color:#fff; border-color:var(--accent); }
+
+  .shell { display:flex; height:100vh; width:100%; }
+  .pane { 
+    background:var(--panel); 
+    overflow:auto; 
+    padding:20px; 
+    font-size: inherit; /* 继承父级字体大小 */
+  }
+  #left { flex: 0 0 50%; min-width: 280px; }
+  #right { 
+    flex: 1 1 auto; 
+    min-width: 320px; 
+    background:#fbfbff; 
+    border-left:1px solid var(--line); 
+    font-size: inherit; 
+  }
+  #divider { 
+    flex: 0 0 8px; 
+    background: linear-gradient(90deg,#e5e7eb,#d1d5db); 
+    cursor: ew-resize; 
+    position:relative; 
+    z-index: 5; 
+    user-select:none; 
+  }
+  h2,h3,h4 { 
+    margin:0 0 10px; 
+    font-size: inherit; 
+  }
+  #left p { 
+    margin: 0 0 12px; 
+    line-height: 1.6; 
+    word-break: normal; 
+    overflow-wrap: normal; 
+    hyphens: none; 
+    font-size: inherit; 
+  }
+  .group { 
+    background:#fff; 
+    border:1px solid var(--line); 
+    border-radius:10px; 
+    padding:12px; 
+    margin-bottom:14px; 
+    font-size: inherit; 
+  }
+  table { border-collapse: collapse; width:100%; font-size: inherit; }
+  th, td { 
+    border:1px solid var(--line); 
+    padding:6px; 
+    text-align:center; 
+    font-size: inherit; 
+  }
+  th:first-child, td:first-child { width:92px; }
+  button { 
+    padding:8px 12px; 
+    border:1px solid var(--line); 
+    border-radius:10px; 
+    background:#fff; 
+    cursor:pointer; 
+    font-size: inherit; 
+  }
+  button.primary { background:var(--accent); color:#fff; border-color:#3b82f6; }
+  #results { 
+    background:#fff; 
+    border:1px solid var(--line); 
+    border-radius:10px; 
+    padding:10px; 
+    font-size: inherit; 
+  }
+  .hl { 
+    background:#fff3a3; 
+    box-shadow: inset 0 -2px 0 rgba(0,0,0,.05); 
+    cursor: pointer; 
+  }
+  .hl:hover { filter: brightness(0.98); }
+  #selbar { 
+    position: absolute; 
+    display:none; 
+    z-index: 6000; 
+    background:#111; 
+    color:#fff; 
+    border-radius: 8px; 
+    padding: 6px; 
+    box-shadow: var(--shadow); 
+    font-size: inherit; 
+    gap:6px; 
+    align-items: center; 
+  }
+  #selbar button { 
+    background: transparent; 
+    color:#fff; 
+    border: 1px solid rgba(255,255,255,.25); 
+    padding: 4px 8px; 
+    border-radius: 6px; 
+    cursor:pointer; 
+    font-size: inherit; 
+  }
+  #selbar button:hover { border-color:#fff; }
+  #notes { 
+    position: fixed; 
+    right: 12px; 
+    bottom: 12px; 
+    width: 320px; 
+    height: 42vh; 
+    background:#fff; 
+    border:1px solid var(--line); 
+    border-radius: 12px; 
+    display:none; 
+    flex-direction: column; 
+    z-index:1500; 
+    box-shadow: var(--shadow); 
+    font-size: inherit; 
+  }
+  #notes header { 
+    display:flex; 
+    align-items:center; 
+    justify-content: space-between; 
+    padding:8px 10px; 
+    border-bottom:1px solid var(--line); 
+    font-size: inherit; 
+  }
+  #notes textarea { 
+    flex:1; 
+    border:0; 
+    padding:10px; 
+    resize:none; 
+    font-size: inherit; 
+    line-height:1.5; 
+  }
+  #toast { 
+    position: fixed; 
+    left:50%; 
+    transform: translateX(-50%); 
+    bottom: 24px; 
+    background:#111; 
+    color:#fff; 
+    padding:8px 12px; 
+    border-radius: 8px; 
+    display:none; 
+    z-index:2500; 
+    font-size: inherit; 
+  }
+  .dropzone { 
+    border:2px dashed #cbd5e1; 
+    background:#f8fafc; 
+    border-radius:10px; 
+    min-height:54px; 
+    padding:8px; 
+    display:flex; 
+    align-items:center; 
+    justify-content:space-between; 
+    gap:8px; 
+    font-size: inherit; 
+  }
+  .droplabel { color:#64748b; font-size: inherit; }
+  .cardpool { 
+    background:#f1f5f9; 
+    border-radius:10px; 
+    padding:12px; 
+    display:grid; 
+    gap:8px; 
+    font-size: inherit; 
+  }
+  .pool-slot { min-height:40px; }
+  .card { 
+    background:#fff; 
+    border:1px solid #e5e7eb; 
+    border-radius:8px; 
+    padding:8px 10px; 
+    display:inline-flex; 
+    gap:8px; 
+    align-items:center; 
+    cursor:grab; 
+    box-shadow:0 1px 0 rgba(0,0,0,.03); 
+    font-size: inherit; 
+  }
+  .card:active { cursor:grabbing; }
+  .tag { 
+    background:#eef2ff; 
+    color:#4338ca; 
+    padding:2px 8px; 
+    border-radius:999px; 
+    font-size: 12px; 
+  }
+  .btn-clear { 
+    border:1px solid #e5e7eb; 
+    background:#fff; 
+    border-radius:8px; 
+    padding:6px 8px; 
+    cursor:pointer; 
+    font-size: inherit; 
+  }
+  .ghost { opacity: .5; }
+  .over { outline:2px dashed #3b82f6; }
+  details.answerbox summary { 
+    cursor: pointer; 
+    user-select:none; 
+    list-style: none; 
+    font-size: inherit; 
+  }
+  details.answerbox { 
+    border:1px dashed var(--line); 
+    border-radius:10px; 
+    padding:8px 10px; 
+    background:#fff; 
+    font-size: inherit; 
+  }
+  .badge { 
+    display:inline-block; 
+    background:#eef2ff; 
+    color:#4338ca; 
+    padding:2px 8px; 
+    border-radius:999px; 
+    font-size:12px; 
+    margin-left:6px; 
+  }
+  body { padding-bottom: 82px; }
+  .practice-nav { 
+    background:#fff; 
+    border-bottom:2px solid var(--line); 
+    padding:12px 20px; 
+    display:flex; 
+    align-items:center; 
+    gap:20px; 
+    box-shadow:0 2px 4px rgba(0,0,0,.05); 
+    flex-wrap:wrap; 
+    position:fixed; 
+    left:0; 
+    right:0; 
+    bottom:0; 
+    border-top:2px solid var(--line); 
+    border-bottom:0; 
+    z-index:4000; 
+    font-size: inherit; 
+  }
+  .practice-nav .title { 
+    font-weight:600; 
+    color:var(--muted); 
+    font-size: inherit; 
+  }
+  .practice-nav .questions { 
+    display:flex; 
+    gap:8px; 
+    align-items:center; 
+    flex-wrap:wrap; 
+    font-size: inherit; 
+  }
+  .practice-nav .q-item { 
+    padding:6px 10px; 
+    border:1px solid var(--line); 
+    border-radius:6px; 
+    background:#fff; 
+    cursor:pointer; 
+    font-size: inherit; 
+    transition:all 0.2s; 
+    min-width:36px; 
+    text-align:center; 
+  }
+  .practice-nav .q-item:hover { background:#f1f5f9; border-color:var(--accent); }
+  .practice-nav .q-item.answered { background:#e0e7ff; border-color:var(--accent); color:var(--accent); font-weight:500; }
+  .practice-nav .q-item.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+</style>
+</head>
+<body>
+<!-- 字体设置弹窗 -->
+<div class="modal-overlay" id="settings-overlay"></div>
+<div id="settings-modal">
+  <h3>Font Size Settings</h3>
+  <div class="font-size-option">
+    <input type="radio" id="font-regular" name="font-size" value="regular" checked>
+    <label for="font-regular">Regular (Default)</label>
+  </div>
+  <div class="font-size-option">
+    <input type="radio" id="font-moderate" name="font-size" value="moderate">
+    <label for="font-moderate">Moderate (Larger)</label>
+  </div>
+  <div class="font-size-option">
+    <input type="radio" id="font-large" name="font-size" value="large">
+    <label for="font-large">Large (Largest)</label>
+  </div>
+  <div class="modal-buttons">
+    <button class="modal-btn" id="cancel-settings">Cancel</button>
+    <button class="modal-btn primary" id="save-settings">Save</button>
+  </div>
+</div>
+
+<div class="practice-nav">
+  <div class="title">Questions</div>
+  <div class="questions">
+    <div class="q-item" id="q1-nav" onclick="scrollToElement('q1-anchor')">1</div>
+    <div class="q-item" id="q2-nav" onclick="scrollToElement('q2-anchor')">2</div>
+    <div class="q-item" id="q3-nav" onclick="scrollToElement('q3-anchor')">3</div>
+    <div class="q-item" id="q4-nav" onclick="scrollToElement('q4-anchor')">4</div>
+    <div class="q-item" id="q5-nav" onclick="scrollToElement('q5-anchor')">5</div>
+    <div class="q-item" id="q6-nav" onclick="scrollToElement('q6-anchor')">6</div>
+    <div class="q-item" id="q7-nav" onclick="scrollToElement('q7-anchor')">7</div>
+    <div class="q-item" id="q8-nav" onclick="scrollToElement('q8-anchor')">8</div>
+    <div class="q-item" id="q9-nav" onclick="scrollToElement('q9-anchor')">9</div>
+    <div class="q-item" id="q10-nav" onclick="scrollToElement('q10-anchor')">10</div>
+    <div class="q-item" id="q11-nav" onclick="scrollToElement('q11-anchor')">11</div>
+    <div class="q-item" id="q12-nav" onclick="scrollToElement('q12-anchor')">12</div>
+    <div class="q-item" id="q13-nav" onclick="scrollToElement('q13-anchor')">13</div>
+  </div>
+</div>
+<div class="shell">
+<section class="pane" id="left">
+  <h2>READING PASSAGE 1 
+    <div id="timer-container">
+      <span id="timer">00:00</span>
+      <button id="settings-btn">Settings</button>
+    </div>
+  </h2>
+  <p>You should spend about 20 minutes on Questions 1–13, which are based on Reading Passage 1 below.</p>
+  <h3>The Early History of Olive Oil</h3>
+  
+  <h4>Paragraph A</h4>
+  <p>Olive oil is produced from the fruit of the olive tree, which is a member of the Oleaceae plant family. The trees require some cold weather during the year, but also tolerate hot, dry conditions, and do not like moisture when they are flowering. They actually produce better when subjected to these stressful conditions, and as a result, olive trees have traditionally been grown on land where little else will survive.</p>
+  
+  <h4>Paragraph B</h4>
+  <p>Archaeologists today are divided over exactly where the first domestication of the olive occurred: some say it was in the area which is now Iran, Syria, Jordan and Egypt, while others contend it was in mainland Greece or on the island of Crete. The one thing that can be said with certainty is that cultivation began at least 6,000 years ago and spread slowly westward across the lands bordering on the Mediterranean Sea. Olive oil was used for a variety of purposes during these early times, including as a pharmacological ointment and in rituals for anointing royalty.</p>
+  
+  <h4>Paragraph C</h4>
+  <p>The ancient Greeks believed the olive tree was a priceless gift from the goddess Athena and used its oil in sacred religious rituals. In fact, the Greek poet Homer called olive oil ‘liquid gold’, and during the 6th and 7th centuries BC, Greek law forbade the cutting down of olive trees and made it punishable by death. The ancient Middle Eastern ruler King David valued his groves of olive trees and his olive oil warehouses so much that he posted guards around the clock to protect them.</p>
+  
+  <h4>Paragraph D</h4>
+  <p>Over the years, olive oil developed other uses. Its employment in cooking dates at least as far back as the 5th century BC, as described by the Greek philosopher Plato. Its use as an aid to beauty and health later became ingrained in many Mediterranean cultures. The Romans, for example, are said to have used generous amounts on their bodies to moisturise their skin after bathing. With the spread of the Roman Empire, olive oil became a major commodity, and its trade promoted commerce throughout the ancient world. It is generally believed that in the 1st–2nd centuries BC, olive trees were taken to North Africa and then to Spain, which was later to become the world’s largest producer of olive oil. Artefacts found at various Mediterranean archaeological sites include olive oil storage vessels with olive plant residue still in them. Historical evidence still in existence in the form of wall paintings and ancient manuscripts (including the works of the Roman naturalist and philosopher, Pliny the Elder) all record production techniques and the various uses of olive oil.</p>
+  
+  <h4>Paragraph E</h4>
+  <p>Making olive oil in those early days was a laborious process accomplished without mechanisation. Processing or milling the fruit involved several distinct stages to extract the liquid. The olives were harvested from the trees by hand or by beating the fruit from the trees with long sticks. The olives were then rinsed and crushed to separate out the large seed found in the centre of each. The remaining seedless flesh was put in woven bags and pressed. Hot water was then poured over the bags to separate the oil from the solid bits of olive. The liquid produced in this process, consisting of oil and water, was drained into stone basins or tanks, where it was allowed to settle and separate. In cold weather, a bit of salt was added to speed up the process. As much oil as possible was drawn off the water, but the result was still not pure oil. Therefore, this impure mixture was allowed once more to settle in vats and then separated in order to refine the product.</p>
+  
+  <h4>Paragraph F</h4>
+  <p>The waste water from the milling process, which is called amurca, is a bitter-tasting and foul-smelling liquid. In many ancient civilisations it was often simply discarded, causing serious pollution because of its acidity and high salt content. However, in the Roman period it was regarded as a very useful substance. When spread on surfaces, amurca forms a hard finish and therefore it was often applied to the floors of grain storage buildings where it hardened, keeping out water, mud and pests. When boiled down, amurca was applied to leather to soften it so that it was easier to shape into articles of clothing and shoes. It could also be eaten by farm animals and was, in fact, fed to livestock suffering from malnutrition. According to ancient texts, amurca was also utilised in moderate amounts by farmers as a fertiliser or as a pesticide, helping them to protect their crops from insects and even small rodents.</p>
+  
+  <p>&nbsp;</p> <!-- 添加空白行防止加载不完全 -->
+  <p>&nbsp;</p> <!-- 额外添加一行空白行增强稳定性 -->
+</section>
+<div id="divider" title="Drag to resize"></div>
+<section class="pane" id="right">
+  <h3>Questions</h3>
+  
+  <div class="group">
+    <h4>Questions 1–6</h4>
+    <p>Do the following statements agree with the information given in Reading Passage 1?</p>
+    <p>In boxes 1–6 on your answer sheet, write</p>
+    <table>
+      <tr>
+        <th>TRUE</th>
+        <th>FALSE</th>
+        <th>NOT GIVEN</th>
+      </tr>
+      <tr>
+        <td>if the statement agrees with the information</td>
+        <td>if the statement contradicts the information</td>
+        <td>if there is no information on this</td>
+      </tr>
+    </table>
+    
+    <a id="q1-anchor"></a>
+    <div id="q1-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+      <p>1 In the cultivation of olives, a period without rain is advantageous.</p>
+      <div style="display:flex; flex-wrap:wrap; gap:10px; margin:4px 0;">
+        <label style="margin:0;"><input name="q1" type="radio" value="TRUE"> TRUE</label>
+        <label style="margin:0;"><input name="q1" type="radio" value="FALSE"> FALSE</label>
+        <label style="margin:0;"><input name="q1" type="radio" value="NOT GIVEN"> NOT GIVEN</label>
+      </div>
+    </div>
+    
+    <a id="q2-anchor"></a>
+    <div id="q2-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+      <p>2 The most fertile fields are usually chosen for growing olives.</p>
+      <div style="display:flex; flex-wrap:wrap; gap:10px; margin:4px 0;">
+        <label style="margin:0;"><input name="q2" type="radio" value="TRUE"> TRUE</label>
+        <label style="margin:0;"><input name="q2" type="radio" value="FALSE"> FALSE</label>
+        <label style="margin:0;"><input name="q2" type="radio" value="NOT GIVEN"> NOT GIVEN</label>
+      </div>
+    </div>
+    
+    <a id="q3-anchor"></a>
+    <div id="q3-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+      <p>3 In ancient Greece, the olive tree was said to have divine origins.</p>
+      <div style="display:flex; flex-wrap:wrap; gap:10px; margin:4px 0;">
+        <label style="margin:0;"><input name="q3" type="radio" value="TRUE"> TRUE</label>
+        <label style="margin:0;"><input name="q3" type="radio" value="FALSE"> FALSE</label>
+        <label style="margin:0;"><input name="q3" type="radio" value="NOT GIVEN"> NOT GIVEN</label>
+      </div>
+    </div>
+    
+    <a id="q4-anchor"></a>
+    <div id="q4-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+      <p>4 Olive oil was more costly to buy in Greece than gold.</p>
+      <div style="display:flex; flex-wrap:wrap; gap:10px; margin:4px 0;">
+        <label style="margin:0;"><input name="q4" type="radio" value="TRUE"> TRUE</label>
+        <label style="margin:0;"><input name="q4" type="radio" value="FALSE"> FALSE</label>
+        <label style="margin:0;"><input name="q4" type="radio" value="NOT GIVEN"> NOT GIVEN</label>
+      </div>
+    </div>
+    
+    <a id="q5-anchor"></a>
+    <div id="q5-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+      <p>5 Plato mentions the use of olive oil in the preparation of food.</p>
+      <div style="display:flex; flex-wrap:wrap; gap:10px; margin:4px 0;">
+        <label style="margin:0;"><input name="q5" type="radio" value="TRUE"> TRUE</label>
+        <label style="margin:0;"><input name="q5" type="radio" value="FALSE"> FALSE</label>
+        <label style="margin:0;"><input name="q5" type="radio" value="NOT GIVEN"> NOT GIVEN</label>
+      </div>
+    </div>
+    
+    <a id="q6-anchor"></a>
+    <div id="q6-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+      <p>6 North African farmers initially resisted the introduction of olive trees.</p>
+      <div style="display:flex; flex-wrap:wrap; gap:10px; margin:4px 0;">
+        <label style="margin:0;"><input name="q6" type="radio" value="TRUE"> TRUE</label>
+        <label style="margin:0;"><input name="q6" type="radio" value="FALSE"> FALSE</label>
+        <label style="margin:0;"><input name="q6" type="radio" value="NOT GIVEN"> NOT GIVEN</label>
+      </div>
+    </div>
+  </div>
+  
+  <div class="group">
+    <h4>Questions 7–9</h4>
+    <p>Complete the flow-chart below.</p>
+    <p>Write ONE WORD ONLY from the passage for each answer.</p>
+    <p>Write your answers in boxes 7–9 on your answer sheet.</p>
+    <p><strong>Ancient olive oil processing</strong></p>
+    <ul style="list-style-type:disc; padding-left:20px;">
+      <li>olives are harvested by picking them or 7 ______ the trees</li>
+      <li><strong>milling stage</strong></li>
+      <li>olives are washed and crushed, and seeds removed</li>
+      <li>olive flesh is placed in 8 ______ and pressed</li>
+      <li>water is poured over the mixture</li>
+      <li>resulting liquid is given time to settle and separate, and 9 ______ is used to aid the process</li>
+      <li>oil is drawn off and separation repeated</li>
+    </ul>
+    
+    <a id="q7-anchor"></a>
+    <div id="q7-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+      <p>7 <input type="text" name="q7" style="width:200px; padding:6px; border:1px solid var(--line); border-radius:6px; font-size:inherit;"></p>
+    </div>
+    
+    <a id="q8-anchor"></a>
+    <div id="q8-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+      <p>8 <input type="text" name="q8" style="width:200px; padding:6px; border:1px solid var(--line); border-radius:6px; font-size:inherit;"></p>
+    </div>
+    
+    <a id="q9-anchor"></a>
+    <div id="q9-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+      <p>9 <input type="text" name="q9" style="width:200px; padding:6px; border:1px solid var(--line); border-radius:6px; font-size:inherit;"></p>
+    </div>
+  </div>
+  
+  <div class="group">
+    <h4>Questions 10–13</h4>
+    <p>Complete the notes below.</p>
+    <p>Write ONE WORD ONLY from the passage for each answer.</p>
+    <p><strong>Amurca</strong></p>
+    <ul style="list-style-type:disc; padding-left:20px;">
+      <li>In ancient times, this waste liquid was usually thrown away, which led to 10 ______</li>
+      <li>However, Romans had practical applications for amurca:</li>
+      <li>– when dried, created a hard surface, so used on 11 ______ of certain buildings</li>
+      <li>– used when making 12 ______</li>
+      <li>– fed to livestock</li>
+      <li>– used on farms as a 13 ______ to stop insects or animals from damaging crops</li>
+    </ul>
+    
+    <a id="q10-anchor"></a>
+    <div id="q10-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+      <p>10 <input type="text" name="q10" style="width:200px; padding:6px; border:1px solid var(--line); border-radius:6px; font-size:inherit;"></p>
+    </div>
+    
+    <a id="q11-anchor"></a>
+    <div id="q11-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+      <p>11 <input type="text" name="q11" style="width:200px; padding:6px; border:1px solid var(--line); border-radius:6px; font-size:inherit;"></p>
+    </div>
+    
+    <a id="q12-anchor"></a>
+    <div id="q12-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+      <p>12 <input type="text" name="q12" style="width:200px; padding:6px; border:1px solid var(--line); border-radius:6px; font-size:inherit;"></p>
+    </div>
+    
+    <a id="q13-anchor"></a>
+    <div id="q13-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+      <p>13 <input type="text" name="q13" style="width:200px; padding:6px; border:1px solid var(--line); border-radius:6px; font-size:inherit;"></p>
+    </div>
+  </div>
+  
+  <div style="display:flex;gap:8px;margin-bottom:10px;">
+    <button class="primary" onclick="grade()">Submit</button>
+    <button onclick="resetForm()">Reset</button>
+    <button onclick="toggleNotes()">Notes</button>
+  </div>
+  <div id="results"></div>
+  <details class="answerbox" id="answerBox">
+    <summary>Show answers (click to toggle) <span class="badge">hidden</span></summary>
+    <div id="answerContent"></div>
+  </details>
+</section>
+</div>
+<div aria-label="Selection tools" id="selbar" role="toolbar">
+  <button id="btnHL">Highlight</button>
+  <button id="btnUH">Remove</button>
+  <button id="btnNote">Note</button>
+</div>
+<div id="notes">
+  <header>
+    <strong>Notes</strong>
+    <div>
+      <button id="btnCopy">Copy</button>
+      <button id="btnClose">Close</button>
+    </div>
+  </header>
+  <textarea id="noteArea" placeholder="Type your notes here..."></textarea>
+</div>
+<div id="toast"></div>
+<script>
+// 计时器变量（用于控制计时启停）
+let _t=0; 
+const _timerEl=document.getElementById('timer');
+let timerInterval = setInterval(updateTimer, 1000);
+let isTimerRunning = true;
+
+// 更新计时器显示
+function updateTimer(){ 
+  if(isTimerRunning){
+    _t++; 
+    var m=String(Math.floor(_t/60)).padStart(2,'0'); 
+    var s=String(_t%60).padStart(2,'0'); 
+    _timerEl.textContent=m+':'+s; 
+  }
+}
+
+// 停止计时器
+function stopTimer(){
+  isTimerRunning = false;
+  clearInterval(timerInterval);
+}
+
+// 拖拽分割线功能
+var divider = document.getElementById('divider');
+var left = document.getElementById('left');
+var right = document.getElementById('right');
+var dragging=false;
+function startDrag(e){ 
+  dragging=true; 
+  document.body.style.cursor='ew-resize'; 
+  if(e.preventDefault) e.preventDefault(); 
+}
+function endDrag(){ 
+  dragging=false; 
+  document.body.style.cursor=''; 
+}
+function onMove(clientX){
+  var container = document.querySelector('.shell').getBoundingClientRect();
+  var x = clientX - container.left;
+  x = Math.max(280, Math.min(container.width-320, x));
+  left.style.flex = '0 0 ' + x + 'px';
+  right.style.flex = '1 1 auto';
+}
+divider.addEventListener('mousedown', function(e){ startDrag(e); });
+window.addEventListener('mousemove', function(e){ if(dragging) onMove(e.clientX); });
+window.addEventListener('mouseup', endDrag);
+divider.addEventListener('touchstart', function(e){ startDrag(e.touches[0]); }, {passive:false});
+window.addEventListener('touchmove', function(e){ if(dragging) onMove(e.touches[0].clientX); }, {passive:false});
+window.addEventListener('touchend', endDrag);
+
+// 文本高亮功能
+var selbar = document.getElementById('selbar');
+var btnHL = document.getElementById('btnHL');
+var btnUH = document.getElementById('btnUH');
+var btnNote = document.getElementById('btnNote');
+var lastRange=null;
+var currentHlNode=null;
+var keepToolbar=false;
+
+function positionSelbarForRect(rect){
+  selbar.style.display='flex';
+  requestAnimationFrame(function(){
+    var top = window.scrollY + rect.top - selbar.offsetHeight - 8;
+    var leftPos = window.scrollX + rect.left + rect.width/2 - selbar.offsetWidth/2;
+    selbar.style.top = ((top>0)?top:(window.scrollY + rect.bottom + 8)) + 'px';
+    selbar.style.left = Math.max(8, leftPos) + 'px';
+  });
+}
+
+function updateSelbar(){
+  var sel=window.getSelection();
+  if(!sel || sel.rangeCount===0 || sel.isCollapsed) { 
+    selbar.style.display='none'; 
+    currentHlNode=null; 
+    return; 
+  }
+  var range = sel.getRangeAt(0);
+  lastRange = range.cloneRange();
+  currentHlNode=null;
+  positionSelbarForRect(range.getBoundingClientRect());
+}
+
+document.getElementById('left').addEventListener('mouseup', updateSelbar);
+document.getElementById('right').addEventListener('mouseup', updateSelbar);
+document.addEventListener('selectionchange', function(){ 
+  var sel=window.getSelection(); 
+  if(!sel || sel.rangeCount===0 || sel.isCollapsed){ 
+    if(!keepToolbar && !currentHlNode){ 
+      selbar.style.display='none'; 
+    } 
+  } 
+});
+document.addEventListener('scroll', function(){ 
+  if(selbar.style.display==='flex') updateSelbar(); 
+});
+document.addEventListener('mousedown', function(e){
+  var t = e.target;
+  if(t.classList && t.classList.contains('hl')){
+    keepToolbar = true;
+  } else {
+    keepToolbar = false;
+  }
+}, true);
+document.addEventListener('click', function(e){
+  var target = e.target;
+  if(target.classList && target.classList.contains('hl')){
+    currentHlNode = target;
+    lastRange = null;
+    positionSelbarForRect(target.getBoundingClientRect());
+    var sel=window.getSelection();
+    if(sel) sel.removeAllRanges();
+    setTimeout(function(){ keepToolbar=false; }, 0);
+  }
+}, true);
+
+// 添加高亮
+function doHighlight(){
+  if(currentHlNode) return;
+  if(!lastRange || lastRange.collapsed) return;
+  var span=document.createElement('span'); 
+  span.className='hl';
+  try { 
+    lastRange.surroundContents(span); 
+  } catch(e){
+    var wrap=document.createElement('span'); 
+    wrap.className='hl';
+    wrap.appendChild(lastRange.cloneContents());
+    lastRange.deleteContents();
+    lastRange.insertNode(wrap);
+  }
+  selbar.style.display='none';
+  showToast('Highlighted');
+}
+
+// 移除高亮
+function removeHighlight(){
+  if(currentHlNode){
+    var p = currentHlNode.parentNode;
+    while(currentHlNode.firstChild) p.insertBefore(currentHlNode.firstChild, currentHlNode);
+    p.removeChild(currentHlNode); 
+    p.normalize();
+    currentHlNode = null;
+    selbar.style.display='none';
+    showToast('Highlight removed');
+    return;
+  }
+  if(!lastRange) return;
+  var selRect = lastRange.getBoundingClientRect();
+  var walker=document.createTreeWalker(document.body, NodeFilter.SHOW_ELEMENT);
+  var toRemove=[];
+  while(walker.nextNode()){
+    var n=walker.currentNode;
+    if(n.classList && n.classList.contains('hl')) {
+      var r = n.getBoundingClientRect();
+      if(!(r.right < selRect.left || r.left > selRect.right || r.bottom < selRect.top || r.top > selRect.bottom)) {
+        toRemove.push(n);
+      }
+    }
+  }
+  toRemove.forEach(function(el){ 
+    var p=el.parentNode; 
+    while(el.firstChild) p.insertBefore(el.firstChild, el); 
+    p.removeChild(el); 
+    p.normalize(); 
+  });
+  selbar.style.display='none';
+  showToast('Highlight removed');
+}
+
+btnHL.addEventListener('click', doHighlight);
+btnUH.addEventListener('click', removeHighlight);
+
+// 笔记功能
+var notes = document.getElementById('notes');
+var noteArea = document.getElementById('noteArea');
+var btnCopy=document.getElementById('btnCopy');
+var btnClose=document.getElementById('btnClose');
+
+function toggleNotes(){ 
+  notes.style.display = (notes.style.display==='flex'?'none':'flex'); 
+}
+window.toggleNotes = toggleNotes;
+
+btnClose.addEventListener('click', toggleNotes);
+btnCopy.addEventListener('click', async function(){ 
+  await navigator.clipboard.writeText(noteArea.value||''); 
+  showToast('Copied'); 
+});
+
+btnNote.addEventListener('click', function(){
+  var text = '';
+  if(currentHlNode){ 
+    text = (currentHlNode.textContent||'').trim(); 
+  } else if(lastRange){ 
+    var frag = lastRange.cloneContents(); 
+    text = (frag.textContent||'').trim(); 
+  }
+  toggleNotes();
+  if(text) {
+    noteArea.value = (noteArea.value? noteArea.value+'\n':'') + '> ' + text + '\n';
+  }
+  selbar.style.display='none';
+});
+
+// 提示框功能
+var toastEl=document.getElementById('toast');
+function showToast(msg){
+  toastEl.textContent=msg; 
+  toastEl.style.display='block';
+  setTimeout(function(){ toastEl.style.display='none'; }, 1200);
+}
+
+// 答案与评分功能
+var answers = {
+  "q1":"TRUE", "q2":"FALSE", "q3":"TRUE", "q4":"NOT GIVEN", "q5":"TRUE", "q6":"NOT GIVEN",
+  "q7":"beating", "q8":"bags", "q9":"salt",
+  "q10":"pollution", "q11":"floors", "q12":"leather", "q13":"pesticide"
+};
+
+// 评分函数
+function grade(){
+  // 提交后停止计时器
+  stopTimer();
+  
+  var total=0, correct=0, lines=[];
+  
+  function push(q, ok, user){
+    total++; 
+    if(ok) correct++;
+    lines.push(q.toUpperCase()+": "+(user||'None')+" "+(ok?'✅':'❌'));
+  }
+
+  // 判断题（1-6）
+  for(var n=1;n<=6;n++){
+    var sel=document.querySelector('input[name="q'+n+'"]:checked');
+    var val=sel?sel.value:'';
+    push('q'+n, val === answers['q'+n], val);
+  }
+
+  // 填空题（7-13）
+  for(var n=7;n<=13;n++){
+    var input=document.querySelector('input[name="q'+n+'"]');
+    var val=input?input.value.trim().toLowerCase():'', key=answers['q'+n].toLowerCase();
+    push('q'+n, val === key, val);
+  }
+
+  // 计算正确率并显示结果
+  var acc = (total? Math.round(100*correct/total):0);
+  var html = '<p><strong>Score:</strong> '+correct+'/'+total+' <span class="badge">Accuracy '+acc+'%</span></p>';
+  html += '<pre>'+lines.join('\n')+'</pre>';
+  document.getElementById('results').innerHTML = html;
+
+  // 显示答案 key
+  document.getElementById('answerContent').innerHTML = `
+    <ol>
+      <li>1 → TRUE (Olive trees tolerate dry conditions and produce better, so rainless period is advantageous)</li>
+      <li>2 → FALSE (Olive trees are grown on land where little else survives, not most fertile fields)</li>
+      <li>3 → TRUE (Ancient Greeks believed olive tree was a gift from goddess Athena, divine origin)</li>
+      <li>4 → NOT GIVEN (Homer called it "liquid gold" (metaphor), no price comparison with gold)</li>
+      <li>5 → TRUE (Plato described olive oil's use in cooking, which is food preparation)</li>
+      <li>6 → NOT GIVEN (Olive trees were taken to North Africa, no info on farmers' resistance)</li>
+      <li>7 → beating (Olives harvested by hand or beating with long sticks)</li>
+      <li>8 → bags (Seedless flesh put in woven bags and pressed)</li>
+      <li>9 → salt (Salt added to speed up settling in cold weather)</li>
+      <li>10 → pollution (Discarding amurca caused serious pollution)</li>
+      <li>11 → floors (Amurca applied to floors of grain storage buildings)</li>
+      <li>12 → leather (Amurca used to soften leather for clothing and shoes)</li>
+      <li>13 → pesticide (Amurca used as pesticide to protect crops from insects/rodents)</li>
+    </ol>
+  `;
+  document.querySelector('#answerBox .badge').textContent='tap to view';
+}
+
+// 重置表单功能
+function resetForm(){
+  // 重置单选按钮
+  document.querySelectorAll('input[type="radio"]').forEach(el=>el.checked=false);
+  // 重置输入框
+  document.querySelectorAll('input[type="text"]').forEach(el=>el.value='');
+  // 重置结果和答案显示
+  document.getElementById('results').innerHTML='';
+  document.getElementById('answerContent').innerHTML='';
+  document.querySelector('#answerBox .badge').textContent = 'hidden';
+  // 重置导航按钮状态
+  document.querySelectorAll('.q-item').forEach(item => {
+    item.classList.remove('answered');
+  });
+  // 重置计时器
+  _t=0;
+  _timerEl.textContent='00:00';
+  clearInterval(timerInterval);
+  isTimerRunning = true;
+  timerInterval = setInterval(updateTimer, 1000);
+  // 移除所有高亮
+  document.querySelectorAll('.hl').forEach(hl => {
+    var parent = hl.parentNode;
+    while(hl.firstChild) parent.insertBefore(hl.firstChild, hl);
+    parent.removeChild(hl);
+    parent.normalize();
+  });
+}
+
+// 滚动到题目位置功能
+function scrollToElement(id){
+  var el = document.getElementById(id);
+  if(el){ 
+    el.scrollIntoView({behavior:'smooth', block:'center'}); 
+  }
+  var navs = document.querySelectorAll('.practice-nav .q-item');
+  navs.forEach(n => n.classList.remove('active'));
+  var btn = document.getElementById(id.replace('-anchor','-nav'));
+  if(btn){ 
+    btn.classList.add('active'); 
+    setTimeout(() => btn.classList.remove('active'), 800); 
+  }
+}
+
+// 标记已答题目的导航按钮
+(function(){
+  function mark(qn){
+    var nav = document.getElementById(`q${qn}-nav`);
+    if(!nav) return;
+    
+    // 判断题（单选按钮）
+    if(qn <=6){
+      var radios = document.querySelectorAll(`input[name="q${qn}"]:checked`);
+      var answered = radios.length > 0;
+      if(answered) nav.classList.add('answered');
+      else nav.classList.remove('answered');
+    } 
+    // 填空题（文本输入框）
+    else {
+      var input = document.querySelector(`input[name="q${qn}"]`);
+      var answered = input && input.value.trim() !== '';
+      if(answered) nav.classList.add('answered');
+      else nav.classList.remove('answered');
+    }
+  }
+
+  // 为所有题目添加变化监听
+  for(var q=1;q<=13;q++){
+    (function(n){
+      // 判断题监听
+      if(n<=6){
+        document.querySelectorAll(`input[name="q${n}"]`).forEach(input => {
+          input.addEventListener('change', () => mark(n));
+        });
+      } 
+      // 填空题监听
+      else {
+        var input = document.querySelector(`input[name="q${n}"]`);
+        if(input){
+          input.addEventListener('input', () => mark(n));
+          input.addEventListener('change', () => mark(n));
+        }
+      }
+    })(q);
+  }
+})();
+
+// 字体大小设置功能
+const settingsBtn = document.getElementById('settings-btn');
+const settingsOverlay = document.getElementById('settings-overlay');
+const settingsModal = document.getElementById('settings-modal');
+const cancelSettings = document.getElementById('cancel-settings');
+const saveSettings = document.getElementById('save-settings');
+const fontSizeOptions = document.querySelectorAll('input[name="font-size"]');
+const htmlElement = document.documentElement;
+
+// 打开设置弹窗
+settingsBtn.addEventListener('click', function(){
+  settingsOverlay.classList.add('active');
+  settingsModal.classList.add('active');
+  // 恢复当前选中的字体大小选项
+  const currentFontSize = getCurrentFontSize();
+  fontSizeOptions.forEach(option => {
+    if(option.value === currentFontSize){
+      option.checked = true;
+    }
+  });
+});
+
+// 关闭设置弹窗
+cancelSettings.addEventListener('click', closeSettingsModal);
+settingsOverlay.addEventListener('click', closeSettingsModal);
+
+function closeSettingsModal(){
+  settingsOverlay.classList.remove('active');
+  settingsModal.classList.remove('active');
+}
+
+// 保存字体大小设置
+saveSettings.addEventListener('click', function(){
+  let selectedSize = 'regular';
+  fontSizeOptions.forEach(option => {
+    if(option.checked){
+      selectedSize = option.value;
+    }
+  });
+  // 应用字体大小
+  applyFontSize(selectedSize);
+  closeSettingsModal();
+  showToast(`Font size set to ${selectedSize}`);
+});
+
+// 获取当前字体大小
+function getCurrentFontSize(){
+  if(htmlElement.classList.contains('font-large')) return 'large';
+  if(htmlElement.classList.contains('font-moderate')) return 'moderate';
+  return 'regular';
+}
+
+// 应用字体大小
+function applyFontSize(size){
+  // 移除所有字体大小类
+  htmlElement.classList.remove('font-regular', 'font-moderate', 'font-large');
+  // 添加选中的字体大小类
+  htmlElement.classList.add(`font-${size}`);
+}
+
+// 初始应用默认字体大小
+applyFontSize('regular');
+</script>
+</body>
+</html>

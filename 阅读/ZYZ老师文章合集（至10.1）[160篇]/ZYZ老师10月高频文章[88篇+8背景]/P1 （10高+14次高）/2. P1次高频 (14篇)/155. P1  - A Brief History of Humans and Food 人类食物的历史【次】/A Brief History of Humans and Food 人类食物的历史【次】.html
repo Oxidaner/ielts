@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>A Brief History of Humans and Food</title>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<style>
+  :root { 
+    --line:#e5e7eb; 
+    --bg:#f6f7fb; 
+    --panel:#fff; 
+    --accent:#3b82f6; 
+    --muted:#6b7280; 
+    --shadow:0 6px 20px rgba(0,0,0,.12);
+    --font-size: 16px; /* Regular font size */
+  }
+  * { box-sizing: border-box; }
+  html,body { height:100%; }
+  body { 
+    margin:0; 
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; 
+    background:var(--bg); 
+    font-size: var(--font-size);
+    padding-bottom: 82px;
+  }
+  /* Font size for all elements */
+  h2 { font-size: calc(var(--font-size) * 1.5); }
+  h3 { font-size: calc(var(--font-size) * 1.3); }
+  h4 { font-size: calc(var(--font-size) * 1.2); }
+  p { font-size: var(--font-size); line-height: 1.6; }
+  label { font-size: var(--font-size); }
+  .q-item { font-size: var(--font-size); }
+  button { font-size: var(--font-size); }
+  textarea { font-size: var(--font-size); }
+  .badge { font-size: calc(var(--font-size) * 0.8); }
+  .tag { font-size: calc(var(--font-size) * 0.8); }
+
+  #timer { 
+    position: static; 
+    display: inline-block; 
+    margin-left: 8px; 
+    background:#fff; 
+    border:1px solid var(--line); 
+    border-radius:10px; 
+    padding:2px 8px; 
+    font-size: var(--font-size); 
+    vertical-align: middle; 
+  }
+  #settingsBtn {
+    position: static;
+    display: inline-block;
+    margin-left: 8px;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 2px 8px;
+    font-size: var(--font-size);
+    vertical-align: middle;
+    cursor: pointer;
+  }
+  #settingsPanel {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 15px;
+    box-shadow: var(--shadow);
+    z-index: 3000;
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+    width: 250px;
+  }
+  #settingsPanel h4 { margin: 0 0 5px; }
+  .font-option {
+    padding: 8px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    cursor: pointer;
+    text-align: center;
+  }
+  .font-option:hover {
+    background: var(--bg);
+    border-color: var(--accent);
+  }
+  #closeSettings {
+    padding: 8px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--accent);
+    color: #fff;
+    cursor: pointer;
+  }
+
+  .shell { display:flex; height:100vh; width:100%; }
+  .pane { background:var(--panel); overflow:auto; padding:20px; }
+  #left { flex: 0 0 50%; min-width: 280px; }
+  #right { flex: 1 1 auto; min-width: 320px; background:#fbfbff; border-left:1px solid var(--line); }
+  #divider { flex: 0 0 8px; background: linear-gradient(90deg,#e5e7eb,#d1d5db); cursor: ew-resize; position:relative; z-index: 5; user-select:none; }
+  h2,h3,h4 { margin:0 0 10px; }
+  #left p { margin: 0 0 12px; word-break: normal; overflow-wrap: normal; hyphens: none; }
+  .group { background:#fff; border:1px solid var(--line); border-radius:10px; padding:12px; margin-bottom:14px; }
+  table { border-collapse: collapse; width:100%; }
+  th, td { border:1px solid var(--line); padding:6px; text-align:center; font-size: var(--font-size); }
+  th:first-child, td:first-child { width:92px; }
+  button { padding:8px 12px; border:1px solid var(--line); border-radius:10px; background:#fff; cursor:pointer; }
+  button.primary { background:var(--accent); color:#fff; border-color:#3b82f6; }
+  #results { background:#fff; border:1px solid var(--line); border-radius:10px; padding:10px; }
+  .hl { background:#fff3a3; box-shadow: inset 0 -2px 0 rgba(0,0,0,.05); cursor: pointer; }
+  .hl:hover { filter: brightness(0.98); }
+  #selbar { position: absolute; display:none; z-index: 6000; background:#111; color:#fff; border-radius: 8px; padding: 6px; box-shadow: var(--shadow); font-size: calc(var(--font-size) * 0.9); gap:6px; align-items: center; }
+  #selbar button { background: transparent; color:#fff; border: 1px solid rgba(255,255,255,.25); padding: 4px 8px; border-radius: 6px; cursor:pointer; font-size: calc(var(--font-size) * 0.9); }
+  #selbar button:hover { border-color:#fff; }
+  #notes { position: fixed; right: 12px; bottom: 12px; width: 320px; height: 42vh; background:#fff; border:1px solid var(--line); border-radius: 12px; display:none; flex-direction: column; z-index:1500; box-shadow: var(--shadow); }
+  #notes header { display:flex; align-items:center; justify-content: space-between; padding:8px 10px; border-bottom:1px solid var(--line); }
+  #notes textarea { flex:1; border:0; padding:10px; resize:none; line-height:1.5; }
+  #toast { position: fixed; left:50%; transform: translateX(-50%); bottom: 24px; background:#111; color:#fff; padding:8px 12px; border-radius: 8px; display:none; z-index:2500; font-size: var(--font-size); }
+  .dropzone { border:2px dashed #cbd5e1; background:#f8fafc; border-radius:10px; min-height:54px; padding:8px; display:flex; align-items:center; justify-content:space-between; gap:8px; }
+  .droplabel { color:#64748b; font-size: var(--font-size); }
+  .cardpool { background:#f1f5f9; border-radius:10px; padding:12px; display:grid; gap:8px; }
+  .pool-slot { min-height:40px; }
+  .card { background:#fff; border:1px solid #e5e7eb; border-radius:8px; padding:8px 10px; display:inline-flex; gap:8px; align-items:center; cursor:grab; box-shadow:0 1px 0 rgba(0,0,0,.03); font-size: var(--font-size); }
+  .card:active { cursor:grabbing; }
+  .btn-clear { border:1px solid #e5e7eb; background:#fff; border-radius:8px; padding:6px 8px; cursor:pointer; font-size: var(--font-size); }
+  .ghost { opacity: .5; }
+  .over { outline:2px dashed #3b82f6; }
+  details.answerbox summary { cursor: pointer; user-select:none; list-style: none; font-size: var(--font-size); }
+  details.answerbox { border:1px dashed var(--line); border-radius:10px; padding:8px 10px; background:#fff; }
+  .badge { display:inline-block; background:#eef2ff; color:#4338ca; padding:2px 8px; border-radius:999px; margin-left:6px; }
+  .practice-nav { background:#fff; border-bottom:2px solid var(--line); padding:12px 20px; display:flex; align-items:center; gap:20px; box-shadow:0 2px 4px rgba(0,0,0,.05); flex-wrap:wrap; position:fixed; left:0; right:0; bottom:0; border-top:2px solid var(--line); border-bottom:0; z-index:4000; }
+  .practice-nav .title { font-weight:600; color:var(--muted); font-size: var(--font-size); }
+  .practice-nav .questions { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .practice-nav .q-item { padding:6px 10px; border:1px solid var(--line); border-radius:6px; background:#fff; cursor:pointer; transition:all 0.2s; min-width:36px; text-align:center; }
+  .practice-nav .q-item:hover { background:#f1f5f9; border-color:var(--accent); }
+  .practice-nav .q-item.answered { background:#e0e7ff; border-color:var(--accent); color:var(--accent); font-weight:500; }
+  .practice-nav .q-item.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+</style>
+</head>
+<body>
+<div class="practice-nav">
+  <div class="title">Questions</div>
+  <div class="questions">
+    <div class="q-item" id="q1-nav" onclick="scrollToElement('q1-anchor')">1</div>
+    <div class="q-item" id="q2-nav" onclick="scrollToElement('q2-anchor')">2</div>
+    <div class="q-item" id="q3-nav" onclick="scrollToElement('q3-anchor')">3</div>
+    <div class="q-item" id="q4-nav" onclick="scrollToElement('q4-anchor')">4</div>
+    <div class="q-item" id="q5-nav" onclick="scrollToElement('q5-anchor')">5</div>
+    <div class="q-item" id="q6-nav" onclick="scrollToElement('q6-anchor')">6</div>
+    <div class="q-item" id="q7-nav" onclick="scrollToElement('q7-anchor')">7</div>
+    <div class="q-item" id="q8-nav" onclick="scrollToElement('q8-anchor')">8</div>
+    <div class="q-item" id="q9-nav" onclick="scrollToElement('q9-anchor')">9</div>
+    <div class="q-item" id="q10-nav" onclick="scrollToElement('q10-anchor')">10</div>
+    <div class="q-item" id="q11-nav" onclick="scrollToElement('q11-anchor')">11</div>
+    <div class="q-item" id="q12-nav" onclick="scrollToElement('q12-anchor')">12</div>
+    <div class="q-item" id="q13-nav" onclick="scrollToElement('q13-anchor')">13</div>
+  </div>
+</div>
+
+<!-- Settings Panel -->
+<div id="settingsPanel">
+  <h4>Font Size</h4>
+  <div class="font-option" data-size="16px">Regular (Default)</div>
+  <div class="font-option" data-size="18px">Moderate (Larger)</div>
+  <div class="font-option" data-size="20px">Large (Largest)</div>
+  <button id="closeSettings">Close</button>
+</div>
+
+<div class="shell">
+<section class="pane" id="left">
+  <h2>READING PASSAGE 1 <span id="timer">00:00</span> <button id="settingsBtn">Settings</button></h2>
+  <p>You should spend about 20 minutes on Questions 1–13, which are based on Reading Passage 1 below.</p>
+  <h3>A Brief History of Humans and Food</h3>
+  
+  <p>During the journey from our hunter-gatherer ancestors to the present day, there have been three seismic changes that have impacted the food we eat: the discovery of cooking, the emergence of agriculture, and the invention of methods of preserving food.</p>
+  
+  <p>The 19th-century scientist Charles Darwin thought that cooking, after language, was the greatest discovery made by man. All of us eat some raw food, such as fruit and vegetables, but the great majority of food we consume is cooked. Cooking can turn plants that are inedible into edible food by destroying toxic chemicals that plants often manufacture to protect themselves against attack by insects or other herbivorous animals. These toxic chemicals are referred to as “plant secondary compounds” because they are not directly involved in the plant’s normal growth, development, and reproduction, and are produced purely as chemical defenses. They give many of the plants we consume, such as coffee or Brussels sprouts, their bitter taste.</p>
+  
+  <p>Cooked food is often more digestible because heat breaks down tough cellulose cell walls in plants or tough connective tissue in animals. Chewing raw turnip, a plate of uncooked rice, or a raw leg of lamb is much harder work than eating the cooked equivalent. The energy expended in chewing to break down the tough material is replaced by energy from the fuel used in cooking the food, so the ratio of energy gained to energy expended by the body is greater when food is cooked.</p>
+  
+  <p>Until the development of agriculture, hunter-gatherers spent up to seven hours a day gathering food. This all began to change around 10,500 years ago with the advent of farming, which led to dramatic changes in human societies. People began to create a variety of new tools to aid survival, and in turn, populations increased in size. These changes led to the possibility of specialization of different tasks within society. Around this time, writing became more sophisticated and allowed people to maintain records of the harvest and taxes. Eventually, formalized structures of government were established as people settled in one area.</p>
+  
+  <p>The arrival of agriculture meant that, for the first time, our ancestors had more food than they could eat immediately. This, combined with the seasonality of production, led them to discover methods of preserving food: smoking, drying, adding acid by fermentation, or adding salt. These four methods all share one feature in common-they make the food a more hostile environment for bacteria that can cause it to spoil. They also tend to slow down natural chemical reactions in the food that would cause decay.</p>
+  
+  <p>Although foods today are still preserved in these ancient ways, two more recent methods of preserving food have become more common: canning and freezing. Canning was invented by a Frenchman, Nicolas Appert, in the early 19th century. He sealed food in bottles fabricated from glass and then heated them in boiling water to cook the contents. Appert’s method had great advantages over older methods of food preservation: it could be applied to a wide range of foods, and the flavor and texture were similar to freshly cooked products. His idea was soon copied by an Englishman, Peter Durand. Until this point, containers had been too heavy to be widely used, but Durand produced the first ones which were lightweight and resistant to damage. Two years later, in 1812, two Englishmen, Bryan Donkin and John Hall, started the commercial canning of food, although the real rise in popularity of canning had to wait until the invention of the can opener in 1855. Until then, cans were opened with a chisel and hammer. Canning is an extremely effective way of preserving food: one can containing meat, dating back to 1824, was opened in 1939, and the contents were still in good condition.</p>
+  
+  <p>In the 21st century, the dominance of canning as a method of food preservation has been overtaken by freezing. Chilling food to keep it fresh is an old idea. The earliest mentions of icehouses, thick-walled buildings, half underground, date back to 1700 BC in northwest Iran. In early 16th-century Italy, water was mixed with chemicals to lower its freezing point to -18 degrees Celsius. Several centuries later, frozen fish and other goods were transported by ship from Australia to England. However, the modern frozen food industry was started in the 1920s by an American, Clarence Birdseye. While on a fishing trip with the Inuit in the Canadian Arctic, Birdseye observed that rapid freezing creates smaller ice crystals and therefore causes less damage to food-a discovery he had not expected. Nevertheless, the major growth in demand for frozen food came with the arrival of freezers in ordinary people’s homes. The advantages of frozen over canned food include the fact that the flavor and consistency are often identical to the fresh product, and freezing can be used to preserve a wide variety of foods.</p>
+  
+  <!-- Extra blank lines to prevent incomplete loading -->
+  <p>&nbsp;</p>
+  <p>&nbsp;</p>
+</section>
+<div id="divider" title="Drag to resize"></div>
+<section class="pane" id="right">
+  <h3>Questions</h3>
+  
+  <div class="group">
+    <h4>Questions 1–5</h4>
+    <p>Do the following statements agree with the information given in Reading Passage 1?</p>
+    <p>In boxes 1–5 on your answer sheet, write</p>
+    <ul>
+      <li>TRUE if the statement agrees with the information</li>
+      <li>FALSE if the statement contradicts the information</li>
+      <li>NOT GIVEN if there is no information on this</li>
+    </ul>
+    
+    <a id="q1-anchor"></a>
+    <div id="q1-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+      <p>1 According to Darwin, cooking was the most significant development in human history.</p>
+      <div style="display:flex; flex-wrap:wrap; gap:10px; margin:4px 0;">
+        <label style="margin:0;"><input name="q1" type="radio" value="TRUE"> TRUE</label>
+        <label style="margin:0;"><input name="q1" type="radio" value="FALSE"> FALSE</label>
+        <label style="margin:0;"><input name="q1" type="radio" value="NOT GIVEN"> NOT GIVEN</label>
+      </div>
+    </div>
+    
+    <a id="q2-anchor"></a>
+    <div id="q2-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+      <p>2 The process of cooking gets rid of some plant poisons.</p>
+      <div style="display:flex; flex-wrap:wrap; gap:10px; margin:4px 0;">
+        <label style="margin:0;"><input name="q2" type="radio" value="TRUE"> TRUE</label>
+        <label style="margin:0;"><input name="q2" type="radio" value="FALSE"> FALSE</label>
+        <label style="margin:0;"><input name="q2" type="radio" value="NOT GIVEN"> NOT GIVEN</label>
+      </div>
+    </div>
+    
+    <a id="q3-anchor"></a>
+    <div id="q3-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+      <p>3 Eating cooked food is more energy efficient than eating raw food.</p>
+      <div style="display:flex; flex-wrap:wrap; gap:10px; margin:4px 0;">
+        <label style="margin:0;"><input name="q3" type="radio" value="TRUE"> TRUE</label>
+        <label style="margin:0;"><input name="q3" type="radio" value="FALSE"> FALSE</label>
+        <label style="margin:0;"><input name="q3" type="radio" value="NOT GIVEN"> NOT GIVEN</label>
+      </div>
+    </div>
+    
+    <a id="q4-anchor"></a>
+    <div id="q4-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+      <p>4 Clarence Birdseye had previously worked in the Australian food industry.</p>
+      <div style="display:flex; flex-wrap:wrap; gap:10px; margin:4px 0;">
+        <label style="margin:0;"><input name="q4" type="radio" value="TRUE"> TRUE</label>
+        <label style="margin:0;"><input name="q4" type="radio" value="FALSE"> FALSE</label>
+        <label style="margin:0;"><input name="q4" type="radio" value="NOT GIVEN"> NOT GIVEN</label>
+      </div>
+    </div>
+    
+    <a id="q5-anchor"></a>
+    <div id="q5-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+      <p>5 Birdseye’s trip with the Inuit confirmed what he already believed about rapid freezing.</p>
+      <div style="display:flex; flex-wrap:wrap; gap:10px; margin:4px 0;">
+        <label style="margin:0;"><input name="q5" type="radio" value="TRUE"> TRUE</label>
+        <label style="margin:0;"><input name="q5" type="radio" value="FALSE"> FALSE</label>
+        <label style="margin:0;"><input name="q5" type="radio" value="NOT GIVEN"> NOT GIVEN</label>
+      </div>
+    </div>
+  </div>
+  
+  <div class="group">
+    <h4>Questions 6–13</h4>
+    <p>Complete the notes below.</p>
+    <p>Choose ONE WORD ONLY from the passage for each answer.</p>
+    <p>Write your answers in boxes 6–13 on your answer sheet.</p>
+    
+    <h4>The Development of Agriculture and Food Preservation</h4>
+    <p>The changes agriculture brought about were:</p>
+    <ul>
+      <li>the development of equipment and larger <strong>6</strong> ________</li>
+      <li>the ability to keep <strong>7</strong> ________ as writing developed</li>
+      <li>the setting up of organised government</li>
+    </ul>
+    
+    <p><strong>Food preservation</strong></p>
+    <p>early methods of food preservation included: smoking, drying and combining food with acid or <strong>8</strong> ________</p>
+    
+    <p><strong>canning</strong></p>
+    <ul>
+      <li>Nicolas Appert put food into containers made of <strong>9</strong> ________</li>
+      <li>Appert’s method resulted in preserved food that had the same taste and <strong>10</strong> ________ as fresh food</li>
+      <li>Peter Durand introduced cans which had the advantage of being <strong>11</strong> ________ and hard to break</li>
+      <li>In 1855, the metal can opener replaced the <strong>12</strong> ________ which had been used with a hammer to open cans</li>
+      <li>some food was still found to be edible after more than a hundred years, e.g. an old can of <strong>13</strong> ________</li>
+    </ul>
+    
+    <p><strong>freezing</strong></p>
+    
+    <a id="q6-anchor"></a>
+    <div id="q6-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+      <p>6 ________</p>
+      <input type="text" name="q6" style="width:100%; padding:8px; border:1px solid var(--line); border-radius:6px; margin-top:4px;">
+    </div>
+    
+    <a id="q7-anchor"></a>
+    <div id="q7-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+      <p>7 ________</p>
+      <input type="text" name="q7" style="width:100%; padding:8px; border:1px solid var(--line); border-radius:6px; margin-top:4px;">
+    </div>
+    
+    <a id="q8-anchor"></a>
+    <div id="q8-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+      <p>8 ________</p>
+      <input type="text" name="q8" style="width:100%; padding:8px; border:1px solid var(--line); border-radius:6px; margin-top:4px;">
+    </div>
+    
+    <a id="q9-anchor"></a>
+    <div id="q9-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+      <p>9 ________</p>
+      <input type="text" name="q9" style="width:100%; padding:8px; border:1px solid var(--line); border-radius:6px; margin-top:4px;">
+    </div>
+    
+    <a id="q10-anchor"></a>
+    <div id="q10-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+      <p>10 ________</p>
+      <input type="text" name="q10" style="width:100%; padding:8px; border:1px solid var(--line); border-radius:6px; margin-top:4px;">
+    </div>
+    
+    <a id="q11-anchor"></a>
+    <div id="q11-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+      <p>11 ________</p>
+      <input type="text" name="q11" style="width:100%; padding:8px; border:1px solid var(--line); border-radius:6px; margin-top:4px;">
+    </div>
+    
+    <a id="q12-anchor"></a>
+    <div id="q12-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+      <p>12 ________</p>
+      <input type="text" name="q12" style="width:100%; padding:8px; border:1px solid var(--line); border-radius:6px; margin-top:4px;">
+    </div>
+    
+    <a id="q13-anchor"></a>
+    <div id="q13-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+      <p>13 ________</p>
+      <input type="text" name="q13" style="width:100%; padding:8px; border:1px solid var(--line); border-radius:6px; margin-top:4px;">
+    </div>
+  </div>
+  
+  <div style="display:flex;gap:8px;margin-bottom:10px;">
+    <button class="primary" onclick="grade()">Submit</button>
+    <button onclick="resetForm()">Reset</button>
+    <button onclick="toggleNotes()">Notes</button>
+  </div>
+  <div id="results"></div>
+  <details class="answerbox" id="answerBox">
+    <summary>Show answers (click to toggle) <span class="badge">hidden</span></summary>
+    <div id="answerContent"></div>
+  </details>
+</section>
+</div>
+<div aria-label="Selection tools" id="selbar" role="toolbar">
+  <button id="btnHL">Highlight</button>
+  <button id="btnUH">Remove</button>
+  <button id="btnNote">Note</button>
+</div>
+<div id="notes">
+  <header>
+    <strong>Notes</strong>
+    <div>
+      <button id="btnCopy">Copy</button>
+      <button id="btnClose">Close</button>
+    </div>
+  </header>
+  <textarea id="noteArea" placeholder="Type your notes here..."></textarea>
+</div>
+<div id="toast"></div>
+<script>
+// Timer (with stop functionality)
+let _t = 0; 
+const _timerEl = document.getElementById('timer');
+let timerInterval; // Store interval ID to stop later
+
+// Start timer
+function startTimer() {
+  timerInterval = setInterval(function(){ 
+    _t++; 
+    const m = String(Math.floor(_t/60)).padStart(2,'0'); 
+    const s = String(_t%60).padStart(2,'0'); 
+    _timerEl.textContent = m + ':' + s; 
+  }, 1000);
+}
+startTimer(); // Initialize timer on load
+
+// Drag divider
+const divider = document.getElementById('divider');
+const left = document.getElementById('left');
+const right = document.getElementById('right');
+let dragging = false;
+
+function startDrag(e) { 
+  dragging = true; 
+  document.body.style.cursor = 'ew-resize'; 
+  if (e.preventDefault) e.preventDefault(); 
+}
+
+function endDrag() { 
+  dragging = false; 
+  document.body.style.cursor = ''; 
+}
+
+function onMove(clientX) {
+  const container = document.querySelector('.shell').getBoundingClientRect();
+  let x = clientX - container.left;
+  x = Math.max(280, Math.min(container.width - 320, x));
+  left.style.flex = '0 0 ' + x + 'px';
+  right.style.flex = '1 1 auto';
+}
+
+divider.addEventListener('mousedown', startDrag);
+window.addEventListener('mousemove', (e) => { if (dragging) onMove(e.clientX); });
+window.addEventListener('mouseup', endDrag);
+divider.addEventListener('touchstart', (e) => { startDrag(e.touches[0]); }, { passive: false });
+window.addEventListener('touchmove', (e) => { if (dragging) onMove(e.touches[0].clientX); }, { passive: false });
+window.addEventListener('touchend', endDrag);
+
+// Highlight toolbar (supports all text)
+const selbar = document.getElementById('selbar');
+const btnHL = document.getElementById('btnHL');
+const btnUH = document.getElementById('btnUH');
+const btnNote = document.getElementById('btnNote');
+let lastRange = null;
+let currentHlNode = null;
+let keepToolbar = false;
+
+function positionSelbarForRect(rect) {
+  selbar.style.display = 'flex';
+  requestAnimationFrame(function() {
+    const top = window.scrollY + rect.top - selbar.offsetHeight - 8;
+    const leftPos = window.scrollX + rect.left + rect.width/2 - selbar.offsetWidth/2;
+    selbar.style.top = ((top > 0) ? top : (window.scrollY + rect.bottom + 8)) + 'px';
+    selbar.style.left = Math.max(8, leftPos) + 'px';
+  });
+}
+
+function updateSelbar() {
+  const sel = window.getSelection();
+  if (!sel || sel.rangeCount === 0 || sel.isCollapsed) { 
+    selbar.style.display = 'none'; 
+    currentHlNode = null; 
+    return; 
+  }
+  const range = sel.getRangeAt(0);
+  lastRange = range.cloneRange();
+  currentHlNode = null;
+  positionSelbarForRect(range.getBoundingClientRect());
+}
+
+// Enable highlight on all text areas
+document.getElementById('left').addEventListener('mouseup', updateSelbar);
+document.getElementById('right').addEventListener('mouseup', updateSelbar);
+document.addEventListener('selectionchange', () => { 
+  const sel = window.getSelection(); 
+  if (!sel || sel.rangeCount === 0 || sel.isCollapsed) { 
+    if (!keepToolbar && !currentHlNode) { 
+      selbar.style.display = 'none'; 
+    } 
+  } 
+});
+document.addEventListener('scroll', () => { 
+  if (selbar.style.display === 'flex') updateSelbar(); 
+});
+
+document.addEventListener('mousedown', (e) => {
+  const t = e.target;
+  keepToolbar = t.classList && t.classList.contains('hl');
+}, true);
+
+document.addEventListener('click', (e) => {
+  const target = e.target;
+  if (target.classList && target.classList.contains('hl')) {
+    currentHlNode = target;
+    lastRange = null;
+    positionSelbarForRect(target.getBoundingClientRect());
+    const sel = window.getSelection();
+    if (sel) sel.removeAllRanges();
+    setTimeout(() => { keepToolbar = false; }, 0);
+  }
+}, true);
+
+// Highlight function
+function doHighlight() {
+  if (currentHlNode) return;
+  if (!lastRange || lastRange.collapsed) return;
+  const span = document.createElement('span');
+  span.className = 'hl';
+  try { 
+    lastRange.surroundContents(span); 
+  } catch (e) {
+    const wrap = document.createElement('span');
+    wrap.className = 'hl';
+    wrap.appendChild(lastRange.cloneContents());
+    lastRange.deleteContents();
+    lastRange.insertNode(wrap);
+  }
+  selbar.style.display = 'none';
+  showToast('Highlighted');
+}
+
+// Remove highlight function
+function removeHighlight() {
+  if (currentHlNode) {
+    const p = currentHlNode.parentNode;
+    while (currentHlNode.firstChild) p.insertBefore(currentHlNode.firstChild, currentHlNode);
+    p.removeChild(currentHlNode); 
+    p.normalize();
+    currentHlNode = null;
+    selbar.style.display = 'none';
+    showToast('Highlight removed');
+    return;
+  }
+  if (!lastRange) return;
+  const selRect = lastRange.getBoundingClientRect();
+  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_ELEMENT);
+  const toRemove = [];
+  while (walker.nextNode()) {
+    const n = walker.currentNode;
+    if (n.classList && n.classList.contains('hl')) {
+      const r = n.getBoundingClientRect();
+      if (!(r.right < selRect.left || r.left > selRect.right || r.bottom < selRect.top || r.top > selRect.bottom)) {
+        toRemove.push(n);
+      }
+    }
+  }
+  toRemove.forEach(el => { 
+    const p = el.parentNode; 
+    while (el.firstChild) p.insertBefore(el.firstChild, el); 
+    p.removeChild(el); 
+    p.normalize(); 
+  });
+  selbar.style.display = 'none';
+  showToast('Highlight removed');
+}
+
+btnHL.addEventListener('click', doHighlight);
+btnUH.addEventListener('click', removeHighlight);
+
+// Notes function
+const notes = document.getElementById('notes');
+const noteArea = document.getElementById('noteArea');
+const btnCopy = document.getElementById('btnCopy');
+const btnClose = document.getElementById('btnClose');
+
+function toggleNotes() { 
+  notes.style.display = (notes.style.display === 'flex' ? 'none' : 'flex'); 
+}
+
+btnClose.addEventListener('click', toggleNotes);
+btnCopy.addEventListener('click', async () => { 
+  await navigator.clipboard.writeText(noteArea.value || ''); 
+  showToast('Copied'); 
+});
+
+btnNote.addEventListener('click', () => {
+  let text = '';
+  if (currentHlNode) { 
+    text = (currentHlNode.textContent || '').trim(); 
+  } else if (lastRange) { 
+    const frag = lastRange.cloneContents(); 
+    text = (frag.textContent || '').trim(); 
+  }
+  toggleNotes();
+  if (text) {
+    noteArea.value = (noteArea.value ? noteArea.value + '\n' : '') + '> ' + text + '\n';
+  }
+  selbar.style.display = 'none';
+});
+
+// Toast notification
+const toastEl = document.getElementById('toast');
+function showToast(msg) {
+  toastEl.textContent = msg; 
+  toastEl.style.display = 'block';
+  setTimeout(() => { toastEl.style.display = 'none'; }, 1200);
+}
+
+// Font Size Settings
+const settingsBtn = document.getElementById('settingsBtn');
+const settingsPanel = document.getElementById('settingsPanel');
+const closeSettings = document.getElementById('closeSettings');
+const fontOptions = document.querySelectorAll('.font-option');
+
+// Open settings
+settingsBtn.addEventListener('click', () => {
+  settingsPanel.style.display = 'flex';
+});
+
+// Close settings
+closeSettings.addEventListener('click', () => {
+  settingsPanel.style.display = 'none';
+});
+
+// Change font size
+fontOptions.forEach(option => {
+  option.addEventListener('click', () => {
+    const fontSize = option.dataset.size;
+    document.documentElement.style.setProperty('--font-size', fontSize);
+    showToast(`Font size set to ${option.textContent.split(' ')[0]}`);
+    settingsPanel.style.display = 'none';
+  });
+});
+
+// Answer key and grading (with timer stop)
+const answers = {
+  "q1": "FALSE", 
+  "q2": "TRUE", 
+  "q3": "TRUE", 
+  "q4": "NOT GIVEN", 
+  "q5": "FALSE",
+  "q6": "populations", 
+  "q7": "records", 
+  "q8": "salt", 
+  "q9": "glass", 
+  "q10": "texture", 
+  "q11": "lightweight", 
+  "q12": "chisel", 
+  "q13": "meat"
+};
+
+function grade() {
+  // Stop timer when submitting
+  clearInterval(timerInterval);
+  
+  let total = 0;
+  let correct = 0;
+  const lines = [];
+
+  function push(q, ok, user) {
+    total++;
+    if (ok) correct++;
+    lines.push(`${q.toUpperCase()}: ${user || 'None'} ${ok ? '✅' : '❌'}`);
+  }
+
+  // Check Questions 1-5 (True/False/Not Given)
+  for (let n = 1; n <= 5; n++) {
+    const sel = document.querySelector(`input[name="q${n}"]:checked`);
+    const val = sel ? sel.value : '';
+    const ok = val === answers[`q${n}`];
+    push(`q${n}`, ok, val);
+  }
+
+  // Check Questions 6-13 (Fill in the blank)
+  for (let n = 6; n <= 13; n++) {
+    const input = document.querySelector(`input[name="q${n}"]`);
+    const val = input ? input.value.trim().toLowerCase() : '';
+    const correctVal = answers[`q${n}`].toLowerCase();
+    const ok = val === correctVal;
+    push(`q${n}`, ok, val);
+  }
+
+  // Show results
+  const acc = total ? Math.round(100 * correct / total) : 0;
+  let html = `<p><strong>Score:</strong> ${correct}/${total} <span class="badge">Accuracy ${acc}%</span></p>`;
+  html += `<pre>${lines.join('\n')}</pre>`;
+  document.getElementById('results').innerHTML = html;
+
+  // Show answer key
+  document.getElementById('answerContent').innerHTML = `
+    <ol>
+      <li>1 → FALSE (Darwin considered cooking second only to language)</li>
+      <li>2 → TRUE (Cooking destroys plant toxic chemicals)</li>
+      <li>3 → TRUE (Cooked food has higher energy gain vs expenditure ratio)</li>
+      <li>4 → NOT GIVEN (No info about Birdseye’s Australian work experience)</li>
+      <li>5 → FALSE (Birdseye’s discovery was unexpected, not confirmed belief)</li>
+      <li>6 → populations (Agriculture led to larger populations)</li>
+      <li>7 → records (Writing enabled harvest/tax records)</li>
+      <li>8 → salt (Early preservation methods included salt)</li>
+      <li>9 → glass (Appert used glass bottles)</li>
+      <li>10 → texture (Appert’s method preserved flavor and texture)</li>
+      <li>11 → lightweight (Durand’s cans were lightweight)</li>
+      <li>12 → chisel (Cans were opened with chisel and hammer before 1855)</li>
+      <li>13 → meat (1824 meat can was still edible in 1939)</li>
+    </ol>
+  `;
+  document.querySelector('#answerBox .badge').textContent = 'tap to view';
+}
+
+// Reset form
+function resetForm() {
+  // Reset radio buttons
+  document.querySelectorAll('input[type="radio"]').forEach(el => el.checked = false);
+  // Reset text inputs
+  document.querySelectorAll('input[type="text"]').forEach(el => el.value = '');
+  // Clear results and answer key
+  document.getElementById('results').innerHTML = '';
+  document.getElementById('answerContent').innerHTML = '';
+  document.querySelector('#answerBox .badge').textContent = 'hidden';
+  // Reset question navigation status
+  document.querySelectorAll('.q-item').forEach(item => {
+    item.classList.remove('answered');
+  });
+  // Reset timer
+  clearInterval(timerInterval);
+  _t = 0;
+  _timerEl.textContent = '00:00';
+  startTimer(); // Restart timer
+}
+
+// Scroll to question
+function scrollToElement(id) {
+  const el = document.getElementById(id);
+  if (el) { 
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' }); 
+  }
+  // Update active question nav
+  document.querySelectorAll('.practice-nav .q-item').forEach(n => n.classList.remove('active'));
+  const btn = document.getElementById(id.replace('-anchor', '-nav'));
+  if (btn) { 
+    btn.classList.add('active'); 
+    setTimeout(() => btn.classList.remove('active'), 800); 
+  }
+}
+
+// Mark answered questions in navigation
+(function() {
+  function mark(qn) {
+    const nav = document.getElementById(`q${qn}-nav`);
+    if (!nav) return;
+    
+    let answered = false;
+    // Check radio buttons (Q1-Q5)
+    const radios = document.querySelectorAll(`input[name="q${qn}"]:checked`);
+    if (radios.length > 0) {
+      answered = true;
+    }
+    // Check text inputs (Q6-Q13)
+    const input = document.querySelector(`input[name="q${qn}"]`);
+    if (input && input.value.trim() !== '') {
+      answered = true;
+    }
+
+    if (answered) {
+      nav.classList.add('answered');
+    } else {
+      nav.classList.remove('answered');
+    }
+  }
+
+  // Monitor Q1-Q5 (radio buttons)
+  for (let q = 1; q <= 5; q++) {
+    (function(n) {
+      document.querySelectorAll(`input[name="q${n}"]`).forEach(input => {
+        input.addEventListener('change', () => mark(n));
+      });
+    })(q);
+  }
+
+  // Monitor Q6-Q13 (text inputs)
+  for (let q = 6; q <= 13; q++) {
+    (function(n) {
+      const input = document.querySelector(`input[name="q${n}"]`);
+      if (input) {
+        input.addEventListener('input', () => mark(n));
+      }
+    })(q);
+  }
+})();
+</script>
+</body>
+</html>

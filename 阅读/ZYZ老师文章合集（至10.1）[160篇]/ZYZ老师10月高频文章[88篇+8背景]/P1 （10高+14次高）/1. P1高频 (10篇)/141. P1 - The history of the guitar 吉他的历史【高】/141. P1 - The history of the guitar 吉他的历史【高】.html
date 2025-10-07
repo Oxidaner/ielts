@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>P1 – The History of the Guitar</title>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<style>
+  :root { 
+    --line:#e5e7eb; 
+    --bg:#f6f7fb; 
+    --panel:#fff; 
+    --accent:#3b82f6; 
+    --muted:#6b7280; 
+    --shadow:0 6px 20px rgba(0,0,0,.12); 
+    /* 字体大小变量 - 默认regular */
+    --font-size-regular: 16px;
+    --font-size-moderate: 18px;
+    --font-size-large: 20px;
+    --font-size-heading-regular: 20px;
+    --font-size-heading-moderate: 22px;
+    --font-size-heading-large: 24px;
+    --font-size-small-regular: 14px;
+    --font-size-small-moderate: 16px;
+    --font-size-small-large: 18px;
+  }
+  /* 基础字体样式 - 默认regular */
+  * { 
+    box-sizing: border-box; 
+    font-size: var(--font-size-regular);
+  }
+  h2, h3, h4 { 
+    font-size: var(--font-size-heading-regular);
+  }
+  .small-text, table th, table td, button, .badge, .droplabel, .tag, #timer, #notes textarea, #toast {
+    font-size: var(--font-size-small-regular);
+  }
+
+  /* 字体大小切换类 - moderate */
+  body.font-moderate * {
+    font-size: var(--font-size-moderate);
+  }
+  body.font-moderate h2, 
+  body.font-moderate h3, 
+  body.font-moderate h4 {
+    font-size: var(--font-size-heading-moderate);
+  }
+  body.font-moderate .small-text, 
+  body.font-moderate table th, 
+  body.font-moderate table td, 
+  body.font-moderate button, 
+  body.font-moderate .badge, 
+  body.font-moderate .droplabel, 
+  body.font-moderate .tag, 
+  body.font-moderate #timer, 
+  body.font-moderate #notes textarea, 
+  body.font-moderate #toast {
+    font-size: var(--font-size-small-moderate);
+  }
+
+  /* 字体大小切换类 - large */
+  body.font-large * {
+    font-size: var(--font-size-large);
+  }
+  body.font-large h2, 
+  body.font-large h3, 
+  body.font-large h4 {
+    font-size: var(--font-size-heading-large);
+  }
+  body.font-large .small-text, 
+  body.font-large table th, 
+  body.font-large table td, 
+  body.font-large button, 
+  body.font-large .badge, 
+  body.font-large .droplabel, 
+  body.font-large .tag, 
+  body.font-large #timer, 
+  body.font-large #notes textarea, 
+  body.font-large #toast {
+    font-size: var(--font-size-small-large);
+  }
+
+  html,body { height:100%; }
+  body { 
+    margin:0; 
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; 
+    background:var(--bg); 
+    padding-bottom: 82px;
+  }
+  /* 计时器与设置按钮容器 */
+  #timer-container {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  #timer { 
+    position: static; 
+    display: inline-block; 
+    background:#fff; 
+    border:1px solid var(--line); 
+    border-radius:10px; 
+    padding:2px 8px; 
+    vertical-align: middle; 
+  }
+  /* 设置按钮样式 */
+  #settings-btn {
+    padding:4px 8px; 
+    border:1px solid var(--line); 
+    border-radius:8px; 
+    background:#fff; 
+    cursor:pointer; 
+    vertical-align: middle;
+  }
+  #settings-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  /* 设置菜单样式 */
+  #settings-menu {
+    position: absolute;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 8px;
+    box-shadow: var(--shadow);
+    display: none;
+    flex-direction: column;
+    gap: 6px;
+    z-index: 1000;
+  }
+  .settings-option {
+    padding: 4px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  .settings-option:hover {
+    background: var(--bg);
+  }
+  .settings-option.active {
+    background: #eef2ff;
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  .shell { display:flex; height:100vh; width:100%; }
+  .pane { background:var(--panel); overflow:auto; padding:20px; }
+  #left { flex: 0 0 50%; min-width: 280px; }
+  #right { flex: 1 1 auto; min-width: 320px; background:#fbfbff; border-left:1px solid var(--line); }
+  #divider { flex: 0 0 8px; background: linear-gradient(90deg,#e5e7eb,#d1d5db); cursor: ew-resize; position:relative; z-index: 5; user-select:none; }
+  
+  h2,h3,h4 { margin:0 0 10px; }
+  #left p { margin: 0 0 12px; line-height: 1.6; word-break: normal; overflow-wrap: normal; hyphens: none; }
+  .group { background:#fff; border:1px solid var(--line); border-radius:10px; padding:12px; margin-bottom:14px; }
+  table { border-collapse: collapse; width:100%; }
+  th, td { border:1px solid var(--line); padding:6px; text-align:center; }
+  th:first-child, td:first-child { width:92px; }
+  button { padding:8px 12px; border:1px solid var(--line); border-radius:10px; background:#fff; cursor:pointer; }
+  button.primary { background:var(--accent); color:#fff; border-color:#3b82f6; }
+  #results { background:#fff; border:1px solid var(--line); border-radius:10px; padding:10px; }
+  
+  /* 高亮样式 */
+  .hl { background:#fff3a3; box-shadow: inset 0 -2px 0 rgba(0,0,0,.05); cursor: pointer; }
+  .hl:hover { filter: brightness(0.98); }
+  
+  #selbar { position: absolute; display:none; z-index: 6000; background:#111; color:#fff; border-radius: 8px; padding: 6px; box-shadow: var(--shadow); font-size: 13px; gap:6px; align-items: center; }
+  #selbar button { background: transparent; color:#fff; border: 1px solid rgba(255,255,255,.25); padding: 4px 8px; border-radius: 6px; cursor:pointer; }
+  #selbar button:hover { border-color:#fff; }
+  
+  #notes { position: fixed; right: 12px; bottom: 12px; width: 320px; height: 42vh; background:#fff; border:1px solid var(--line); border-radius: 12px; display:none; flex-direction: column; z-index:1500; box-shadow: var(--shadow); }
+  #notes header { display:flex; align-items:center; justify-content: space-between; padding:8px 10px; border-bottom:1px solid var(--line); }
+  #notes textarea { flex:1; border:0; padding:10px; resize:none; line-height:1.5; }
+  
+  #toast { position: fixed; left:50%; transform: translateX(-50%); bottom: 24px; background:#111; color:#fff; padding:8px 12px; border-radius: 8px; display:none; z-index:2500; }
+  
+  .dropzone { border:2px dashed #cbd5e1; background:#f8fafc; border-radius:10px; min-height:54px; padding:8px; display:flex; align-items:center; justify-content:space-between; gap:8px; }
+  .droplabel { color:#64748b; }
+  
+  .cardpool { background:#f1f5f9; border-radius:10px; padding:12px; display:grid; gap:8px; }
+  .pool-slot { min-height:40px; }
+  
+  .card { background:#fff; border:1px solid #e5e7eb; border-radius:8px; padding:8px 10px; display:inline-flex; gap:8px; align-items:center; cursor:grab; box-shadow:0 1px 0 rgba(0,0,0,.03); }
+  .card:active { cursor:grabbing; }
+  
+  .tag { background:#eef2ff; color:#4338ca; padding:2px 8px; border-radius:999px; font-size:12px; }
+  
+  .btn-clear { border:1px solid #e5e7eb; background:#fff; border-radius:8px; padding:6px 8px; cursor:pointer; }
+  
+  .ghost { opacity: .5; }
+  .over { outline:2px dashed #3b82f6; }
+  
+  details.answerbox summary { cursor: pointer; user-select:none; list-style: none; }
+  details.answerbox { border:1px dashed var(--line); border-radius:10px; padding:8px 10px; background:#fff; }
+  
+  .badge { display:inline-block; background:#eef2ff; color:#4338ca; padding:2px 8px; border-radius:999px; font-size:12px; margin-left:6px; }
+  
+  .practice-nav { background:#fff; border-bottom:2px solid var(--line); padding:12px 20px; display:flex; align-items:center; gap:20px; box-shadow:0 2px 4px rgba(0,0,0,.05); flex-wrap:wrap; position:fixed; left:0; right:0; bottom:0; border-top:2px solid var(--line); border-bottom:0; z-index:4000; }
+  .practice-nav .title { font-weight:600; color:var(--muted); }
+  .practice-nav .questions { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .practice-nav .q-item { padding:6px 10px; border:1px solid var(--line); border-radius:6px; background:#fff; cursor:pointer; transition:all 0.2s; min-width:36px; text-align:center; }
+  .practice-nav .q-item:hover { background:#f1f5f9; border-color:var(--accent); }
+  .practice-nav .q-item.answered { background:#e0e7ff; border-color:var(--accent); color:var(--accent); font-weight:500; }
+  .practice-nav .q-item.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+
+  /* 表格填空题样式 */
+  .table-fill { width: 100%; margin: 10px 0; }
+  .table-fill th, .table-fill td { padding: 8px; text-align: left; vertical-align: top; }
+  .table-fill th { background: #f1f5f9; }
+  .table-fill td input { width: 100%; padding: 4px; border:1px solid var(--line); border-radius:6px; }
+</style>
+</head>
+<body class="font-regular">
+<!-- 字体设置菜单 -->
+<div id="settings-menu">
+  <div class="settings-option active" data-size="regular">Regular (默认)</div>
+  <div class="settings-option" data-size="moderate">Moderate (加大1号)</div>
+  <div class="settings-option" data-size="large">Large (加大2号)</div>
+</div>
+
+<div class="practice-nav">
+  <div class="title">Questions</div>
+  <div class="questions">
+    <div class="q-item" id="q1-nav" onclick="scrollToElement('q1-anchor')">1</div>
+    <div class="q-item" id="q2-nav" onclick="scrollToElement('q2-anchor')">2</div>
+    <div class="q-item" id="q3-nav" onclick="scrollToElement('q3-anchor')">3</div>
+    <div class="q-item" id="q4-nav" onclick="scrollToElement('q4-anchor')">4</div>
+    <div class="q-item" id="q5-nav" onclick="scrollToElement('q5-anchor')">5</div>
+    <div class="q-item" id="q6-nav" onclick="scrollToElement('q6-anchor')">6</div>
+    <div class="q-item" id="q7-nav" onclick="scrollToElement('q7-anchor')">7</div>
+    <div class="q-item" id="q8-nav" onclick="scrollToElement('q8-anchor')">8</div>
+    <div class="q-item" id="q9-nav" onclick="scrollToElement('q9-anchor')">9</div>
+    <div class="q-item" id="q10-nav" onclick="scrollToElement('q10-anchor')">10</div>
+    <div class="q-item" id="q11-nav" onclick="scrollToElement('q11-anchor')">11</div>
+    <div class="q-item" id="q12-nav" onclick="scrollToElement('q12-anchor')">12</div>
+    <div class="q-item" id="q13-nav" onclick="scrollToElement('q13-anchor')">13</div>
+  </div>
+</div>
+
+<div class="shell">
+<section class="pane" id="left">
+  <h2>READING PASSAGE 1 
+    <div id="timer-container">
+      <span id="timer">00:00</span>
+      <button id="settings-btn">Settings</button>
+    </div>
+  </h2>
+  <p>You should spend about 20 minutes on Questions 1–13, which are based on Reading Passage 1 below.</p>
+  <h3>The History of the Guitar</h3>
+  <h4>An overview of the origins of the modern guitar</h4>
+  
+  <p>The earliest stringed instruments currently known to archaeologists are bowl harps. For millennia, people made bowl harps using, for example, tortoise shells as resonators, with a bent stick for a neck and one or more gut or silk strings. The world’s museums contain many such harps from the ancient Sumerian, Babylonian, and Egyptian civilisations. Around 2500-2000 BC, more advanced harps, such as the beautifully carved 11-stringed instrument found in the tomb of Queen Shub-Ad in ancient Mesopotamia, now modern-day Iraq, started to appear.</p>
+  
+  <p>The tanbur* probably developed from the bowl harp. It was different from the bowl harp in that its neck was straightened out to allow the strings to be pressed down to create more notes. Tomb paintings and stone carvings in Egypt indicate that harps and tanburs – plus flutes and percussion instruments – were being played together 3,500-4,000 years ago. Archaeologists have also found many similar relics amongst the ruins of the ancient Mesopotamian civilisation. Many of these instruments have survived into modern times in almost unchanged form, for example, folk instruments of the region such as the Turkish saz and Afghan panchtar.</p>
+  
+  <p>At 3,500 years old, the tanbur which belonged to the Egyptian singer Har-Mose is the earliest known example of this instrument. Har-Mose’s tanbur had three strings and a plectrum suspended from the neck by a cord. The soundbox, which increased the volume, was made of beautifully polished cedarwood and covered in rawhide. It can be seen today at the Archaeological Museum in Cairo.</p>
+  
+  <p>In order to distinguish guitars from other stringed instruments, it is helpful to have a broad definition of the guitar. Music expert Dr Michael Kasha defines a guitar as having ‘a long, fretted neck, flat wooden soundboard, ribs, and a flat back, most often with sides that curve inwards’. The oldest known visual representation of such an instrument is a stone carving at Alaca Huyuk in Turkey, which shows a 3,300-year-old instrument with a long neck and sides that clearly curve inwards.</p>
+  
+  <p><em>tanbur*: a long-necked stringed instrument with a small pear-shaped body</em></p>
+  
+  <p>The name ‘guitar’ comes from the ancient Sanskrit word for ‘string’ – ‘tar’. Many popular stringed instruments used in Central Asia today have existed in an unchanged form for several thousand years, as shown by archaeological finds in the area. Many have names that end in ‘tar’, with a prefix indicating the number of strings, such as the doter, a two-stringed instrument found in Turkestan, and the Persian three-stringed setar and four-stringed chartar. The Indian sitar almost certainly took its name from the setar, but over the centuries it evolved radically, following the Indians’ own aesthetic and cultural ideals.</p>
+  
+  <p>Tanburs and harps spread around the ancient world with travellers, merchants and seamen. The earliest guitar-like instruments to arrive in Europe had, most often, four strings. Many such instruments, and variations with from three to five strings, can be seen in mediaeval illustrated manuscripts. They were also carved in stone in European churches and cathedrals, from the first century AD through until the 13th century.</p>
+  
+  <p>When the four-stringed Persian chartar arrived in Spain, however, it changed in form and construction, acquiring pairs of strings tuned to the same note instead of single strings. It became known as the chitarra. By the middle of the 14th century, the chitarra had become dominant, at least in most of Europe. The earliest known music for the eight-stringed chitarra was written in 16th-century Spain. The ten-string version first appeared in Italy at the same time, and gradually replaced the eight-stringed instrument. A further two strings first appeared in the 17th century, an innovation which guitar makers all over Europe quickly took up. However, this twelve-string arrangement gradually gave way to six single strings across the continent. The six-stringed guitar can thus be said to be a development of the twelve-string, rather than vice versa, as was thought previously.</p>
+  
+  <p>At the beginning of the 19th century, the present-day guitar began to take shape, although bodies were still fairly small and narrow-waisted. The modern classical guitar first appeared in its current form in the mid-19th century, when the Spanish guitar maker Antonio Torres increased the size of the body, altered its proportions, and introduced the revolutionary fanbraced top**. His design radically increased the volume and improved the tone of the instrument, and very soon became the norm. This design has remained essentially unchanged to this day.</p>
+  
+  <p>At the time when Torres made his breakthrough, German immigrants to America – among them Christian Friedrich Martin – began making guitars with X-braced tops. Steel strings, which became widely available several decades later in the early 1900s, offered the promise of a much louder guitar, but the increased tension was too much for the fan-braced top. The stronger X-braced top proved equal to the job, and quickly became the industry standard.</p>
+  
+  <p>At the end of the 19th century, guitar manufacturer Orville Gibson added steel strings to a body constructed like a cello, a combination which produced more volume. The electric guitar was born when pickups were fitted to Hawaiian and jazz guitars in the late 1920s, but met with little success until 1936, when Gibson introduced its famous ES150 model.</p>
+  
+  <p><em>fan-braced top**: a strengthening structure in the shape of a fan inserted into the soundbox</em></p>
+  
+  <p>&nbsp;</p> <!-- 空白行防止加载不完全 -->
+</section>
+
+<div id="divider" title="Drag to resize"></div>
+
+<section class="pane" id="right">
+  <h3>Questions</h3>
+  
+  <!-- Questions 1-6: True/False/Not Given -->
+  <div class="group">
+    <h4>Questions 1–6</h4>
+    <p>Do the following statements agree with the information given in Reading Passage 1?</p>
+    <p>In boxes 1–6 on your answer sheet, write:</p>
+    <ul>
+      <li>TRUE if the statement agrees with the information</li>
+      <li>FALSE if the statement contradicts the information</li>
+      <li>NOT GIVEN if there is no information on this</li>
+    </ul>
+    
+    <a id="q1-anchor"></a>
+    <div id="q1-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+      <p>1 The instrument found in Queen Shub-Ad’s tomb is the world’s oldest known version of a harp.</p>
+      <div style="display:flex; flex-wrap:wrap; gap:10px; margin:4px 0;">
+        <label style="margin:0;"><input name="q1" type="radio" value="TRUE"> TRUE</label>
+        <label style="margin:0;"><input name="q1" type="radio" value="FALSE"> FALSE</label>
+        <label style="margin:0;"><input name="q1" type="radio" value="NOT GIVEN"> NOT GIVEN</label>
+      </div>
+    </div>
+    
+    <a id="q2-anchor"></a>
+    <div id="q2-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+      <p>2 Today’s Afghan panchtar is very similar to an ancient Mesopotamian instrument.</p>
+      <div style="display:flex; flex-wrap:wrap; gap:10px; margin:4px 0;">
+        <label style="margin:0;"><input name="q2" type="radio" value="TRUE"> TRUE</label>
+        <label style="margin:0;"><input name="q2" type="radio" value="FALSE"> FALSE</label>
+        <label style="margin:0;"><input name="q2" type="radio" value="NOT GIVEN"> NOT GIVEN</label>
+      </div>
+    </div>
+    
+    <a id="q3-anchor"></a>
+    <div id="q3-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+      <p>3 The Egyptian singer Har-Mose was an excellent tanbur player.</p>
+      <div style="display:flex; flex-wrap:wrap; gap:10px; margin:4px 0;">
+        <label style="margin:0;"><input name="q3" type="radio" value="TRUE"> TRUE</label>
+        <label style="margin:0;"><input name="q3" type="radio" value="FALSE"> FALSE</label>
+        <label style="margin:0;"><input name="q3" type="radio" value="NOT GIVEN"> NOT GIVEN</label>
+      </div>
+    </div>
+    
+    <a id="q4-anchor"></a>
+    <div id="q4-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+      <p>4 The Cairo Archaeological Museum contains many historic musical instruments.</p>
+      <div style="display:flex; flex-wrap:wrap; gap:10px; margin:4px 0;">
+        <label style="margin:0;"><input name="q4" type="radio" value="TRUE"> TRUE</label>
+        <label style="margin:0;"><input name="q4" type="radio" value="FALSE"> FALSE</label>
+        <label style="margin:0;"><input name="q4" type="radio" value="NOT GIVEN"> NOT GIVEN</label>
+      </div>
+    </div>
+    
+    <a id="q5-anchor"></a>
+    <div id="q5-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+      <p>5 The instrument carved in stone at Alaca Huyuk is consistent with Dr Michael Kasha’s definition of a guitar.</p>
+      <div style="display:flex; flex-wrap:wrap; gap:10px; margin:4px 0;">
+        <label style="margin:0;"><input name="q5" type="radio" value="TRUE"> TRUE</label>
+        <label style="margin:0;"><input name="q5" type="radio" value="FALSE"> FALSE</label>
+        <label style="margin:0;"><input name="q5" type="radio" value="NOT GIVEN"> NOT GIVEN</label>
+      </div>
+    </div>
+    
+    <a id="q6-anchor"></a>
+    <div id="q6-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+      <p>6 The different instruments that appeared in medieval literature had the same number of strings.</p>
+      <div style="display:flex; flex-wrap:wrap; gap:10px; margin:4px 0;">
+        <label style="margin:0;"><input name="q6" type="radio" value="TRUE"> TRUE</label>
+        <label style="margin:0;"><input name="q6" type="radio" value="FALSE"> FALSE</label>
+        <label style="margin:0;"><input name="q6" type="radio" value="NOT GIVEN"> NOT GIVEN</label>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Questions 7-13: Table Completion -->
+  <div class="group">
+    <h4>Questions 7–13</h4>
+    <p>Complete the table below.</p>
+    <p>Choose ONE WORD ONLY from the passage for each answer.</p>
+    <p>Write your answers in boxes 7–13 on your answer sheet.</p>
+    
+    <table class="table-fill">
+      <tr>
+        <th>Date</th>
+        <th>Type of instrument</th>
+        <th>Notes</th>
+      </tr>
+      <tr>
+        <td>13th–19th century</td>
+        <td>Chitarra</td>
+        <td>
+          <ul style="margin:0; padding-left:20px;">
+            <li>was a development of an earlier instrument called the <a id="q7-anchor"></a><input type="text" name="q7" placeholder="One word only">
+            </li>
+            <li>extra strings added in the 16th century in Italy</li>
+          </ul>
+        </td>
+      </tr>
+      <tr>
+        <td>from around the 1850s</td>
+        <td>Classical guitar</td>
+        <td>
+          <ul style="margin:0; padding-left:20px;">
+            <li>its shape a result of modifications, including a larger <a id="q8-anchor"></a><input type="text" name="q8" placeholder="One word only"> introduced by Antonio Torres</li>
+            <li>changes produced better tone and greater <a id="q9-anchor"></a><input type="text" name="q9" placeholder="One word only"></li>
+          </ul>
+        </td>
+      </tr>
+      <tr>
+        <td>-</td>
+        <td>X-braced top guitar</td>
+        <td>
+          <ul style="margin:0; padding-left:20px;">
+            <li>first made in <a id="q10-anchor"></a><input type="text" name="q10" placeholder="One word only"> in the mid-19th century</li>
+            <li>strings made of <a id="q11-anchor"></a><input type="text" name="q11" placeholder="One word only"> became available around 1900</li>
+          </ul>
+        </td>
+      </tr>
+      <tr>
+        <td>1920s onwards</td>
+        <td>Electric guitar</td>
+        <td>
+          <ul style="margin:0; padding-left:20px;">
+            <li>in the 1920s, <a id="q12-anchor"></a><input type="text" name="q12" placeholder="One word only"> were added to guitars</li>
+            <li>a well-known version was brought out by <a id="q13-anchor"></a><input type="text" name="q13" placeholder="One word only"></li>
+          </ul>
+        </td>
+      </tr>
+    </table>
+  </div>
+  
+  <!-- 按钮组 -->
+  <div style="display:flex;gap:8px;margin-bottom:10px;">
+    <button class="primary" onclick="grade()">Submit</button>
+    <button onclick="resetForm()">Reset</button>
+    <button onclick="toggleNotes()">Notes</button>
+  </div>
+  
+  <!-- 结果显示 -->
+  <div id="results"></div>
+  
+  <!-- 答案显示 -->
+  <details class="answerbox" id="answerBox">
+    <summary>Show answers (click to toggle) <span class="badge">hidden</span></summary>
+    <div id="answerContent"></div>
+  </details>
+</section>
+</div>
+
+<!-- 文本选择工具栏 -->
+<div aria-label="Selection tools" id="selbar" role="toolbar">
+  <button id="btnHL">Highlight</button>
+  <button id="btnUH">Remove</button>
+  <button id="btnNote">Note</button>
+</div>
+
+<!-- 笔记面板 -->
+<div id="notes">
+  <header>
+    <strong>Notes</strong>
+    <div>
+      <button id="btnCopy">Copy</button>
+      <button id="btnClose">Close</button>
+    </div>
+  </header>
+  <textarea id="noteArea" placeholder="Type your notes here..."></textarea>
+</div>
+
+<!-- 提示框 -->
+<div id="toast"></div>
+
+<script>
+// 全局变量
+let timerInterval; // 计时器interval
+let timerSeconds = 0; // 计时秒数
+let timerRunning = true; // 计时器是否运行
+
+// 1. 计时器功能
+const timerEl = document.getElementById('timer');
+// 启动计时器
+function startTimer() {
+  timerInterval = setInterval(() => {
+    if (timerRunning) {
+      timerSeconds++;
+      const minutes = String(Math.floor(timerSeconds / 60)).padStart(2, '0');
+      const seconds = String(timerSeconds % 60).padStart(2, '0');
+      timerEl.textContent = `${minutes}:${seconds}`;
+    }
+  }, 1000);
+}
+// 停止计时器
+function stopTimer() {
+  timerRunning = false;
+}
+// 初始化计时器
+startTimer();
+
+// 2. 字体大小设置功能
+const settingsBtn = document.getElementById('settings-btn');
+const settingsMenu = document.getElementById('settings-menu');
+const settingsOptions = document.querySelectorAll('.settings-option');
+const body = document.body;
+
+// 切换设置菜单显示
+settingsBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  settingsMenu.style.display = settingsMenu.style.display === 'flex' ? 'none' : 'flex';
+  // 定位菜单到按钮下方
+  const btnRect = settingsBtn.getBoundingClientRect();
+  settingsMenu.style.top = `${btnRect.bottom + 5}px`;
+  settingsMenu.style.left = `${btnRect.left}px`;
+});
+
+// 点击页面其他地方关闭菜单
+document.addEventListener('click', () => {
+  settingsMenu.style.display = 'none';
+});
+
+// 选择字体大小
+settingsOptions.forEach(option => {
+  option.addEventListener('click', () => {
+    // 移除所有active状态
+    settingsOptions.forEach(opt => opt.classList.remove('active'));
+    // 添加当前active状态
+    option.classList.add('active');
+    // 设置body字体类
+    const size = option.dataset.size;
+    body.className = `font-${size}`;
+    // 关闭菜单
+    settingsMenu.style.display = 'none';
+  });
+});
+
+// 3. 分割线拖拽功能
+const divider = document.getElementById('divider');
+const leftPane = document.getElementById('left');
+const rightPane = document.getElementById('right');
+let isDragging = false;
+
+divider.addEventListener('mousedown', (e) => {
+  isDragging = true;
+  document.body.style.cursor = 'ew-resize';
+  e.preventDefault();
+});
+
+window.addEventListener('mousemove', (e) => {
+  if (!isDragging) return;
+  const containerRect = document.querySelector('.shell').getBoundingClientRect();
+  // 计算左侧面板宽度（限制最小280px，右侧最小320px）
+  let leftWidth = e.clientX - containerRect.left;
+  leftWidth = Math.max(280, Math.min(containerRect.width - 320, leftWidth));
+  // 设置左侧宽度，右侧自适应
+  leftPane.style.flex = `0 0 ${leftWidth}px`;
+  rightPane.style.flex = '1 1 auto';
+});
+
+window.addEventListener('mouseup', () => {
+  if (isDragging) {
+    isDragging = false;
+    document.body.style.cursor = '';
+  }
+});
+
+// 触摸设备支持
+divider.addEventListener('touchstart', (e) => {
+  isDragging = true;
+  e.preventDefault();
+}, { passive: false });
+
+window.addEventListener('touchmove', (e) => {
+  if (!isDragging) return;
+  const containerRect = document.querySelector('.shell').getBoundingClientRect();
+  const touch = e.touches[0];
+  let leftWidth = touch.clientX - containerRect.left;
+  leftWidth = Math.max(280, Math.min(containerRect.width - 320, leftWidth));
+  leftPane.style.flex = `0 0 ${leftWidth}px`;
+  rightPane.style.flex = '1 1 auto';
+}, { passive: false });
+
+window.addEventListener('touchend', () => {
+  if (isDragging) {
+    isDragging = false;
+  }
+});
+
+// 4. 文本高亮功能
+const selbar = document.getElementById('selbar');
+const btnHL = document.getElementById('btnHL');
+const btnUH = document.getElementById('btnUH');
+const btnNote = document.getElementById('btnNote');
+let lastRange = null;
+let currentHlNode = null;
+let keepToolbar = false;
+
+// 定位选择工具栏
+function positionSelbar(rect) {
+  selbar.style.display = 'flex';
+  requestAnimationFrame(() => {
+    // 计算工具栏位置（避免超出窗口）
+    const topPos = window.scrollY + rect.top - selbar.offsetHeight - 8;
+    const leftPos = window.scrollX + rect.left + rect.width/2 - selbar.offsetWidth/2;
+    // 顶部不够就显示在下方
+    const finalTop = topPos > 0 ? topPos : window.scrollY + rect.bottom + 8;
+    // 左右不超出窗口
+    const finalLeft = Math.max(8, Math.min(leftPos, window.innerWidth - selbar.offsetWidth - 8));
+    
+    selbar.style.top = `${finalTop}px`;
+    selbar.style.left = `${finalLeft}px`;
+  });
+}
+
+// 更新工具栏显示
+function updateSelbar() {
+  const selection = window.getSelection();
+  if (!selection || selection.rangeCount === 0 || selection.isCollapsed) {
+    selbar.style.display = 'none';
+    currentHlNode = null;
+    return;
+  }
+  
+  const range = selection.getRangeAt(0);
+  lastRange = range.cloneRange();
+  currentHlNode = null;
+  positionSelbar(range.getBoundingClientRect());
+}
+
+// 监听文本选择
+document.getElementById('left').addEventListener('mouseup', updateSelbar);
+document.getElementById('right').addEventListener('mouseup', updateSelbar);
+document.addEventListener('selectionchange', () => {
+  const selection = window.getSelection();
+  if (!selection || selection.rangeCount === 0 || selection.isCollapsed) {
+    if (!keepToolbar && !currentHlNode) {
+      selbar.style.display = 'none';
+    }
+  }
+});
+
+// 滚动时更新工具栏位置
+document.addEventListener('scroll', () => {
+  if (selbar.style.display === 'flex') {
+    updateSelbar();
+  }
+});
+
+// 点击高亮文本时显示工具栏
+document.addEventListener('mousedown', (e) => {
+  const target = e.target;
+  keepToolbar = target.classList && target.classList.contains('hl');
+}, true);
+
+document.addEventListener('click', (e) => {
+  const target = e.target;
+  if (target.classList && target.classList.contains('hl')) {
+    currentHlNode = target;
+    lastRange = null;
+    positionSelbar(target.getBoundingClientRect());
+    // 清除选择
+    const selection = window.getSelection();
+    if (selection) selection.removeAllRanges();
+    setTimeout(() => keepToolbar = false, 0);
+  }
+}, true);
+
+// 执行高亮
+function doHighlight() {
+  if (currentHlNode) return;
+  if (!lastRange || lastRange.collapsed) return;
+  
+  const highlightSpan = document.createElement('span');
+  highlightSpan.className = 'hl';
+  
+  try {
+    // 包裹选中内容
+    lastRange.surroundContents(highlightSpan);
+  } catch (e) {
+    // 处理跨节点选择
+    const wrapSpan = document.createElement('span');
+    wrapSpan.className = 'hl';
+    wrapSpan.appendChild(lastRange.cloneContents());
+    lastRange.deleteContents();
+    lastRange.insertNode(wrapSpan);
+  }
+  
+  selbar.style.display = 'none';
+  showToast('Highlighted');
+}
+
+// 移除高亮
+function removeHighlight() {
+  if (currentHlNode) {
+    // 移除单个高亮节点
+    const parent = currentHlNode.parentNode;
+    while (currentHlNode.firstChild) {
+      parent.insertBefore(currentHlNode.firstChild, currentHlNode);
+    }
+    parent.removeChild(currentHlNode);
+    parent.normalize(); // 合并相邻文本节点
+    currentHlNode = null;
+    selbar.style.display = 'none';
+    showToast('Highlight removed');
+    return;
+  }
+  
+  if (!lastRange) return;
+  
+  // 移除选中区域内的所有高亮
+  const selRect = lastRange.getBoundingClientRect();
+  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_ELEMENT);
+  const toRemove = [];
+  
+  let node;
+  while (node = walker.nextNode()) {
+    if (node.classList && node.classList.contains('hl')) {
+      const nodeRect = node.getBoundingClientRect();
+      // 检查节点是否与选择区域重叠
+      const isOverlapping = !(
+        nodeRect.right < selRect.left || 
+        nodeRect.left > selRect.right || 
+        nodeRect.bottom < selRect.top || 
+        nodeRect.top > selRect.bottom
+      );
+      if (isOverlapping) toRemove.push(node);
+    }
+  }
+  
+  // 批量移除
+  toRemove.forEach(node => {
+    const parent = node.parentNode;
+    while (node.firstChild) {
+      parent.insertBefore(node.firstChild, node);
+    }
+    parent.removeChild(node);
+    parent.normalize();
+  });
+  
+  selbar.style.display = 'none';
+  showToast('Highlight removed');
+}
+
+// 绑定高亮按钮事件
+btnHL.addEventListener('click', doHighlight);
+btnUH.addEventListener('click', removeHighlight);
+
+// 5. 笔记功能
+const notesPanel = document.getElementById('notes');
+const noteArea = document.getElementById('noteArea');
+const btnCopy = document.getElementById('btnCopy');
+const btnClose = document.getElementById('btnClose');
+
+// 切换笔记面板
+function toggleNotes() {
+  notesPanel.style.display = notesPanel.style.display === 'flex' ? 'none' : 'flex';
+}
+
+// 关闭笔记
+btnClose.addEventListener('click', toggleNotes);
+
+// 复制笔记
+btnCopy.addEventListener('click', async () => {
+  try {
+    await navigator.clipboard.writeText(noteArea.value || '');
+    showToast('Notes copied');
+  } catch (err) {
+    showToast('Copy failed');
+    console.error('Copy error:', err);
+  }
+});
+
+// 从选择文本添加笔记
+btnNote.addEventListener('click', () => {
+  let text = '';
+  if (currentHlNode) {
+    text = currentHlNode.textContent.trim();
+  } else if (lastRange) {
+    const frag = lastRange.cloneContents();
+    text = frag.textContent.trim();
+  }
+  
+  toggleNotes();
+  if (text) {
+    noteArea.value = noteArea.value ? `${noteArea.value}\n> ${text}\n` : `> ${text}\n`;
+    // 滚动到底部
+    noteArea.scrollTop = noteArea.scrollHeight;
+  }
+  
+  selbar.style.display = 'none';
+});
+
+// 6. 提示框功能
+const toastEl = document.getElementById('toast');
+
+function showToast(message) {
+  toastEl.textContent = message;
+  toastEl.style.display = 'block';
+  setTimeout(() => {
+    toastEl.style.display = 'none';
+  }, 1200);
+}
+
+// 7. 答题评分功能
+const answers = {
+  "q1": "FALSE",
+  "q2": "TRUE",
+  "q3": "NOT GIVEN",
+  "q4": "NOT GIVEN",
+  "q5": "TRUE",
+  "q6": "FALSE",
+  "q7": "chartar",
+  "q8": "body",
+  "q9": "volume",
+  "q10": "America",
+  "q11": "steel",
+  "q12": "pickups",
+  "q13": "Gibson"
+};
+
+// 评分函数
+function grade() {
+  // 停止计时器
+  stopTimer();
+  
+  let total = 13;
+  let correct = 0;
+  let resultLines = [];
+  
+  // 检查每题答案
+  for (let i = 1; i <= total; i++) {
+    const questionName = `q${i}`;
+    const userAnswer = getuserAnswer(questionName, i);
+    const correctAnswer = answers[questionName];
+    const isCorrect = checkAnswer(userAnswer, correctAnswer, i);
+    
+    if (isCorrect) correct++;
+    
+    // 记录结果
+    const status = isCorrect ? '✅' : '❌';
+    resultLines.push(`${questionName.toUpperCase()}: ${userAnswer || 'None'} ${status} (Correct: ${correctAnswer})`);
+  }
+  
+  // 计算正确率
+  const accuracy = Math.round((correct / total) * 100);
+  
+  // 显示结果
+  const resultsEl = document.getElementById('results');
+  resultsEl.innerHTML = `
+    <p><strong>Score:</strong> ${correct}/${total} <span class="badge">Accuracy ${accuracy}%</span></p>
+    <pre>${resultLines.join('\n')}</pre>
+  `;
+  
+  // 显示答案
+  const answerContentEl = document.getElementById('answerContent');
+  answerContentEl.innerHTML = `
+    <ol>
+      <li>1 → FALSE (Queen Shub-Ad's harp is "more advanced", not the oldest; earliest stringed instruments are bowl harps)</li>
+      <li>2 → TRUE (Afghan panchtar is a modern example of ancient Mesopotamian instruments "in almost unchanged form")</li>
+      <li>3 → NOT GIVEN (Only stated Har-Mose owned a tanbur; no information about his playing skill)</li>
+      <li>4 → NOT GIVEN (Only Har-Mose's tanbur is mentioned in the Cairo museum; no "many instruments")</li>
+      <li>5 → TRUE (Alaca Huyuk carving shows an instrument matching Kasha's definition: long neck, curved-in sides)</li>
+      <li>6 → FALSE (Medieval instruments had "variations with from three to five strings", not the same number)</li>
+      <li>7 → chartar (Persian chartar evolved into the chitarra when it arrived in Spain)</li>
+      <li>8 → body (Antonio Torres "increased the size of the body" to develop the modern classical guitar)</li>
+      <li>9 → volume (Torres' design "radically increased the volume and improved the tone")</li>
+      <li>10 → America (German immigrants to America first made guitars with X-braced tops)</li>
+      <li>11 → steel (Steel strings became widely available in the early 1900s)</li>
+      <li>12 → pickups (Electric guitar was born when pickups were fitted to guitars in the late 1920s)</li>
+      <li>13 → Gibson (Gibson introduced the famous ES150 electric guitar model in 1936)</li>
+    </ol>
+  `;
+  
+  // 切换答案显示状态
+  const answerBox = document.getElementById('answerBox');
+  const answerBadge = answerBox.querySelector('.badge');
+  answerBox.open = true;
+  answerBadge.textContent = 'visible';
+}
+
+// 获取用户答案
+function getuserAnswer(questionName, questionNumber) {
+  if (questionNumber >= 1 && questionNumber <= 6) {
+    // 选择题（True/False/Not Given）
+    const radio = document.querySelector(`input[name="${questionName}"]:checked`);
+    return radio ? radio.value : '';
+  } else {
+    // 填空题（文本输入）
+    const input = document.querySelector(`input[name="${questionName}"]`);
+    return input ? input.value.trim().toLowerCase() : '';
+  }
+}
+
+// 检查答案正确性
+function checkAnswer(userAnswer, correctAnswer, questionNumber) {
+  if (questionNumber >= 1 && questionNumber <= 6) {
+    // 选择题：完全匹配
+    return userAnswer === correctAnswer;
+  } else {
+    // 填空题：不区分大小写，完全匹配（允许首字母大小写差异）
+    return userAnswer === correctAnswer.toLowerCase();
+  }
+}
+
+// 重置表单
+function resetForm() {
+  // 重置所有单选按钮
+  document.querySelectorAll('input[type="radio"]').forEach(radio => {
+    radio.checked = false;
+  });
+  
+  // 重置所有文本输入
+  document.querySelectorAll('input[type="text"]').forEach(input => {
+    input.value = '';
+  });
+  
+  // 重置结果和答案显示
+  document.getElementById('results').innerHTML = '';
+  document.getElementById('answerContent').innerHTML = '';
+  document.getElementById('answerBox').open = false;
+  document.getElementById('answerBox').querySelector('.badge').textContent = 'hidden';
+  
+  // 重置问题导航状态
+  document.querySelectorAll('.q-item').forEach(item => {
+    item.classList.remove('answered');
+  });
+  
+  // 重置计时器
+  clearInterval(timerInterval);
+  timerSeconds = 0;
+  timerRunning = true;
+  timerEl.textContent = '00:00';
+  startTimer();
+  
+  // 重置笔记
+  document.getElementById('noteArea').value = '';
+  document.getElementById('notes').style.display = 'none';
+  
+  // 重置高亮
+  document.querySelectorAll('.hl').forEach(hl => {
+    const parent = hl.parentNode;
+    while (hl.firstChild) {
+      parent.insertBefore(hl.firstChild, hl);
+    }
+    parent.removeChild(hl);
+    parent.normalize();
+  });
+}
+
+// 8. 问题导航滚动
+function scrollToElement(id) {
+  const element = document.getElementById(id);
+  if (element) {
+    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  
+  // 高亮当前导航项
+  const navItems = document.querySelectorAll('.practice-nav .q-item');
+  navItems.forEach(item => item.classList.remove('active'));
+  
+  const currentNav = document.getElementById(id.replace('-anchor', '-nav'));
+  if (currentNav) {
+    currentNav.classList.add('active');
+    // 800ms后移除高亮
+    setTimeout(() => {
+      currentNav.classList.remove('active');
+    }, 800);
+  }
+}
+
+// 9. 标记已答题
+(function() {
+  function markAnswered(questionNumber) {
+    const navItem = document.getElementById(`q${questionNumber}-nav`);
+    if (!navItem) return;
+    
+    let isAnswered = false;
+    const questionName = `q${questionNumber}`;
+    
+    if (questionNumber >= 1 && questionNumber <= 6) {
+      // 检查单选按钮
+      const radio = document.querySelector(`input[name="${questionName}"]:checked`);
+      isAnswered = !!radio;
+    } else {
+      // 检查文本输入
+      const input = document.querySelector(`input[name="${questionName}"]`);
+      isAnswered = input && input.value.trim() !== '';
+    }
+    
+    if (isAnswered) {
+      navItem.classList.add('answered');
+    } else {
+      navItem.classList.remove('answered');
+    }
+  }
+  
+  // 监听所有输入变化
+  for (let i = 1; i <= 13; i++) {
+    (function(num) {
+      const inputs = document.querySelectorAll(`input[name="q${num}"]`);
+      inputs.forEach(input => {
+        input.addEventListener('change', () => {
+          markAnswered(num);
+        });
+      });
+    })(i);
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>P2 - Insect Decision-Making</title>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<style>
+  :root { 
+    --line:#e5e7eb; 
+    --bg:#f6f7fb; 
+    --panel:#fff; 
+    --accent:#3b82f6; 
+    --muted:#6b7280; 
+    --shadow:0 6px 20px rgba(0,0,0,.12); 
+    --font-size-regular: 16px; 
+    --font-size-moderate: 18px; 
+    --font-size-large: 20px; 
+  }
+  * { box-sizing: border-box; }
+  html,body { 
+    height:100%; 
+    font-size: var(--font-size-regular); 
+  }
+  body { 
+    margin:0; 
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; 
+    background:var(--bg); 
+  }
+  .font-regular { font-size: var(--font-size-regular) !important; }
+  .font-moderate { font-size: var(--font-size-moderate) !important; }
+  .font-large { font-size: var(--font-size-large) !important; }
+
+  #timer-container { display: inline-flex; align-items: center; gap: 8px; }
+  #timer { 
+    background:#fff; 
+    border:1px solid var(--line); 
+    border-radius:10px; 
+    padding:2px 8px; 
+    font-size: inherit; 
+    vertical-align: middle; 
+  }
+  #settings-btn { 
+    padding:2px 8px; 
+    border:1px solid var(--line); 
+    border-radius:10px; 
+    background:#fff; 
+    cursor:pointer; 
+    font-size: inherit; 
+    vertical-align: middle; 
+  }
+  #settings-btn:hover { background:var(--bg); }
+
+  #settings-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:16px;
+    box-shadow:var(--shadow);
+    z-index: 10000;
+    display: none;
+    flex-direction: column;
+    gap: 12px;
+  }
+  #settings-modal.active { display: flex; }
+  .modal-overlay {
+    position: fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,0.5);
+    z-index: 9999;
+    display: none;
+  }
+  .modal-overlay.active { display: block; }
+  .font-size-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .font-size-option input { cursor: pointer; }
+  .modal-buttons { display: flex; justify-content: flex-end; gap: 8px; }
+  .modal-btn {
+    padding:6px 12px;
+    border:1px solid var(--line);
+    border-radius:8px;
+    background:#fff;
+    cursor:pointer;
+    font-size: inherit;
+  }
+  .modal-btn.primary { background:var(--accent); color:#fff; border-color:var(--accent); }
+
+  .shell { display:flex; height:100vh; width:100%; }
+  .pane { 
+    background:var(--panel); 
+    overflow:auto; 
+    padding:20px; 
+    font-size: inherit; 
+  }
+  #left { flex: 0 0 50%; min-width: 280px; }
+  #right { 
+    flex: 1 1 auto; 
+    min-width: 320px; 
+    background:#fbfbff; 
+    border-left:1px solid var(--line); 
+    font-size: inherit; 
+  }
+  #divider { 
+    flex: 0 0 8px; 
+    background: linear-gradient(90deg,#e5e7eb,#d1d5db); 
+    cursor: ew-resize; 
+    position:relative; 
+    z-index: 5; 
+    user-select:none; 
+  }
+  h2,h3,h4 { 
+    margin:0 0 10px; 
+    font-size: inherit; 
+  }
+  #left p { 
+    margin: 0 0 12px; 
+    line-height: 1.6; 
+    word-break: normal; 
+    overflow-wrap: normal; 
+    hyphens: none; 
+    font-size: inherit; 
+  }
+  .group { 
+    background:#fff; 
+    border:1px solid var(--line); 
+    border-radius:10px; 
+    padding:12px; 
+    margin-bottom:14px; 
+    font-size: inherit; 
+  }
+  table { border-collapse: collapse; width:100%; font-size: inherit; }
+  th, td { 
+    border:1px solid var(--line); 
+    padding:6px; 
+    text-align:center; 
+    font-size: inherit; 
+  }
+  th:first-child, td:first-child { width:92px; }
+  button { 
+    padding:8px 12px; 
+    border:1px solid var(--line); 
+    border-radius:10px; 
+    background:#fff; 
+    cursor:pointer; 
+    font-size: inherit; 
+  }
+  button.primary { background:var(--accent); color:#fff; border-color:#3b82f6; }
+  #results { 
+    background:#fff; 
+    border:1px solid var(--line); 
+    border-radius:10px; 
+    padding:10px; 
+    font-size: inherit; 
+  }
+  .hl { 
+    background:#fff3a3; 
+    box-shadow: inset 0 -2px 0 rgba(0,0,0,.05); 
+    cursor: pointer; 
+  }
+  .hl:hover { filter: brightness(0.98); }
+  #selbar { 
+    position: absolute; 
+    display:none; 
+    z-index: 6000; 
+    background:#111; 
+    color:#fff; 
+    border-radius: 8px; 
+    padding: 6px; 
+    box-shadow: var(--shadow); 
+    font-size: inherit; 
+    gap:6px; 
+    align-items: center; 
+  }
+  #selbar button { 
+    background: transparent; 
+    color:#fff; 
+    border: 1px solid rgba(255,255,255,.25); 
+    padding: 4px 8px; 
+    border-radius: 6px; 
+    cursor:pointer; 
+    font-size: inherit; 
+  }
+  #selbar button:hover { border-color:#fff; }
+  #notes { 
+    position: fixed; 
+    right: 12px; 
+    bottom: 12px; 
+    width: 320px; 
+    height: 42vh; 
+    background:#fff; 
+    border:1px solid var(--line); 
+    border-radius: 12px; 
+    display:none; 
+    flex-direction: column; 
+    z-index:1500; 
+    box-shadow: var(--shadow); 
+    font-size: inherit; 
+  }
+  #notes header { 
+    display:flex; 
+    align-items:center; 
+    justify-content: space-between; 
+    padding:8px 10px; 
+    border-bottom:1px solid var(--line); 
+    font-size: inherit; 
+  }
+  #notes textarea { 
+    flex:1; 
+    border:0; 
+    padding:10px; 
+    resize:none; 
+    font-size: inherit; 
+    line-height:1.5; 
+  }
+  #toast { 
+    position: fixed; 
+    left:50%; 
+    transform: translateX(-50%); 
+    bottom: 24px; 
+    background:#111; 
+    color:#fff; 
+    padding:8px 12px; 
+    border-radius: 8px; 
+    display:none; 
+    z-index:2500; 
+    font-size: inherit; 
+  }
+  .dropzone { 
+    border:2px dashed #cbd5e1; 
+    background:#f8fafc; 
+    border-radius:10px; 
+    min-height:54px; 
+    padding:8px; 
+    display:flex; 
+    align-items:center; 
+    justify-content:space-between; 
+    gap:8px; 
+    font-size: inherit; 
+  }
+  .droplabel { color:#64748b; font-size: inherit; }
+  .cardpool { 
+    background:#f1f5f9; 
+    border-radius:10px; 
+    padding:12px; 
+    display:grid; 
+    gap:8px; 
+    font-size: inherit; 
+  }
+  .pool-slot { min-height:40px; }
+  .card { 
+    background:#fff; 
+    border:1px solid #e5e7eb; 
+    border-radius:8px; 
+    padding:8px 10px; 
+    display:inline-flex; 
+    gap:8px; 
+    align-items:center; 
+    cursor:grab; 
+    box-shadow:0 1px 0 rgba(0,0,0,.03); 
+    font-size: inherit; 
+  }
+  .card:active { cursor:grabbing; }
+  .tag { 
+    background:#eef2ff; 
+    color:#4338ca; 
+    padding:2px 8px; 
+    border-radius:999px; 
+    font-size: 12px; 
+  }
+  .btn-clear { 
+    border:1px solid #e5e7eb; 
+    background:#fff; 
+    border-radius:8px; 
+    padding:6px 8px; 
+    cursor:pointer; 
+    font-size: inherit; 
+  }
+  .ghost { opacity: .5; }
+  .over { outline:2px dashed #3b82f6; }
+  details.answerbox summary { 
+    cursor: pointer; 
+    user-select:none; 
+    list-style: none; 
+    font-size: inherit; 
+  }
+  details.answerbox { 
+    border:1px dashed var(--line); 
+    border-radius:10px; 
+    padding:8px 10px; 
+    background:#fff; 
+    font-size: inherit; 
+  }
+  .badge { 
+    display:inline-block; 
+    background:#eef2ff; 
+    color:#4338ca; 
+    padding:2px 8px; 
+    border-radius:999px; 
+    font-size:12px; 
+    margin-left:6px; 
+  }
+  body { padding-bottom: 82px; }
+  .practice-nav { 
+    background:#fff; 
+    border-bottom:2px solid var(--line); 
+    padding:12px 20px; 
+    display:flex; 
+    align-items:center; 
+    gap:20px; 
+    box-shadow:0 2px 4px rgba(0,0,0,.05); 
+    flex-wrap:wrap; 
+    position:fixed; 
+    left:0; 
+    right:0; 
+    bottom:0; 
+    border-top:2px solid var(--line); 
+    border-bottom:0; 
+    z-index:4000; 
+    font-size: inherit; 
+  }
+  .practice-nav .title { 
+    font-weight:600; 
+    color:var(--muted); 
+    font-size: inherit; 
+  }
+  .practice-nav .questions { 
+    display:flex; 
+    gap:8px; 
+    align-items:center; 
+    flex-wrap:wrap; 
+    font-size: inherit; 
+  }
+  .practice-nav .q-item { 
+    padding:6px 10px; 
+    border:1px solid var(--line); 
+    border-radius:6px; 
+    background:#fff; 
+    cursor:pointer; 
+    font-size: inherit; 
+    transition:all 0.2s; 
+    min-width:36px; 
+    text-align:center; 
+  }
+  .practice-nav .q-item:hover { background:#f1f5f9; border-color:var(--accent); }
+  .practice-nav .q-item.answered { background:#e0e7ff; border-color:var(--accent); color:var(--accent); font-weight:500; }
+  .practice-nav .q-item.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+</style>
+</head>
+<body>
+<div class="modal-overlay" id="settings-overlay"></div>
+<div id="settings-modal">
+  <h3>Font Size Settings</h3>
+  <div class="font-size-option">
+    <input type="radio" id="font-regular" name="font-size" value="regular" checked>
+    <label for="font-regular">Regular (Default)</label>
+  </div>
+  <div class="font-size-option">
+    <input type="radio" id="font-moderate" name="font-size" value="moderate">
+    <label for="font-moderate">Moderate (Larger)</label>
+  </div>
+  <div class="font-size-option">
+    <input type="radio" id="font-large" name="font-size" value="large">
+    <label for="font-large">Large (Largest)</label>
+  </div>
+  <div class="modal-buttons">
+    <button class="modal-btn" id="cancel-settings">Cancel</button>
+    <button class="modal-btn primary" id="save-settings">Save</button>
+  </div>
+</div>
+
+<div class="practice-nav">
+  <div class="title">Questions</div>
+  <div class="questions">
+    <div class="q-item" id="q14-nav" onclick="scrollToElement('q14-anchor')">14</div>
+    <div class="q-item" id="q15-nav" onclick="scrollToElement('q15-anchor')">15</div>
+    <div class="q-item" id="q16-nav" onclick="scrollToElement('q16-anchor')">16</div>
+    <div class="q-item" id="q17-nav" onclick="scrollToElement('q17-anchor')">17</div>
+    <div class="q-item" id="q18-nav" onclick="scrollToElement('q18-anchor')">18</div>
+    <div class="q-item" id="q19-nav" onclick="scrollToElement('q19-anchor')">19</div>
+    <div class="q-item" id="q20-nav" onclick="scrollToElement('q20-anchor')">20</div>
+    <div class="q-item" id="q21-nav" onclick="scrollToElement('q21-anchor')">21</div>
+    <div class="q-item" id="q22-nav" onclick="scrollToElement('q22-anchor')">22</div>
+    <div class="q-item" id="q23-nav" onclick="scrollToElement('q23-anchor')">23</div>
+    <div class="q-item" id="q24-nav" onclick="scrollToElement('q24-anchor')">24</div>
+    <div class="q-item" id="q25-nav" onclick="scrollToElement('q25-anchor')">25</div>
+    <div class="q-item" id="q26-nav" onclick="scrollToElement('q26-anchor')">26</div>
+  </div>
+</div>
+<div class="shell">
+<section class="pane" id="left">
+  <h2>READING PASSAGE 2 
+    <div id="timer-container">
+      <span id="timer">00:00</span>
+      <button id="settings-btn">Settings</button>
+    </div>
+  </h2>
+  <p>You should spend about 20 minutes on Questions 14–26, which are based on Reading Passage 2 below.</p>
+  <h3>Insect Decision-Making</h3>
+  
+  <h4>Paragraph A</h4>
+  <p>It has long been held that decisions made collectively by large groups of people are more likely to turn out to be accurate than decisions made by individuals. The idea goes back to the ‘jury theorem’ of Nicolas de Condorcet, an 18th-century French philosopher who was one of the first to apply mathematics to the social sciences. Condorcet’s theory describes collective decisions, outlining how democratic decisions tend to outperform dictatorial ones. If, for example, each member of a jury has only partial information, the majority decision is more likely to be correct than a decision arrived at by a single juror. Moreover, the probability of a correct decision increases with the size of the jury.</p>
+  
+  <h4>Paragraph B</h4>
+  <p>Now it is becoming clear that group decisions are also extremely valuable for the success of social animals, such as ants, bees, birds and dolphins. Bees make collective decisions, and they do it rather well, according to Christian List of the London School of Economics, who has studied group decision-making in humans and animals. Researchers led by Dr List looked at colonies once the original colony reached a certain size. The queen goes off with about two-thirds of the worker bees to live in a new home or nest, leaving a daughter queen in the old nest with the remaining workers. Among the bees that depart are some that have searched for and found some new nest sites, and reported back using a characteristic body movement known as a ‘waggle dance’ to indicate to the other bees the suitable places they have located. The longer the dance, the better the site. After a while, other bees start to visit the sites signalled by their companions to see for themselves and, on their return, also perform more waggle dances. The process eventually leads to a consensus on the best site and the breakaway swarm migrates. The decision is remarkably reliable, with the bees choosing the best site even when there are only small differences between alternative sites.</p>
+  
+  <h4>Paragraph C</h4>
+  <p>But exactly how do bees reach such a robust consensus? To find out, Dr List and his colleagues used a computer-generated model of the decision-making process. By experimenting with it, they found that, when bees in the model were very good at finding nesting sites but did not share their information, this dramatically slowed down the migration, leaving the swarm homeless and vulnerable. Conversely, bees in the model blindly followed the waggle dances of others without first checking. The researchers concluded that the ability of bees to identify successfully and quickly the best site depends on both the bees’ interdependence in communicating the whereabouts of the best site, and their independence in confirming this information for themselves.</p>
+  
+  <h4>Paragraph D</h4>
+  <p>Another situation in which collective decisions are taken occurs when animals are either isolated from crucial sources of information or dominated by other members of the group. Jose Halloy of the Free University of Brussels in Belgium used robotic cockroaches to subvert the behaviour of living cockroaches and control their decisionmaking process. In his experiment, the artificial bugs were introduced to the live ones and soon became sufficiently socially integrated that they were perceived by the real cockroaches as equals. By manipulating the robots, which were in the minority, Halloy was able to persuade the living cockroaches to choose an inappropriate shelter-even one which they had rejected before being infiltrated by the robots.</p>
+  
+  <h4>Paragraph E</h4>
+  <p>The way insects put into effect collective decisions can be complex and as important as the decisions themselves. At the University of Bristol, in the UK, Nigel Franks and his colleagues studied how a species of ant establishes a new nest. Franks and his associates reported how the insects reduce the problems associated with making a necessarily swift choice. If the ants’ existing nest becomes suddenly threatened, the insects choose certain ants to act as scouts to find a new nest. How quickly they accomplish the transfer to a new home depends not only on how soon the best available site is found, but also on how quickly the migration there can be achieved.</p>
+  
+  <h4>Paragraph F</h4>
+  <p>Once the suitable new nest is identified, the chosen ants begin to lead others, which have made it to the new site or which may simply be in the vicinity, back to the original threatened nest. In this way, those ants which are familiar with the route can help transport, for example, the queen and young ants to the new site, and simultaneously show the way to those ants which have been left behind to guard the old nest. In this way, moving processes are accomplished faster and more efficiently. Thus the dynamics of collective decision-making are closely related to the efficient implementation of those decisions. How this might apply to choices that humans make is, as yet, unclear. But it does suggest, even for humans, the importance of recruiting dynamic leaders to a cause, because the most important thing about collective decision-making, as shown by these insect experiments, is to get others to follow.</p>
+  
+  <p>&nbsp;</p>
+  <p>&nbsp;</p>
+</section>
+<div id="divider" title="Drag to resize"></div>
+<section class="pane" id="right">
+  <h3>Questions</h3>
+  
+  <div class="group">
+    <h4>Questions 14–19</h4>
+    <p>Reading Passage 2 has six paragraphs, A–F.</p>
+    <p>Choose the correct heading for each paragraph from the list of headings below.</p>
+    <p>Write the correct number, i–vii, in boxes 14–19 on your answer sheet.</p>
+    <div class="headings">
+      <p>List of Headings</p>
+      <ol type="i">
+        <li>The effect of man-made imitations on insects</li>
+        <li>The need to instruct additional insect guides</li>
+        <li>Signals used by certain insects to indicate a discovery</li>
+        <li>How urgency can affect the process of finding a new home</li>
+        <li>The use of trained insects in testing scientific theories</li>
+        <li>The use of virtual scenarios in the study of insect behaviour</li>
+        <li>How the number of decision-makers affects the decision</li>
+      </ol>
+    </div>
+    <table>
+      <tr>
+        <th>Paragraph</th>
+        <th>i</th>
+        <th>ii</th>
+        <th>iii</th>
+        <th>iv</th>
+        <th>v</th>
+        <th>vi</th>
+        <th>vii</th>
+      </tr>
+      <a id="q14-anchor"></a>
+      <tr id="q14-row">
+        <td>A (14)</td>
+        <td><label><input name="q14" type="radio" value="i"/></label></td>
+        <td><label><input name="q14" type="radio" value="ii"/></label></td>
+        <td><label><input name="q14" type="radio" value="iii"/></label></td>
+        <td><label><input name="q14" type="radio" value="iv"/></label></td>
+        <td><label><input name="q14" type="radio" value="v"/></label></td>
+        <td><label><input name="q14" type="radio" value="vi"/></label></td>
+        <td><label><input name="q14" type="radio" value="vii"/></label></td>
+      </tr>
+      <a id="q15-anchor"></a>
+      <tr id="q15-row">
+        <td>B (15)</td>
+        <td><label><input name="q15" type="radio" value="i"/></label></td>
+        <td><label><input name="q15" type="radio" value="ii"/></label></td>
+        <td><label><input name="q15" type="radio" value="iii"/></label></td>
+        <td><label><input name="q15" type="radio" value="iv"/></label></td>
+        <td><label><input name="q15" type="radio" value="v"/></label></td>
+        <td><label><input name="q15" type="radio" value="vi"/></label></td>
+        <td><label><input name="q15" type="radio" value="vii"/></label></td>
+      </tr>
+      <a id="q16-anchor"></a>
+      <tr id="q16-row">
+        <td>C (16)</td>
+        <td><label><input name="q16" type="radio" value="i"/></label></td>
+        <td><label><input name="q16" type="radio" value="ii"/></label></td>
+        <td><label><input name="q16" type="radio" value="iii"/></label></td>
+        <td><label><input name="q16" type="radio" value="iv"/></label></td>
+        <td><label><input name="q16" type="radio" value="v"/></label></td>
+        <td><label><input name="q16" type="radio" value="vi"/></label></td>
+        <td><label><input name="q16" type="radio" value="vii"/></label></td>
+      </tr>
+      <a id="q17-anchor"></a>
+      <tr id="q17-row">
+        <td>D (17)</td>
+        <td><label><input name="q17" type="radio" value="i"/></label></td>
+        <td><label><input name="q17" type="radio" value="ii"/></label></td>
+        <td><label><input name="q17" type="radio" value="iii"/></label></td>
+        <td><label><input name="q17" type="radio" value="iv"/></label></td>
+        <td><label><input name="q17" type="radio" value="v"/></label></td>
+        <td><label><input name="q17" type="radio" value="vi"/></label></td>
+        <td><label><input name="q17" type="radio" value="vii"/></label></td>
+      </tr>
+      <a id="q18-anchor"></a>
+      <tr id="q18-row">
+        <td>E (18)</td>
+        <td><label><input name="q18" type="radio" value="i"/></label></td>
+        <td><label><input name="q18" type="radio" value="ii"/></label></td>
+        <td><label><input name="q18" type="radio" value="iii"/></label></td>
+        <td><label><input name="q18" type="radio" value="iv"/></label></td>
+        <td><label><input name="q18" type="radio" value="v"/></label></td>
+        <td><label><input name="q18" type="radio" value="vi"/></label></td>
+        <td><label><input name="q18" type="radio" value="vii"/></label></td>
+      </tr>
+      <a id="q19-anchor"></a>
+      <tr id="q19-row">
+        <td>F (19)</td>
+        <td><label><input name="q19" type="radio" value="i"/></label></td>
+        <td><label><input name="q19" type="radio" value="ii"/></label></td>
+        <td><label><input name="q19" type="radio" value="iii"/></label></td>
+        <td><label><input name="q19" type="radio" value="iv"/></label></td>
+        <td><label><input name="q19" type="radio" value="v"/></label></td>
+        <td><label><input name="q19" type="radio" value="vi"/></label></td>
+        <td><label><input name="q19" type="radio" value="vii"/></label></td>
+      </tr>
+    </table>
+  </div>
+  
+  <div class="group">
+    <h4>Questions 20–23</h4>
+    <p>Look at the following findings (Questions 20–23) and the list of academics below.</p>
+    <p>Match each finding with the correct academic, A–D.</p>
+    <p>Write the correct letter, A–D, in boxes 20–23 on your answer sheet.</p>
+    <p>NB You may use any letter more than once.</p>
+    <p><strong>List of Academics</strong></p>
+    <ul>
+      <li>A Nicolas de Condorcet</li>
+      <li>B Christian List and colleagues</li>
+      <li>C José Halloy</li>
+      <li>D Nigel Franks and colleagues</li>
+    </ul>
+    
+    <a id="q20-anchor"></a>
+    <div id="q20-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+      <p>20 Certain members can influence the rest of the group to alter a previous decision.</p>
+      <label style="display:block;margin:4px 0;"><input name="q20" type="radio" value="A"/> A Nicolas de Condorcet</label>
+      <label style="display:block;margin:4px 0;"><input name="q20" type="radio" value="B"/> B Christian List and colleagues</label>
+      <label style="display:block;margin:4px 0;"><input name="q20" type="radio" value="C"/> C José Halloy</label>
+      <label style="display:block;margin:4px 0;"><input name="q20" type="radio" value="D"/> D Nigel Franks and colleagues</label>
+    </div>
+    
+    <a id="q21-anchor"></a>
+    <div id="q21-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+      <p>21 Individual verification of a proposed choice is important for a successful decision outcome.</p>
+      <label style="display:block;margin:4px 0;"><input name="q21" type="radio" value="A"/> A Nicolas de Condorcet</label>
+      <label style="display:block;margin:4px 0;"><input name="q21" type="radio" value="B"/> B Christian List and colleagues</label>
+      <label style="display:block;margin:4px 0;"><input name="q21" type="radio" value="C"/> C José Halloy</label>
+      <label style="display:block;margin:4px 0;"><input name="q21" type="radio" value="D"/> D Nigel Franks and colleagues</label>
+    </div>
+    
+    <a id="q22-anchor"></a>
+    <div id="q22-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+      <p>22 The more individuals taking part in a decision, the better the decision will be.</p>
+      <label style="display:block;margin:4px 0;"><input name="q22" type="radio" value="A"/> A Nicolas de Condorcet</label>
+      <label style="display:block;margin:4px 0;"><input name="q22" type="radio" value="B"/> B Christian List and colleagues</label>
+      <label style="display:block;margin:4px 0;"><input name="q22" type="radio" value="C"/> C José Halloy</label>
+      <label style="display:block;margin:4px 0;"><input name="q22" type="radio" value="D"/> D Nigel Franks and colleagues</label>
+    </div>
+    
+    <a id="q23-anchor"></a>
+    <div id="q23-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+      <p>23 The decision-making process of certain insects produces excellent results even when fine distinctions are required.</p>
+      <label style="display:block;margin:4px 0;"><input name="q23" type="radio" value="A"/> A Nicolas de Condorcet</label>
+      <label style="display:block;margin:4px 0;"><input name="q23" type="radio" value="B"/> B Christian List and colleagues</label>
+      <label style="display:block;margin:4px 0;"><input name="q23" type="radio" value="C"/> C José Halloy</label>
+      <label style="display:block;margin:4px 0;"><input name="q23" type="radio" value="D"/> D Nigel Franks and colleagues</label>
+    </div>
+  </div>
+  
+  <div class="group">
+    <h4>Questions 24–26</h4>
+    <p>Complete the summary below.</p>
+    <p>Choose ONE WORD ONLY from the passage for each answer.</p>
+    <p>Write your answers in boxes 24–26 on your answer sheet.</p>
+    <p><strong>A Study of Insect Decision-making</strong></p>
+    <p>A Bristol University study looked at how insects make decisions when their home has been 24 _________. The ants in the experiment relied on the use of individuals called 25 _________ to find a new nest and efficiently direct the others to go there. The study concluded that the effective implementation of the ants’ decision meant that the insects could change homes quickly. The study emphasized the necessity, for people as well as insects, of having active 26 _________ in order to execute decisions successfully.</p>
+    
+    <a id="q24-anchor"></a>
+    <div id="q24-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+      <p>24 <input type="text" name="q24" style="width:200px; padding:6px; border:1px solid var(--line); border-radius:6px; font-size:inherit;"></p>
+    </div>
+    
+    <a id="q25-anchor"></a>
+    <div id="q25-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+      <p>25 <input type="text" name="q25" style="width:200px; padding:6px; border:1px solid var(--line); border-radius:6px; font-size:inherit;"></p>
+    </div>
+    
+    <a id="q26-anchor"></a>
+    <div id="q26-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+      <p>26 <input type="text" name="q26" style="width:200px; padding:6px; border:1px solid var(--line); border-radius:6px; font-size:inherit;"></p>
+    </div>
+  </div>
+  
+  <div style="display:flex;gap:8px;margin-bottom:10px;">
+    <button class="primary" onclick="grade()">Submit</button>
+    <button onclick="resetForm()">Reset</button>
+    <button onclick="toggleNotes()">Notes</button>
+  </div>
+  <div id="results"></div>
+  <details class="answerbox" id="answerBox">
+    <summary>Show answers (click to toggle) <span class="badge">hidden</span></summary>
+    <div id="answerContent"></div>
+  </details>
+</section>
+</div>
+<div aria-label="Selection tools" id="selbar" role="toolbar">
+  <button id="btnHL">Highlight</button>
+  <button id="btnUH">Remove</button>
+  <button id="btnNote">Note</button>
+</div>
+<div id="notes">
+  <header>
+    <strong>Notes</strong>
+    <div>
+      <button id="btnCopy">Copy</button>
+      <button id="btnClose">Close</button>
+    </div>
+  </header>
+  <textarea id="noteArea" placeholder="Type your notes here..."></textarea>
+</div>
+<div id="toast"></div>
+<script>
+let _t=0; 
+const _timerEl=document.getElementById('timer');
+let timerInterval = setInterval(updateTimer, 1000);
+let isTimerRunning = true;
+
+function updateTimer(){ 
+  if(isTimerRunning){
+    _t++; 
+    var m=String(Math.floor(_t/60)).padStart(2,'0'); 
+    var s=String(_t%60).padStart(2,'0'); 
+    _timerEl.textContent=m+':'+s; 
+  }
+}
+
+function stopTimer(){
+  isTimerRunning = false;
+  clearInterval(timerInterval);
+}
+
+var divider = document.getElementById('divider');
+var left = document.getElementById('left');
+var right = document.getElementById('right');
+var dragging=false;
+function startDrag(e){ 
+  dragging=true; 
+  document.body.style.cursor='ew-resize'; 
+  if(e.preventDefault) e.preventDefault(); 
+}
+function endDrag(){ 
+  dragging=false; 
+  document.body.style.cursor=''; 
+}
+function onMove(clientX){
+  var container = document.querySelector('.shell').getBoundingClientRect();
+  var x = clientX - container.left;
+  x = Math.max(280, Math.min(container.width-320, x));
+  left.style.flex = '0 0 ' + x + 'px';
+  right.style.flex = '1 1 auto';
+}
+divider.addEventListener('mousedown', function(e){ startDrag(e); });
+window.addEventListener('mousemove', function(e){ if(dragging) onMove(e.clientX); });
+window.addEventListener('mouseup', endDrag);
+divider.addEventListener('touchstart', function(e){ startDrag(e.touches[0]); }, {passive:false});
+window.addEventListener('touchmove', function(e){ if(dragging) onMove(e.touches[0].clientX); }, {passive:false});
+window.addEventListener('touchend', endDrag);
+
+var selbar = document.getElementById('selbar');
+var btnHL = document.getElementById('btnHL');
+var btnUH = document.getElementById('btnUH');
+var btnNote = document.getElementById('btnNote');
+var lastRange=null;
+var currentHlNode=null;
+var keepToolbar=false;
+
+function positionSelbarForRect(rect){
+  selbar.style.display='flex';
+  requestAnimationFrame(function(){
+    var top = window.scrollY + rect.top - selbar.offsetHeight - 8;
+    var leftPos = window.scrollX + rect.left + rect.width/2 - selbar.offsetWidth/2;
+    selbar.style.top = ((top>0)?top:(window.scrollY + rect.bottom + 8)) + 'px';
+    selbar.style.left = Math.max(8, leftPos) + 'px';
+  });
+}
+
+function updateSelbar(){
+  var sel=window.getSelection();
+  if(!sel || sel.rangeCount===0 || sel.isCollapsed) { 
+    selbar.style.display='none'; 
+    currentHlNode=null; 
+    return; 
+  }
+  var range = sel.getRangeAt(0);
+  lastRange = range.cloneRange();
+  currentHlNode=null;
+  positionSelbarForRect(range.getBoundingClientRect());
+}
+
+document.getElementById('left').addEventListener('mouseup', updateSelbar);
+document.getElementById('right').addEventListener('mouseup', updateSelbar);
+document.addEventListener('selectionchange', function(){ 
+  var sel=window.getSelection(); 
+  if(!sel || sel.rangeCount===0 || sel.isCollapsed){ 
+    if(!keepToolbar && !currentHlNode){ 
+      selbar.style.display='none'; 
+    } 
+  } 
+});
+document.addEventListener('scroll', function(){ 
+  if(selbar.style.display==='flex') updateSelbar(); 
+});
+document.addEventListener('mousedown', function(e){
+  var t = e.target;
+  if(t.classList && t.classList.contains('hl')){
+    keepToolbar = true;
+  } else {
+    keepToolbar = false;
+  }
+}, true);
+document.addEventListener('click', function(e){
+  var target = e.target;
+  if(target.classList && target.classList.contains('hl')){
+    currentHlNode = target;
+    lastRange = null;
+    positionSelbarForRect(target.getBoundingClientRect());
+    var sel=window.getSelection();
+    if(sel) sel.removeAllRanges();
+    setTimeout(function(){ keepToolbar=false; }, 0);
+  }
+}, true);
+
+function doHighlight(){
+  if(currentHlNode) return;
+  if(!lastRange || lastRange.collapsed) return;
+  var span=document.createElement('span'); 
+  span.className='hl';
+  try { 
+    lastRange.surroundContents(span); 
+  } catch(e){
+    var wrap=document.createElement('span'); 
+    wrap.className='hl';
+    wrap.appendChild(lastRange.cloneContents());
+    lastRange.deleteContents();
+    lastRange.insertNode(wrap);
+  }
+  selbar.style.display='none';
+  showToast('Highlighted');
+}
+
+function removeHighlight(){
+  if(currentHlNode){
+    var p = currentHlNode.parentNode;
+    while(currentHlNode.firstChild) p.insertBefore(currentHlNode.firstChild, currentHlNode);
+    p.removeChild(currentHlNode); 
+    p.normalize();
+    currentHlNode = null;
+    selbar.style.display='none';
+    showToast('Highlight removed');
+    return;
+  }
+  if(!lastRange) return;
+  var selRect = lastRange.getBoundingClientRect();
+  var walker=document.createTreeWalker(document.body, NodeFilter.SHOW_ELEMENT);
+  var toRemove=[];
+  while(walker.nextNode()){
+    var n=walker.currentNode;
+    if(n.classList && n.classList.contains('hl')) {
+      var r = n.getBoundingClientRect();
+      if(!(r.right < selRect.left || r.left > selRect.right || r.bottom < selRect.top || r.top > selRect.bottom)) {
+        toRemove.push(n);
+      }
+    }
+  }
+  toRemove.forEach(function(el){ 
+    var p=el.parentNode; 
+    while(el.firstChild) p.insertBefore(el.firstChild, el); 
+    p.removeChild(el); 
+    p.normalize(); 
+  });
+  selbar.style.display='none';
+  showToast('Highlight removed');
+}
+
+btnHL.addEventListener('click', doHighlight);
+btnUH.addEventListener('click', removeHighlight);
+
+var notes = document.getElementById('notes');
+var noteArea = document.getElementById('noteArea');
+var btnCopy=document.getElementById('btnCopy');
+var btnClose=document.getElementById('btnClose');
+
+function toggleNotes(){ 
+  notes.style.display = (notes.style.display==='flex'?'none':'flex'); 
+}
+window.toggleNotes = toggleNotes;
+
+btnClose.addEventListener('click', toggleNotes);
+btnCopy.addEventListener('click', async function(){ 
+  await navigator.clipboard.writeText(noteArea.value||''); 
+  showToast('Copied'); 
+});
+
+btnNote.addEventListener('click', function(){
+  var text = '';
+  if(currentHlNode){ 
+    text = (currentHlNode.textContent||'').trim(); 
+  } else if(lastRange){ 
+    var frag = lastRange.cloneContents(); 
+    text = (frag.textContent||'').trim(); 
+  }
+  toggleNotes();
+  if(text) {
+    noteArea.value = (noteArea.value? noteArea.value+'\n':'') + '> ' + text + '\n';
+  }
+  selbar.style.display='none';
+});
+
+var toastEl=document.getElementById('toast');
+function showToast(msg){
+  toastEl.textContent=msg; 
+  toastEl.style.display='block';
+  setTimeout(function(){ toastEl.style.display='none'; }, 1200);
+}
+
+var answers = {
+  "q14":"vii", "q15":"iii", "q16":"vi", "q17":"i", "q18":"iv", "q19":"ii",
+  "q20":"C", "q21":"B", "q22":"A", "q23":"B",
+  "q24":"threatened", "q25":"scouts", "q26":"leaders"
+};
+
+function grade(){
+  stopTimer();
+  
+  var total=0, correct=0, lines=[];
+  
+  function push(q, ok, user){
+    total++; 
+    if(ok) correct++;
+    lines.push(q.toUpperCase()+": "+(user||'None')+" "+(ok?'✅':'❌'));
+  }
+
+  // 标题匹配题（14-19）
+  for(var n=14;n<=19;n++){
+    var sel=document.querySelector('input[name="q'+n+'"]:checked');
+    var val=sel?sel.value:'';
+    push('q'+n, val === answers['q'+n], val);
+  }
+
+  // 学术匹配题（20-23）
+  for(var n=20;n<=23;n++){
+    var sel=document.querySelector('input[name="q'+n+'"]:checked');
+    var val=sel?sel.value:'';
+    push('q'+n, val === answers['q'+n], val);
+  }
+
+  // 填空题（24-26）
+  for(var n=24;n<=26;n++){
+    var input=document.querySelector('input[name="q'+n+'"]');
+    var val=input?input.value.trim().toLowerCase():'', key=answers['q'+n].toLowerCase();
+    push('q'+n, val === key, val);
+  }
+
+  var acc = (total? Math.round(100*correct/total):0);
+  var html = '<p><strong>Score:</strong> '+correct+'/'+total+' <span class="badge">Accuracy '+acc+'%</span></p>';
+  html += '<pre>'+lines.join('\n')+'</pre>';
+  document.getElementById('results').innerHTML = html;
+
+  document.getElementById('answerContent').innerHTML = `
+    <ol>
+      <li>14 → vii (How the number of decision-makers affects the decision: Condorcet's jury theorem - more jurors = higher correct probability)</li>
+      <li>15 → iii (Signals used by certain insects to indicate a discovery: Bees use "waggle dance" to signal nest sites)</li>
+      <li>16 → vi (The use of virtual scenarios in the study of insect behaviour: List's team used computer-generated model)</li>
+      <li>17 → i (The effect of man-made imitations on insects: Halloy used robotic cockroaches to alter real cockroaches' choice)</li>
+      <li>18 → iv (How urgency can affect the process of finding a new home: Ants' nest threatened → need swift migration)</li>
+      <li>19 → ii (The need to instruct additional insect guides: Chosen ants lead others; importance of leaders to get follow)</li>
+      <li>20 → C (José Halloy: Robotic cockroaches influenced real ones to change previous shelter choice)</li>
+      <li>21 → B (Christian List and colleagues: Bees' success depends on independent verification of waggle dance info)</li>
+      <li>22 → A (Nicolas de Condorcet: Jury size increases correct decision probability)</li>
+      <li>23 → B (Christian List and colleagues: Bees choose best nest even with small differences between sites)</li>
+      <li>24 → threatened (Ants' nest becomes suddenly threatened, triggering new nest search)</li>
+      <li>25 → scouts (Ants choose certain ants as scouts to find new nest)</li>
+      <li>26 → leaders (Importance of active leaders to execute decisions successfully, for insects and humans)</li>
+    </ol>
+  `;
+  document.querySelector('#answerBox .badge').textContent='tap to view';
+}
+
+function resetForm(){
+  document.querySelectorAll('input[type="radio"]').forEach(el=>el.checked=false);
+  document.querySelectorAll('input[type="text"]').forEach(el=>el.value='');
+  document.getElementById('results').innerHTML='';
+  document.getElementById('answerContent').innerHTML='';
+  document.querySelector('#answerBox .badge').textContent = 'hidden';
+  document.querySelectorAll('.q-item').forEach(item => {
+    item.classList.remove('answered');
+  });
+  _t=0;
+  _timerEl.textContent='00:00';
+  clearInterval(timerInterval);
+  isTimerRunning = true;
+  timerInterval = setInterval(updateTimer, 1000);
+  document.querySelectorAll('.hl').forEach(hl => {
+    var parent = hl.parentNode;
+    while(hl.firstChild) parent.insertBefore(hl.firstChild, hl);
+    parent.removeChild(hl);
+    parent.normalize();
+  });
+}
+
+function scrollToElement(id){
+  var el = document.getElementById(id);
+  if(el){ 
+    el.scrollIntoView({behavior:'smooth', block:'center'}); 
+  }
+  var navs = document.querySelectorAll('.practice-nav .q-item');
+  navs.forEach(n => n.classList.remove('active'));
+  var btn = document.getElementById(id.replace('-anchor','-nav'));
+  if(btn){ 
+    btn.classList.add('active'); 
+    setTimeout(() => btn.classList.remove('active'), 800); 
+  }
+}
+
+(function(){
+  function mark(qn){
+    var nav = document.getElementById(`q${qn}-nav`);
+    if(!nav) return;
+    
+    if(qn <=19){
+      var radios = document.querySelectorAll(`input[name="q${qn}"]:checked`);
+      var answered = radios.length > 0;
+      if(answered) nav.classList.add('answered');
+      else nav.classList.remove('answered');
+    } else {
+      var input = document.querySelector(`input[name="q${qn}"]`);
+      var answered = input && input.value.trim() !== '';
+      if(answered) nav.classList.add('answered');
+      else nav.classList.remove('answered');
+    }
+  }
+
+  for(var q=14;q<=26;q++){
+    (function(n){
+      if(n<=19){
+        document.querySelectorAll(`input[name="q${n}"]`).forEach(input => {
+          input.addEventListener('change', () => mark(n));
+        });
+      } else {
+        var input = document.querySelector(`input[name="q${n}"]`);
+        if(input){
+          input.addEventListener('input', () => mark(n));
+          input.addEventListener('change', () => mark(n));
+        }
+      }
+    })(q);
+  }
+})();
+
+const settingsBtn = document.getElementById('settings-btn');
+const settingsOverlay = document.getElementById('settings-overlay');
+const settingsModal = document.getElementById('settings-modal');
+const cancelSettings = document.getElementById('cancel-settings');
+const saveSettings = document.getElementById('save-settings');
+const fontSizeOptions = document.querySelectorAll('input[name="font-size"]');
+const htmlElement = document.documentElement;
+
+settingsBtn.addEventListener('click', function(){
+  settingsOverlay.classList.add('active');
+  settingsModal.classList.add('active');
+  const currentFontSize = getCurrentFontSize();
+  fontSizeOptions.forEach(option => {
+    if(option.value === currentFontSize){
+      option.checked = true;
+    }
+  });
+});
+
+cancelSettings.addEventListener('click', closeSettingsModal);
+settingsOverlay.addEventListener('click', closeSettingsModal);
+
+function closeSettingsModal(){
+  settingsOverlay.classList.remove('active');
+  settingsModal.classList.remove('active');
+}
+
+saveSettings.addEventListener('click', function(){
+  let selectedSize = 'regular';
+  fontSizeOptions.forEach(option => {
+    if(option.checked){
+      selectedSize = option.value;
+    }
+  });
+  applyFontSize(selectedSize);
+  closeSettingsModal();
+  showToast(`Font size set to ${selectedSize}`);
+});
+
+function getCurrentFontSize(){
+  if(htmlElement.classList.contains('font-large')) return 'large';
+  if(htmlElement.classList.contains('font-moderate')) return 'moderate';
+  return 'regular';
+}
+
+function applyFontSize(size){
+  htmlElement.classList.remove('font-regular', 'font-moderate', 'font-large');
+  htmlElement.classList.add(`font-${size}`);
+}
+
+applyFontSize('regular');
+</script>
+</body>
+</html>

@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>P1 - Sorry—who are you 脸盲症</title>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<style>
+  :root { 
+    --line:#e5e7eb; 
+    --bg:#f6f7fb; 
+    --panel:#fff; 
+    --accent:#3b82f6; 
+    --muted:#6b7280; 
+    --shadow:0 6px 20px rgba(0,0,0,.12); 
+    /* 字体大小变量 - 默认regular */
+    --font-size-regular: 16px;
+    --font-size-moderate: 18px;
+    --font-size-large: 20px;
+  }
+  /* 基础字体大小应用 */
+  * { 
+    box-sizing: border-box; 
+    font-size: var(--font-size-regular);
+  }
+  html,body { height:100%; }
+  body { 
+    margin:0; 
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; 
+    background:var(--bg); 
+  }
+  /* 计时器和设置按钮容器 */
+  .timer-settings {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  #timer { 
+    position: static; 
+    display: inline-block; 
+    background:#fff; 
+    border:1px solid var(--line); 
+    border-radius:10px; 
+    padding:2px 8px; 
+    font-size:14px; 
+    vertical-align: middle; 
+  }
+  #settingsBtn {
+    padding:2px 8px;
+    border:1px solid var(--line);
+    border-radius:10px;
+    background:#fff;
+    cursor:pointer;
+    font-size:14px;
+    vertical-align: middle;
+  }
+  #settingsBtn:hover {
+    background:#f1f5f9;
+    border-color:var(--accent);
+  }
+  /* 设置下拉菜单 */
+  #settingsMenu {
+    position: absolute;
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:8px;
+    box-shadow:var(--shadow);
+    display:none;
+    z-index: 1000;
+  }
+  .settings-item {
+    padding:4px 8px;
+    cursor:pointer;
+    border-radius:6px;
+    margin-bottom:4px;
+  }
+  .settings-item:hover {
+    background:#f1f5f9;
+  }
+  .shell { display:flex; height:100vh; width:100%; }
+  .pane { background:var(--panel); overflow:auto; padding:20px; }
+  #left { flex: 0 0 50%; min-width: 280px; }
+  #right { flex: 1 1 auto; min-width: 320px; background:#fbfbff; border-left:1px solid var(--line); }
+  #divider { flex: 0 0 8px; background: linear-gradient(90deg,#e5e7eb,#d1d5db); cursor: ew-resize; position:relative; z-index: 5; user-select:none; }
+  h2,h3,h4 { 
+    margin:0 0 10px; 
+    font-size: calc(var(--font-size-regular) + 4px);
+  }
+  #left p { 
+    margin: 0 0 12px; 
+    line-height: 1.6; 
+    word-break: normal; 
+    overflow-wrap: normal; 
+    hyphens: none; 
+  }
+  .group { 
+    background:#fff; 
+    border:1px solid var(--line); 
+    border-radius:10px; 
+    padding:12px; 
+    margin-bottom:14px; 
+  }
+  table { border-collapse: collapse; width:100%; }
+  th, td { 
+    border:1px solid var(--line); 
+    padding:6px; 
+    text-align:center; 
+    font-size: calc(var(--font-size-regular) - 2px);
+  }
+  th:first-child, td:first-child { width:92px; }
+  button { 
+    padding:8px 12px; 
+    border:1px solid var(--line); 
+    border-radius:10px; 
+    background:#fff; 
+    cursor:pointer; 
+    font-size: var(--font-size-regular);
+  }
+  button.primary { 
+    background:var(--accent); 
+    color:#fff; 
+    border-color:#3b82f6; 
+  }
+  #results { 
+    background:#fff; 
+    border:1px solid var(--line); 
+    border-radius:10px; 
+    padding:10px; 
+    font-size: var(--font-size-regular);
+  }
+  .hl { 
+    background:#fff3a3; 
+    box-shadow: inset 0 -2px 0 rgba(0,0,0,.05); 
+    cursor: pointer; 
+  }
+  .hl:hover { filter: brightness(0.98); }
+  #selbar { 
+    position: absolute; 
+    display:none; 
+    z-index: 6000; 
+    background:#111; 
+    color:#fff; 
+    border-radius: 8px; 
+    padding: 6px; 
+    box-shadow: var(--shadow); 
+    font-size: 13px; 
+    gap:6px; 
+    align-items: center; 
+  }
+  #selbar button { 
+    background: transparent; 
+    color:#fff; 
+    border: 1px solid rgba(255,255,255,.25); 
+    padding: 4px 8px; 
+    border-radius: 6px; 
+    cursor:pointer; 
+    font-size:13px;
+  }
+  #selbar button:hover { border-color:#fff; }
+  #notes { 
+    position: fixed; 
+    right: 12px; 
+    bottom: 12px; 
+    width: 320px; 
+    height: 42vh; 
+    background:#fff; 
+    border:1px solid var(--line); 
+    border-radius: 12px; 
+    display:none; 
+    flex-direction: column; 
+    z-index:1500; 
+    box-shadow: var(--shadow); 
+  }
+  #notes header { 
+    display:flex; 
+    align-items:center; 
+    justify-content: space-between; 
+    padding:8px 10px; 
+    border-bottom:1px solid var(--line); 
+  }
+  #notes textarea { 
+    flex:1; 
+    border:0; 
+    padding:10px; 
+    resize:none; 
+    font-size:14px; 
+    line-height:1.5; 
+  }
+  #toast { 
+    position: fixed; 
+    left:50%; 
+    transform: translateX(-50%); 
+    bottom: 24px; 
+    background:#111; 
+    color:#fff; 
+    padding:8px 12px; 
+    border-radius: 8px; 
+    display:none; 
+    z-index:2500; 
+    font-size: var(--font-size-regular);
+  }
+  .dropzone { 
+    border:2px dashed #cbd5e1; 
+    background:#f8fafc; 
+    border-radius:10px; 
+    min-height:54px; 
+    padding:8px; 
+    display:flex; 
+    align-items:center; 
+    justify-content:space-between; 
+    gap:8px; 
+  }
+  .droplabel { color:#64748b; }
+  .cardpool { 
+    background:#f1f5f9; 
+    border-radius:10px; 
+    padding:12px; 
+    display:grid; 
+    gap:8px; 
+  }
+  .pool-slot { min-height:40px; }
+  .card { 
+    background:#fff; 
+    border:1px solid #e5e7eb; 
+    border-radius:8px; 
+    padding:8px 10px; 
+    display:inline-flex; 
+    gap:8px; 
+    align-items:center; 
+    cursor:grab; 
+    box-shadow:0 1px 0 rgba(0,0,0,.03); 
+  }
+  .card:active { cursor:grabbing; }
+  .tag { 
+    background:#eef2ff; 
+    color:#4338ca; 
+    padding:2px 8px; 
+    border-radius:999px; 
+    font-size:12px; 
+  }
+  .btn-clear { 
+    border:1px solid #e5e7eb; 
+    background:#fff; 
+    border-radius:8px; 
+    padding:6px 8px; 
+    cursor:pointer; 
+  }
+  .ghost { opacity: .5; }
+  .over { outline:2px dashed #3b82f6; }
+  details.answerbox summary { 
+    cursor: pointer; 
+    user-select:none; 
+    list-style: none; 
+    font-size: var(--font-size-regular);
+  }
+  details.answerbox { 
+    border:1px dashed var(--line); 
+    border-radius:10px; 
+    padding:8px 10px; 
+    background:#fff; 
+  }
+  .badge { 
+    display:inline-block; 
+    background:#eef2ff; 
+    color:#4338ca; 
+    padding:2px 8px; 
+    border-radius:999px; 
+    font-size:12px; 
+    margin-left:6px; 
+  }
+  body { padding-bottom: 82px; }
+  .practice-nav { 
+    background:#fff; 
+    border-bottom:2px solid var(--line); 
+    padding:12px 20px; 
+    display:flex; 
+    align-items:center; 
+    gap:20px; 
+    box-shadow:0 2px 4px rgba(0,0,0,.05); 
+    flex-wrap:wrap; 
+    position:fixed; 
+    left:0; 
+    right:0; 
+    bottom:0; 
+    border-top:2px solid var(--line); 
+    border-bottom:0; 
+    z-index:4000; 
+  }
+  .practice-nav .title { 
+    font-weight:600; 
+    color:var(--muted); 
+    font-size: var(--font-size-regular);
+  }
+  .practice-nav .questions { 
+    display:flex; 
+    gap:8px; 
+    align-items:center; 
+    flex-wrap:wrap; 
+  }
+  .practice-nav .q-item { 
+    padding:6px 10px; 
+    border:1px solid var(--line); 
+    border-radius:6px; 
+    background:#fff; 
+    cursor:pointer; 
+    font-size:14px; 
+    transition:all 0.2s; 
+    min-width:36px; 
+    text-align:center; 
+  }
+  .practice-nav .q-item:hover { 
+    background:#f1f5f9; 
+    border-color:var(--accent); 
+  }
+  .practice-nav .q-item.answered { 
+    background:#e0e7ff; 
+    border-color:var(--accent); 
+    color:var(--accent); 
+    font-weight:500; 
+  }
+  .practice-nav .q-item.active { 
+    background:var(--accent); 
+    color:#fff; 
+    border-color:var(--accent); 
+  }
+  /* 填空题输入框样式 */
+  .fill-input {
+    width: 100px;
+    padding: 4px 6px;
+    border:1px solid var(--line);
+    border-radius:6px;
+    font-size: calc(var(--font-size-regular) - 2px);
+  }
+</style>
+</head>
+<body>
+<!-- 底部导航栏 -->
+<div class="practice-nav">
+  <div class="title">Questions</div>
+  <div class="questions">
+    <div class="q-item" id="q1-nav" onclick="scrollToElement('q1-anchor')">1</div>
+    <div class="q-item" id="q2-nav" onclick="scrollToElement('q2-anchor')">2</div>
+    <div class="q-item" id="q3-nav" onclick="scrollToElement('q3-anchor')">3</div>
+    <div class="q-item" id="q4-nav" onclick="scrollToElement('q4-anchor')">4</div>
+    <div class="q-item" id="q5-nav" onclick="scrollToElement('q5-anchor')">5</div>
+    <div class="q-item" id="q6-nav" onclick="scrollToElement('q6-anchor')">6</div>
+    <div class="q-item" id="q7-nav" onclick="scrollToElement('q7-anchor')">7</div>
+    <div class="q-item" id="q8-nav" onclick="scrollToElement('q8-anchor')">8</div>
+    <div class="q-item" id="q9-nav" onclick="scrollToElement('q9-anchor')">9</div>
+    <div class="q-item" id="q10-nav" onclick="scrollToElement('q10-anchor')">10</div>
+    <div class="q-item" id="q11-nav" onclick="scrollToElement('q11-anchor')">11</div>
+    <div class="q-item" id="q12-nav" onclick="scrollToElement('q12-anchor')">12</div>
+    <div class="q-item" id="q13-nav" onclick="scrollToElement('q13-anchor')">13</div>
+  </div>
+</div>
+
+<!-- 主内容区 -->
+<div class="shell">
+  <!-- 左侧文章区 -->
+  <section class="pane" id="left">
+    <h2>READING PASSAGE 1 
+      <div class="timer-settings">
+        <span id="timer">00:00</span>
+        <button id="settingsBtn">Settings</button>
+        <!-- 字体设置下拉菜单 -->
+        <div id="settingsMenu">
+          <div class="settings-item" data-size="regular">Font Size: Regular</div>
+          <div class="settings-item" data-size="moderate">Font Size: Moderate</div>
+          <div class="settings-item" data-size="large">Font Size: Large</div>
+        </div>
+      </div>
+    </h2>
+    <p>You should spend about 20 minutes on Questions 1–13, which are based on Reading Passage 1 below.</p>
+    <h3>Sorry—who are you?</h3>
+    
+    <p>Prosopagnosia is a medical condition that stops people from recognizing people’s faces, but how common is it and why does it happen?</p>
+    
+    <p>It was Jacob Hodes’s first day at college. He can still recall spending an enjoyable afternoon being shown around campus by a second-year student named Daniel Byrne, who happened to be from his home town. Jacob then spent the rest of the year ignoring him. ‘I never saw him again,’ he says. ‘Well, I’m sure I walked past him plenty of times, but I just didn’t see him.’ This behaviour wasn’t intentional. Jacob just couldn’t recollect what his fellow student looked like. He had had the same trouble all his life. Friends and relatives would greet him and he would have no idea who they were.</p>
+    
+    <p>It wasn’t until five years ago that it all made sense. That was when Hodes was diagnosed with prosopagnosia, a condition that means he is unable to recognise faces. According to researchers, he is far from alone. In fact, the condition is not that uncommon, but until a few years ago only a few dozen cases had ever been described, and all of these had been caused by brain injury. Recently, though, researchers identified a second form of face blindness, developmental prosopagnosia, which is either present from birth or develops very early in life.</p>
+    
+    <p>In May a team from Harvard University in the US and University College London (UCL) announced the results of a web survey of 1,600 people, suggesting that up to 2 per cent of people have some degree of face blindness. Then in August, Martina Gruter and colleagues at the Institute for Human Genetics in Munster, Germany, similarly reported that 2.5 per cent of 700 secondary-school pupils they had tested had trouble recognising faces. The results of the surveys took everyone by surprise.</p>
+    
+    <p>It seems that if you have never known what it is to recognise a face, you don’t necessarily know that you are supposed to be able to. Prosopagnosics almost always know that they have trouble recognising people, but they often don’t realise that other people have better recognition skills than they do, says Brad Duchaine, a researcher at UCL.</p>
+    
+    <p>Despite these issues, the majority of developmental prosopagnosics possess strategies that allow them to get around their difficulty-for instance, by recognising hair, clothing, or a person’s way of speaking-so, unless they see a familiar person out of context, with a new hairstyle or in different clothes, they can recognise people just fine. Even so, the discovery of developmental prosopagnosia has attracted attention from neuroscientists keen to discover what is different about the brain of face-blind people. This difference, they believe, could help solve the problem of how the brain deals with information in general, not just visual data. In other words, it may show whether the brain has specialised parts for specific tasks or is more of a general-purpose information processor.</p>
+    
+    <p>One issue, however, that will present challenges for researchers is that no two prosopagnosics are the same. Some have problems only with faces, while others have trouble with ordinary everyday objects and, so it turns out, animals which would normally be familiar as well. Some prosopagnosics can train themselves to recognise specific faces; others can’t even recognise their own in a mirror. When some have been tested they could identify the emotion that was conveyed on another’s face, even though the face itself seemed unfamiliar, while for other subjects this was an impossibility. Some cannot recognise the faces of old friends or fellow students but have no trouble telling whether a particular face from such groups would be attractive to most people. Because of this diversity, working out the cause of prosopagnosia will not be easy.</p>
+    
+    <p>In Martina Gruter’s study, the prosopagnosics who agreed to have their parents and relatives tested reported at least one relative with the condition. Having looked at 38 cases in seven families, the German team believe they have good evidence that a single gene could be responsible. Duchaine also has some evidence that face blindness could be inherited but thinks other factors might be more significant. He refers to studies of babies born with a condition which means the eye’s lens is not clear, and when it’s the left one, being unable to see through this eye during the first two months of life is a major risk factor for prosopagnosia.</p>
+    
+    <p>Whatever the cause, what most prosopagnosics want to know is whether they can do anything to improve their face-recognition skills. Joseph DeGutis, a graduate student at the University of California, recently reported successfully training a severe developmental prosopagnosic to recognise faces during tests carried out in the laboratory. The subject also reported that recognising faces in everyday life became easier due to the training. Duchaine now plans to attempt to train sufferers to recognise the five people they most need to know-maybe their immediate family, for example, and essential colleagues. Thomas Gruter, Martina Gruter’s husband, who also works on her team, however, is not convinced it will work. ‘I don’t know how you can have more training than you have already had,’ he says. ‘Humans already spend all day looking at faces.’ He also points out that cheating is a possibility during tests and provides an example. One person we studied said that when she was doing the face-recognition test, she memorised the distance between nose and upper lip. She wasn’t the only one. So you can perform well in the test and not do so well in real life.</p>
+    
+    <!-- 空白行防止加载不完全 -->
+    <p>&nbsp;</p>
+    <p>&nbsp;</p>
+  </section>
+
+  <!-- 分隔条 -->
+  <div id="divider" title="Drag to resize"></div>
+
+  <!-- 右侧题目区 -->
+  <section class="pane" id="right">
+    <h3>Questions</h3>
+    
+    <!-- 判断题 (1-7) -->
+    <div class="group">
+      <h4>Questions 1–7</h4>
+      <p>Do the following statements agree with the information given in Reading Passage 1?</p>
+      <p>In boxes 1–7 on your answer sheet, write</p>
+      <table>
+        <tr>
+          <th>Answer</th>
+          <th>Meaning</th>
+        </tr>
+        <tr>
+          <td>TRUE</td>
+          <td>if the statement agrees with the information</td>
+        </tr>
+        <tr>
+          <td>FALSE</td>
+          <td>if the statement contradicts the information</td>
+        </tr>
+        <tr>
+          <td>NOT GIVEN</td>
+          <td>if there is no information on this</td>
+        </tr>
+      </table>
+      
+      <!-- Q1 -->
+      <a id="q1-anchor"></a>
+      <div id="q1-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+        <p>1 Before attending college, Jacob was capable of recognising people he knew well.</p>
+        <div style="display:flex; flex-wrap:wrap; gap:10px; margin:4px 0;">
+          <label style="margin:0;"><input name="q1" type="radio" value="TRUE"> TRUE</label>
+          <label style="margin:0;"><input name="q1" type="radio" value="FALSE"> FALSE</label>
+          <label style="margin:0;"><input name="q1" type="radio" value="NOT GIVEN"> NOT GIVEN</label>
+        </div>
+      </div>
+      
+      <!-- Q2 -->
+      <a id="q2-anchor"></a>
+      <div id="q2-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+        <p>2 Researchers believe that prosopagnosia may be a growing problem.</p>
+        <div style="display:flex; flex-wrap:wrap; gap:10px; margin:4px 0;">
+          <label style="margin:0;"><input name="q2" type="radio" value="TRUE"> TRUE</label>
+          <label style="margin:0;"><input name="q2" type="radio" value="FALSE"> FALSE</label>
+          <label style="margin:0;"><input name="q2" type="radio" value="NOT GIVEN"> NOT GIVEN</label>
+        </div>
+      </div>
+      
+      <!-- Q3 -->
+      <a id="q3-anchor"></a>
+      <div id="q3-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+        <p>3 It is harder to identify developmental prosopagnosia in babies than in young children.</p>
+        <div style="display:flex; flex-wrap:wrap; gap:10px; margin:4px 0;">
+          <label style="margin:0;"><input name="q3" type="radio" value="TRUE"> TRUE</label>
+          <label style="margin:0;"><input name="q3" type="radio" value="FALSE"> FALSE</label>
+          <label style="margin:0;"><input name="q3" type="radio" value="NOT GIVEN"> NOT GIVEN</label>
+        </div>
+      </div>
+      
+      <!-- Q4 -->
+      <a id="q4-anchor"></a>
+      <div id="q4-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+        <p>4 A German study seems to support the Harvard and UCL research findings.</p>
+        <div style="display:flex; flex-wrap:wrap; gap:10px; margin:4px 0;">
+          <label style="margin:0;"><input name="q4" type="radio" value="TRUE"> TRUE</label>
+          <label style="margin:0;"><input name="q4" type="radio" value="FALSE"> FALSE</label>
+          <label style="margin:0;"><input name="q4" type="radio" value="NOT GIVEN"> NOT GIVEN</label>
+        </div>
+      </div>
+      
+      <!-- Q5 -->
+      <a id="q5-anchor"></a>
+      <div id="q5-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+        <p>5 In general, prosopagnosics are aware that other people can recognise faces more easily than they can.</p>
+        <div style="display:flex; flex-wrap:wrap; gap:10px; margin:4px 0;">
+          <label style="margin:0;"><input name="q5" type="radio" value="TRUE"> TRUE</label>
+          <label style="margin:0;"><input name="q5" type="radio" value="FALSE"> FALSE</label>
+          <label style="margin:0;"><input name="q5" type="radio" value="NOT GIVEN"> NOT GIVEN</label>
+        </div>
+      </div>
+      
+      <!-- Q6 -->
+      <a id="q6-anchor"></a>
+      <div id="q6-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+        <p>6 In most cases, prosopagnosics have developed ways to deal with their problem.</p>
+        <div style="display:flex; flex-wrap:wrap; gap:10px; margin:4px 0;">
+          <label style="margin:0;"><input name="q6" type="radio" value="TRUE"> TRUE</label>
+          <label style="margin:0;"><input name="q6" type="radio" value="FALSE"> FALSE</label>
+          <label style="margin:0;"><input name="q6" type="radio" value="NOT GIVEN"> NOT GIVEN</label>
+        </div>
+      </div>
+      
+      <!-- Q7 -->
+      <a id="q7-anchor"></a>
+      <div id="q7-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+        <p>7 The study of prosopagnosia may help neuroscientists to treat different kinds of brain injury.</p>
+        <div style="display:flex; flex-wrap:wrap; gap:10px; margin:4px 0;">
+          <label style="margin:0;"><input name="q7" type="radio" value="TRUE"> TRUE</label>
+          <label style="margin:0;"><input name="q7" type="radio" value="FALSE"> FALSE</label>
+          <label style="margin:0;"><input name="q7" type="radio" value="NOT GIVEN"> NOT GIVEN</label>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 填空题 (8-13) -->
+    <div class="group">
+      <h4>Questions 8–13</h4>
+      <p>Complete the notes below.</p>
+      <p>Choose ONE WORD ONLY from the passage for each answer.</p>
+      <p>Write your answers in boxes 8–13 on your answer sheet.</p>
+      <h4>The challenges for prosopagnosia researchers</h4>
+      
+      <p><strong>Differences in prosopagnosics</strong></p>
+      <p>As well as being unable to recognise facial features, prosopagnosics may also have problems recognising commonly seen the <input type="text" name="q8" class="fill-input" placeholder="Answer"> and objects.</p>
+      
+      <a id="q8-anchor"></a>
+      <div id="q8-section" style="padding:4px 0;"></div>
+      
+      <p>Some prosopagnosics can identify the <input type="text" name="q9" class="fill-input" placeholder="Answer"> on someone else’s face.</p>
+      
+      <a id="q9-anchor"></a>
+      <div id="q9-section" style="padding:4px 0;"></div>
+      
+      <p>Some prosopagnosics can recognise that people are regarded as attractive by others.</p>
+      
+      <p><strong>Causes of prosopagnosia</strong></p>
+      <p>Prosopagnosia may be caused by just one <input type="text" name="q10" class="fill-input" placeholder="Answer">, according to Martina Gruter</p>
+      
+      <a id="q10-anchor"></a>
+      <div id="q10-section" style="padding:4px 0;"></div>
+      
+      <p>• a defect in the <input type="text" name="q11" class="fill-input" placeholder="Answer"> eye, according to Brad Duchaine</p>
+      
+      <a id="q11-anchor"></a>
+      <div id="q11-section" style="padding:4px 0;"></div>
+      
+      <p><strong>Treatment for prosopagnosia</strong></p>
+      <p>Joseph DeGutis’s patient proved he had been successfully trained to recognise faces inside the <input type="text" name="q12" class="fill-input" placeholder="Answer"> and in the outside world.</p>
+      
+      <a id="q12-anchor"></a>
+      <div id="q12-section" style="padding:4px 0;"></div>
+      
+      <p>Duchaine’s training may allow prosopagnosics to recognise faces belonging to family and workmates.</p>
+      <p>Thomas Gruter doubts that the training will work and mentions that some subjects can affect research results through <input type="text" name="q13" class="fill-input" placeholder="Answer">.</p>
+      
+      <a id="q13-anchor"></a>
+      <div id="q13-section" style="padding:4px 0;"></div>
+    </div>
+    
+    <!-- 提交/重置/笔记按钮 -->
+    <div style="display:flex;gap:8px;margin-bottom:10px;">
+      <button class="primary" onclick="grade()">Submit</button>
+      <button onclick="resetForm()">Reset</button>
+      <button onclick="toggleNotes()">Notes</button>
+    </div>
+    
+    <!-- 结果显示区 -->
+    <div id="results"></div>
+    
+    <!-- 答案显示区 -->
+    <details class="answerbox" id="answerBox">
+      <summary>Show answers (click to toggle) <span class="badge">hidden</span></summary>
+      <div id="answerContent"></div>
+    </details>
+  </section>
+</div>
+
+<!-- 文本选择工具栏 -->
+<div aria-label="Selection tools" id="selbar" role="toolbar">
+  <button id="btnHL">Highlight</button>
+  <button id="btnUH">Remove</button>
+  <button id="btnNote">Note</button>
+</div>
+
+<!-- 笔记面板 -->
+<div id="notes">
+  <header>
+    <strong>Notes</strong>
+    <div>
+      <button id="btnCopy">Copy</button>
+      <button id="btnClose">Close</button>
+    </div>
+  </header>
+  <textarea id="noteArea" placeholder="Type your notes here..."></textarea>
+</div>
+
+<!-- 提示框 -->
+<div id="toast"></div>
+
+<script>
+// 全局变量 - 计时器
+let timerInterval;
+let timerSeconds = 0;
+const timerEl = document.getElementById('timer');
+
+// 1. 计时器初始化
+function startTimer() {
+  timerInterval = setInterval(() => {
+    timerSeconds++;
+    const minutes = String(Math.floor(timerSeconds / 60)).padStart(2, '0');
+    const seconds = String(timerSeconds % 60).padStart(2, '0');
+    timerEl.textContent = `${minutes}:${seconds}`;
+  }, 1000);
+}
+
+// 2. 计时器停止（提交时调用）
+function stopTimer() {
+  clearInterval(timerInterval);
+}
+
+// 3. 字体大小设置功能
+const settingsBtn = document.getElementById('settingsBtn');
+const settingsMenu = document.getElementById('settingsMenu');
+const root = document.documentElement;
+
+// 显示/隐藏设置菜单
+settingsBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  settingsMenu.style.display = settingsMenu.style.display === 'block' ? 'none' : 'block';
+});
+
+// 点击页面其他区域关闭菜单
+document.addEventListener('click', () => {
+  settingsMenu.style.display = 'none';
+});
+
+// 字体大小切换
+document.querySelectorAll('.settings-item').forEach(item => {
+  item.addEventListener('click', () => {
+    const size = item.dataset.size;
+    switch(size) {
+      case 'regular':
+        root.style.setProperty('--font-size-regular', '16px');
+        root.style.setProperty('--font-size-moderate', '18px');
+        root.style.setProperty('--font-size-large', '20px');
+        break;
+      case 'moderate':
+        root.style.setProperty('--font-size-regular', '18px');
+        root.style.setProperty('--font-size-moderate', '20px');
+        root.style.setProperty('--font-size-large', '22px');
+        break;
+      case 'large':
+        root.style.setProperty('--font-size-regular', '20px');
+        root.style.setProperty('--font-size-moderate', '22px');
+        root.style.setProperty('--font-size-large', '24px');
+        break;
+    }
+    settingsMenu.style.display = 'none';
+    showToast(`Font size set to ${size}`);
+  });
+});
+
+// 4. 分隔条拖拽功能
+const divider = document.getElementById('divider');
+const leftPane = document.getElementById('left');
+const rightPane = document.getElementById('right');
+let isDragging = false;
+
+divider.addEventListener('mousedown', (e) => {
+  isDragging = true;
+  document.body.style.cursor = 'ew-resize';
+  e.preventDefault();
+});
+
+window.addEventListener('mousemove', (e) => {
+  if (!isDragging) return;
+  const containerRect = document.querySelector('.shell').getBoundingClientRect();
+  const x = e.clientX - containerRect.left;
+  // 限制最小宽度
+  const minLeftWidth = 280;
+  const minRightWidth = 320;
+  const maxLeftWidth = containerRect.width - minRightWidth;
+  const finalX = Math.max(minLeftWidth, Math.min(maxLeftWidth, x));
+  
+  leftPane.style.flex = `0 0 ${finalX}px`;
+  rightPane.style.flex = '1 1 auto';
+});
+
+window.addEventListener('mouseup', () => {
+  if (isDragging) {
+    isDragging = false;
+    document.body.style.cursor = '';
+  }
+});
+
+// 触摸设备支持
+divider.addEventListener('touchstart', (e) => {
+  isDragging = true;
+  e.preventDefault();
+}, { passive: false });
+
+window.addEventListener('touchmove', (e) => {
+  if (!isDragging) return;
+  const containerRect = document.querySelector('.shell').getBoundingClientRect();
+  const x = e.touches[0].clientX - containerRect.left;
+  const minLeftWidth = 280;
+  const minRightWidth = 320;
+  const maxLeftWidth = containerRect.width - minRightWidth;
+  const finalX = Math.max(minLeftWidth, Math.min(maxLeftWidth, x));
+  
+  leftPane.style.flex = `0 0 ${finalX}px`;
+  rightPane.style.flex = '1 1 auto';
+}, { passive: false });
+
+window.addEventListener('touchend', () => {
+  if (isDragging) {
+    isDragging = false;
+  }
+});
+
+// 5. 文本高亮功能
+const selbar = document.getElementById('selbar');
+const btnHL = document.getElementById('btnHL');
+const btnUH = document.getElementById('btnUH');
+const btnNote = document.getElementById('btnNote');
+let lastSelectionRange = null;
+let currentHighlightNode = null;
+let keepToolbarVisible = false;
+
+// 定位选择工具栏
+function positionSelbar(rect) {
+  selbar.style.display = 'flex';
+  requestAnimationFrame(() => {
+    const topPos = window.scrollY + rect.top - selbar.offsetHeight - 8;
+    const leftPos = window.scrollX + rect.left + rect.width/2 - selbar.offsetWidth/2;
+    // 确保工具栏不超出屏幕
+    selbar.style.top = topPos > 0 ? `${topPos}px` : `${window.scrollY + rect.bottom + 8}px`;
+    selbar.style.left = `${Math.max(8, leftPos)}px`;
+  });
+}
+
+// 更新工具栏状态
+function updateSelectionToolbar() {
+  const selection = window.getSelection();
+  if (!selection || selection.rangeCount === 0 || selection.isCollapsed) {
+    selbar.style.display = 'none';
+    currentHighlightNode = null;
+    return;
+  }
+  
+  const range = selection.getRangeAt(0);
+  lastSelectionRange = range.cloneRange();
+  currentHighlightNode = null;
+  positionSelbar(range.getBoundingClientRect());
+}
+
+// 监听文本选择
+document.getElementById('left').addEventListener('mouseup', updateSelectionToolbar);
+document.getElementById('right').addEventListener('mouseup', updateSelectionToolbar);
+document.addEventListener('selectionchange', () => {
+  const selection = window.getSelection();
+  if (!selection || selection.rangeCount === 0 || selection.isCollapsed) {
+    if (!keepToolbarVisible && !currentHighlightNode) {
+      selbar.style.display = 'none';
+    }
+  }
+});
+
+// 滚动时更新工具栏位置
+document.addEventListener('scroll', () => {
+  if (selbar.style.display === 'flex') {
+    updateSelectionToolbar();
+  }
+});
+
+// 点击高亮文本时显示工具栏
+document.addEventListener('mousedown', (e) => {
+  if (e.target.classList && e.target.classList.contains('hl')) {
+    keepToolbarVisible = true;
+  } else {
+    keepToolbarVisible = false;
+  }
+}, true);
+
+document.addEventListener('click', (e) => {
+  if (e.target.classList && e.target.classList.contains('hl')) {
+    currentHighlightNode = e.target;
+    lastSelectionRange = null;
+    positionSelbar(e.target.getBoundingClientRect());
+    const selection = window.getSelection();
+    if (selection) selection.removeAllRanges();
+    setTimeout(() => keepToolbarVisible = false, 0);
+  }
+}, true);
+
+// 执行高亮
+function applyHighlight() {
+  if (currentHighlightNode) return;
+  if (!lastSelectionRange || lastSelectionRange.collapsed) return;
+  
+  const highlightSpan = document.createElement('span');
+  highlightSpan.className = 'hl';
+  
+  try {
+    lastSelectionRange.surroundContents(highlightSpan);
+  } catch (e) {
+    // 处理跨节点选择
+    const wrapSpan = document.createElement('span');
+    wrapSpan.className = 'hl';
+    wrapSpan.appendChild(lastSelectionRange.cloneContents());
+    lastSelectionRange.deleteContents();
+    lastSelectionRange.insertNode(wrapSpan);
+  }
+  
+  selbar.style.display = 'none';
+  showToast('Highlighted');
+}
+
+// 移除高亮
+function removeHighlight() {
+  if (currentHighlightNode) {
+    const parent = currentHighlightNode.parentNode;
+    while (currentHighlightNode.firstChild) {
+      parent.insertBefore(currentHighlightNode.firstChild, currentHighlightNode);
+    }
+    parent.removeChild(currentHighlightNode);
+    parent.normalize();
+    currentHighlightNode = null;
+    selbar.style.display = 'none';
+    showToast('Highlight removed');
+    return;
+  }
+  
+  if (!lastSelectionRange) return;
+  const selectionRect = lastSelectionRange.getBoundingClientRect();
+  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_ELEMENT);
+  const highlightsToRemove = [];
+  
+  let node;
+  while (node = walker.nextNode()) {
+    if (node.classList && node.classList.contains('hl')) {
+      const nodeRect = node.getBoundingClientRect();
+      // 检查高亮是否与选择区域重叠
+      const isOverlapping = !(
+        nodeRect.right < selectionRect.left ||
+        nodeRect.left > selectionRect.right ||
+        nodeRect.bottom < selectionRect.top ||
+        nodeRect.top > selectionRect.bottom
+      );
+      
+      if (isOverlapping) {
+        highlightsToRemove.push(node);
+      }
+    }
+  }
+  
+  highlightsToRemove.forEach(hlNode => {
+    const parent = hlNode.parentNode;
+    while (hlNode.firstChild) {
+      parent.insertBefore(hlNode.firstChild, hlNode);
+    }
+    parent.removeChild(hlNode);
+    parent.normalize();
+  });
+  
+  selbar.style.display = 'none';
+  showToast('Highlight removed');
+}
+
+// 绑定高亮按钮事件
+btnHL.addEventListener('click', applyHighlight);
+btnUH.addEventListener('click', removeHighlight);
+
+// 6. 笔记功能
+const notesPanel = document.getElementById('notes');
+const noteArea = document.getElementById('noteArea');
+const btnCopyNote = document.getElementById('btnCopy');
+const btnCloseNote = document.getElementById('btnClose');
+
+function toggleNotes() {
+  notesPanel.style.display = notesPanel.style.display === 'flex' ? 'none' : 'flex';
+}
+
+btnCloseNote.addEventListener('click', toggleNotes);
+
+// 复制笔记
+btnCopyNote.addEventListener('click', async () => {
+  const noteText = noteArea.value.trim();
+  if (!noteText) {
+    showToast('No notes to copy');
+    return;
+  }
+  
+  try {
+    await navigator.clipboard.writeText(noteText);
+    showToast('Notes copied');
+  } catch (err) {
+    showToast('Failed to copy notes');
+    console.error('Copy error:', err);
+  }
+});
+
+// 从选择文本创建笔记
+btnNote.addEventListener('click', () => {
+  let selectedText = '';
+  if (currentHighlightNode) {
+    selectedText = currentHighlightNode.textContent.trim();
+  } else if (lastSelectionRange) {
+    const fragment = lastSelectionRange.cloneContents();
+    selectedText = fragment.textContent.trim();
+  }
+  
+  toggleNotes();
+  if (selectedText) {
+    noteArea.value = noteArea.value ? `${noteArea.value}\n> ${selectedText}\n` : `> ${selectedText}\n`;
+    noteArea.scrollTop = noteArea.scrollHeight;
+  }
+  selbar.style.display = 'none';
+});
+
+// 7. 提示框功能
+const toastEl = document.getElementById('toast');
+
+function showToast(message) {
+  toastEl.textContent = message;
+  toastEl.style.display = 'block';
+  setTimeout(() => {
+    toastEl.style.display = 'none';
+  }, 1200);
+}
+
+// 8. 答案评分功能
+const correctAnswers = {
+  q1: "FALSE",
+  q2: "NOT GIVEN",
+  q3: "NOT GIVEN",
+  q4: "TRUE",
+  q5: "FALSE",
+  q6: "TRUE",
+  q7: "NOT GIVEN",
+  q8: "animals",
+  q9: "emotion",
+  q10: "gene",
+  q11: "left",
+  q12: "laboratory",
+  q13: "cheating"
+};
+
+// 评分函数
+function grade() {
+  // 停止计时器
+  stopTimer();
+  
+  let totalQuestions = 13;
+  let correctCount = 0;
+  let resultLines = [];
+  
+  // 判断题评分 (1-7)
+  for (let i = 1; i <= 7; i++) {
+    const questionName = `q${i}`;
+    const selectedOption = document.querySelector(`input[name="${questionName}"]:checked`);
+    const userAnswer = selectedOption ? selectedOption.value : "No answer";
+    const isCorrect = userAnswer === correctAnswers[questionName];
+    
+    if (isCorrect) correctCount++;
+    resultLines.push(`${questionName.toUpperCase()}: ${userAnswer} ${isCorrect ? '✅' : '❌'} (Correct: ${correctAnswers[questionName]})`);
+  }
+  
+  // 填空题评分 (8-13)
+  for (let i = 8; i <= 13; i++) {
+    const questionName = `q${i}`;
+    const userInput = document.querySelector(`input[name="${questionName}"]`);
+    const userAnswer = userInput ? userInput.value.trim().toLowerCase() : "No answer";
+    const correctAnswer = correctAnswers[questionName].toLowerCase();
+    const isCorrect = userAnswer === correctAnswer;
+    
+    if (isCorrect) correctCount++;
+    resultLines.push(`${questionName.toUpperCase()}: ${userAnswer} ${isCorrect ? '✅' : '❌'} (Correct: ${correctAnswers[questionName]})`);
+  }
+  
+  // 计算准确率
+  const accuracy = Math.round((correctCount / totalQuestions) * 100);
+  
+  // 显示结果
+  const resultsEl = document.getElementById('results');
+  resultsEl.innerHTML = `
+    <p><strong>Score:</strong> ${correctCount}/${totalQuestions} <span class="badge">Accuracy ${accuracy}%</span></p>
+    <p><strong>Time Taken:</strong> ${timerEl.textContent}</p>
+    <pre>${resultLines.join('\n')}</pre>
+  `;
+  
+  // 显示正确答案
+  const answerContentEl = document.getElementById('answerContent');
+  answerContentEl.innerHTML = `
+    <ol>
+      <li>1 → FALSE (Jacob had trouble recognizing people all his life)</li>
+      <li>2 → NOT GIVEN (No info about prosopagnosia being a growing problem)</li>
+      <li>3 → NOT GIVEN (No comparison between babies and young children)</li>
+      <li>4 → TRUE (German study (2.5%) supported Harvard/UCL (2%))</li>
+      <li>5 → FALSE (Prosopagnosics often don’t realize others have better skills)</li>
+      <li>6 → TRUE (Most have strategies like recognizing hair/clothing/speech)</li>
+      <li>7 → NOT GIVEN (Study helps understand brain function, not treat injury)</li>
+      <li>8 → animals (Trouble with everyday objects and familiar animals)</li>
+      <li>9 → emotion (Some can identify emotions on unfamiliar faces)</li>
+      <li>10 → gene (German team found single gene evidence)</li>
+      <li>11 → left (Left eye lens defect in first two months is a risk factor)</li>
+      <li>12 → laboratory (Training successful in lab tests)</li>
+      <li>13 → cheating (Subjects may cheat by memorizing facial distances)</li>
+    </ol>
+  `;
+  
+  document.querySelector('#answerBox .badge').textContent = 'tap to view';
+}
+
+// 重置功能
+function resetForm() {
+  // 重置单选按钮
+  document.querySelectorAll('input[type="radio"]').forEach(radio => {
+    radio.checked = false;
+  });
+  
+  // 重置输入框
+  document.querySelectorAll('input[type="text"]').forEach(input => {
+    input.value = '';
+  });
+  
+  // 清空结果和答案
+  document.getElementById('results').innerHTML = '';
+  document.getElementById('answerContent').innerHTML = '';
+  document.querySelector('#answerBox .badge').textContent = 'hidden';
+  
+  // 重置导航栏状态
+  document.querySelectorAll('.q-item').forEach(item => {
+    item.classList.remove('answered');
+  });
+  
+  // 重置计时器
+  clearInterval(timerInterval);
+  timerSeconds = 0;
+  timerEl.textContent = '00:00';
+  // 重启计时器
+  startTimer();
+  
+  // 清空笔记
+  document.getElementById('noteArea').value = '';
+  
+  // 移除所有高亮
+  document.querySelectorAll('.hl').forEach(hl => {
+    const parent = hl.parentNode;
+    while (hl.firstChild) {
+      parent.insertBefore(hl.firstChild, hl);
+    }
+    parent.removeChild(hl);
+    parent.normalize();
+  });
+}
+
+// 导航栏状态更新
+function updateNavStatus() {
+  // 判断题状态
+  for (let i = 1; i <= 7; i++) {
+    const navItem = document.getElementById(`q${i}-nav`);
+    const isAnswered = document.querySelector(`input[name="q${i}"]:checked`) !== null;
+    navItem.classList.toggle('answered', isAnswered);
+  }
+  
+  // 填空题状态
+  for (let i = 8; i <= 13; i++) {
+    const navItem = document.getElementById(`q${i}-nav`);
+    const inputValue = document.querySelector(`input[name="q${i}"]`).value.trim();
+    const isAnswered = inputValue !== '';
+    navItem.classList.toggle('answered', isAnswered);
+  }
+}
+
+// 监听答题状态变化
+document.querySelectorAll('input[type="radio"]').forEach(radio => {
+  radio.addEventListener('change', updateNavStatus);
+});
+
+document.querySelectorAll('input[type="text"]').forEach(input => {
+  input.addEventListener('input', updateNavStatus);
+});
+
+// 滚动到题目位置
+function scrollToElement(id) {
+  const element = document.getElementById(id);
+  if (element) {
+    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  
+  // 高亮导航项
+  const navItems = document.querySelectorAll('.q-item');
+  navItems.forEach(item => item.classList.remove('active'));
+  
+  const navId = id.replace('-anchor', '-nav');
+  const activeNav = document.getElementById(navId);
+  if (activeNav) {
+    activeNav.classList.add('active');
+    setTimeout(() => activeNav.classList.remove('active'), 800);
+  }
+}
+
+// 页面加载完成后启动计时器
+window.addEventListener('load', () => {
+  startTimer();
+  // 初始化导航状态
+  updateNavStatus();
+});
+</script>
+</body>
+</html>

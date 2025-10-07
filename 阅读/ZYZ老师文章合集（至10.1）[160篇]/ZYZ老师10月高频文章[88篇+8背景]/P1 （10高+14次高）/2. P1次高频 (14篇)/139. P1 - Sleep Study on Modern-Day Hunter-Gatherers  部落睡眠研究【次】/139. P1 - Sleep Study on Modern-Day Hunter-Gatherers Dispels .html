@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Sleep Study on Modern-Day Hunter-Gatherers Dispels Popular Notions</title>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<style>
+  :root { 
+    --line:#e5e7eb; 
+    --bg:#f6f7fb; 
+    --panel:#fff; 
+    --accent:#3b82f6; 
+    --muted:#6b7280; 
+    --shadow:0 6px 20px rgba(0,0,0,.12); 
+    --font-size: 16px; /* Regular - base font size */
+  }
+  * { box-sizing: border-box; }
+  html,body { height:100%; font-size: var(--font-size); }
+  body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background:var(--bg); }
+  /* Font size inheritance for all elements */
+  h2 { font-size: calc(var(--font-size) * 1.5); }
+  h3 { font-size: calc(var(--font-size) * 1.3); }
+  h4 { font-size: calc(var(--font-size) * 1.15); }
+  p, label, li, button, input, textarea, .q-item, .badge, .droplabel, .tag { font-size: var(--font-size); }
+  
+  #timer { position: static; display: inline-block; margin-left: 8px; background:#fff; border:1px solid var(--line); border-radius:10px; padding:2px 8px; vertical-align: middle; }
+  /* Settings button & panel */
+  #settingsBtn { margin-left: 10px; padding:2px 8px; border:1px solid var(--line); border-radius:10px; background:#fff; cursor:pointer; vertical-align: middle; }
+  #settingsPanel { position: absolute; top: 40px; right: 20px; background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:10px; box-shadow:var(--shadow); display:none; z-index: 1000; }
+  .font-size-option { margin:8px 0; cursor:pointer; padding:4px 6px; border-radius:6px; }
+  .font-size-option:hover { background:#f1f5f9; }
+  .font-size-option.active { background:#e0e7ff; color:var(--accent); border:1px solid var(--accent); }
+  
+  .shell { display:flex; height:100vh; width:100%; }
+  .pane { background:var(--panel); overflow:auto; padding:20px; }
+  #left { flex: 0 0 50%; min-width: 280px; }
+  #right { flex: 1 1 auto; min-width: 320px; background:#fbfbff; border-left:1px solid var(--line); }
+  #divider { flex: 0 0 8px; background: linear-gradient(90deg,#e5e7eb,#d1d5db); cursor: ew-resize; position:relative; z-index: 5; user-select:none; }
+  
+  h2,h3,h4 { margin:0 0 10px; }
+  #left p { margin: 0 0 12px; line-height: 1.6; word-break: normal; overflow-wrap: normal; hyphens: none; }
+  .group { background:#fff; border:1px solid var(--line); border-radius:10px; padding:12px; margin-bottom:14px; }
+  table { border-collapse: collapse; width:100%; }
+  th, td { border:1px solid var(--line); padding:6px; text-align:center; }
+  th:first-child, td:first-child { width:92px; }
+  button { padding:8px 12px; border:1px solid var(--line); border-radius:10px; background:#fff; cursor:pointer; }
+  button.primary { background:var(--accent); color:#fff; border-color:#3b82f6; }
+  
+  #results { background:#fff; border:1px solid var(--line); border-radius:10px; padding:10px; margin-top:10px; }
+  .hl { background:#fff3a3; box-shadow: inset 0 -2px 0 rgba(0,0,0,.05); cursor: pointer; }
+  .hl:hover { filter: brightness(0.98); }
+  
+  #selbar { position: absolute; display:none; z-index: 6000; background:#111; color:#fff; border-radius: 8px; padding: 6px; box-shadow: var(--shadow); gap:6px; align-items: center; }
+  #selbar button { background: transparent; color:#fff; border: 1px solid rgba(255,255,255,.25); padding: 4px 8px; border-radius: 6px; cursor:pointer; }
+  #selbar button:hover { border-color:#fff; }
+  
+  #notes { position: fixed; right: 12px; bottom: 12px; width: 320px; height: 42vh; background:#fff; border:1px solid var(--line); border-radius: 12px; display:none; flex-direction: column; z-index:1500; box-shadow: var(--shadow); }
+  #notes header { display:flex; align-items:center; justify-content: space-between; padding:8px 10px; border-bottom:1px solid var(--line); }
+  #notes textarea { flex:1; border:0; padding:10px; resize:none; line-height:1.5; }
+  
+  #toast { position: fixed; left:50%; transform: translateX(-50%); bottom: 24px; background:#111; color:#fff; padding:8px 12px; border-radius: 8px; display:none; z-index:2500; }
+  
+  .dropzone { border:2px dashed #cbd5e1; background:#f8fafc; border-radius:10px; min-height:54px; padding:8px; display:flex; align-items:center; justify-content:space-between; gap:8px; }
+  .droplabel { color:#64748b; }
+  .cardpool { background:#f1f5f9; border-radius:10px; padding:12px; display:grid; gap:8px; }
+  .pool-slot { min-height:40px; }
+  .card { background:#fff; border:1px solid #e5e7eb; border-radius:8px; padding:8px 10px; display:inline-flex; gap:8px; align-items:center; cursor:grab; box-shadow:0 1px 0 rgba(0,0,0,.03); }
+  .card:active { cursor:grabbing; }
+  .tag { background:#eef2ff; color:#4338ca; padding:2px 8px; border-radius:999px; font-size: calc(var(--font-size) * 0.85); }
+  .btn-clear { border:1px solid #e5e7eb; background:#fff; border-radius:8px; padding:6px 8px; cursor:pointer; }
+  .ghost { opacity: .5; }
+  .over { outline:2px dashed #3b82f6; }
+  
+  details.answerbox summary { cursor: pointer; user-select:none; list-style: none; padding:8px 0; }
+  details.answerbox { border:1px dashed var(--line); border-radius:10px; padding:8px 10px; background:#fff; margin-top:10px; }
+  .badge { display:inline-block; background:#eef2ff; color:#4338ca; padding:2px 8px; border-radius:999px; font-size: calc(var(--font-size) * 0.85); margin-left:6px; }
+  
+  body { padding-bottom: 82px; }
+  .practice-nav { background:#fff; border-bottom:2px solid var(--line); padding:12px 20px; display:flex; align-items:center; gap:20px; box-shadow:0 2px 4px rgba(0,0,0,.05); flex-wrap:wrap; position:fixed; left:0; right:0; bottom:0; border-top:2px solid var(--line); border-bottom:0; z-index:4000; }
+  .practice-nav .title { font-weight:600; color:var(--muted); }
+  .practice-nav .questions { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .practice-nav .q-item { padding:6px 10px; border:1px solid var(--line); border-radius:6px; background:#fff; cursor:pointer; transition:all 0.2s; min-width:36px; text-align:center; }
+  .practice-nav .q-item:hover { background:#f1f5f9; border-color:var(--accent); }
+  .practice-nav .q-item.answered { background:#e0e7ff; border-color:var(--accent); color:var(--accent); font-weight:500; }
+  .practice-nav .q-item.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+  
+  /* Fill in the blank input style */
+  .fill-input { width: 120px; padding:4px 6px; border:1px solid var(--line); border-radius:6px; margin:0 4px; }
+</style>
+</head>
+<body>
+<!-- Settings Panel -->
+<div id="settingsPanel">
+  <h4 style="margin-bottom:8px;">Font Size</h4>
+  <div class="font-size-option active" data-size="16px">Regular (Default)</div>
+  <div class="font-size-option" data-size="18px">Moderate (Larger)</div>
+  <div class="font-size-option" data-size="20px">Large (Largest)</div>
+</div>
+
+<div class="practice-nav">
+  <div class="title">Questions</div>
+  <div class="questions">
+    <div class="q-item" id="q1-nav" onclick="scrollToElement('q1-anchor')">1</div>
+    <div class="q-item" id="q2-nav" onclick="scrollToElement('q2-anchor')">2</div>
+    <div class="q-item" id="q3-nav" onclick="scrollToElement('q3-anchor')">3</div>
+    <div class="q-item" id="q4-nav" onclick="scrollToElement('q4-anchor')">4</div>
+    <div class="q-item" id="q5-nav" onclick="scrollToElement('q5-anchor')">5</div>
+    <div class="q-item" id="q6-nav" onclick="scrollToElement('q6-anchor')">6</div>
+    <div class="q-item" id="q7-nav" onclick="scrollToElement('q7-anchor')">7</div>
+    <div class="q-item" id="q8-nav" onclick="scrollToElement('q8-anchor')">8</div>
+    <div class="q-item" id="q9-nav" onclick="scrollToElement('q9-anchor')">9</div>
+    <div class="q-item" id="q10-nav" onclick="scrollToElement('q10-anchor')">10</div>
+    <div class="q-item" id="q11-nav" onclick="scrollToElement('q11-anchor')">11</div>
+    <div class="q-item" id="q12-nav" onclick="scrollToElement('q12-anchor')">12</div>
+    <div class="q-item" id="q13-nav" onclick="scrollToElement('q13-anchor')">13</div>
+  </div>
+</div>
+
+<div class="shell">
+<section class="pane" id="left">
+  <h2>READING PASSAGE 1 <span id="timer">00:00</span>
+    <button id="settingsBtn">Settings</button>
+  </h2>
+  <p>You should spend about 20 minutes on Questions 1–13, which are based on Reading Passage 1 below.</p>
+  <h3>Sleep Study on Modern-Day Hunter-Gatherers Dispels Popular Notions</h3>
+  
+  <p>The sleep troubles common in modern life have long been blamed on our industrial society, from the city lights, long work hours and commutes, to caffeine and the Internet. Sleep researchers often look back on a time when humans were able to get more rest by sleeping and waking to the rhythms of the sun. It turns out that this may not be quite right. In fact, our ancestors may not have been getting the recommended eight hours of sleep, either.</p>
+  
+  <p>In a recent study, researchers traveled all over the world to examine sleep in some of the world’s last remaining hunter-gatherer societies – the Hadza of Tanzania, the San of Namibia, and the Tsimane of Bolivia. Cut off from media, electricity and other distractions, these pre-industrial societies are thought to sleep the way humans did more than 10,000 years ago. Traveling to where they lived, often in humid, remote locations, researchers used medical devices to record the sleeping habits of 94 of these tribespeople and ended up collecting data representing 1,165 days.</p>
+  
+  <p>They found very similar sleep patterns despite their geographic isolation. On average, all three groups sleep a little less than 6.5 hours a night, do not take naps, and don’t go to sleep when it gets dark. Like many of us, the Hadza, San, and Tsimane spend more time in bed – from 6.9 to 8.5 hours – than they do actually sleeping. This adds up to a sleep efficiency that is very similar to today’s industrial populations.</p>
+  
+  <p>According to Jerome Siegel, director of the University of California’s Center for Sleep Research, evidence suggests sleep habits may not be environmental or cultural, but central to the physical makeup of humans. These findings question the millions of dollars that have been spent on research that tries to explain why some sleepers get only about six hours of sleep a night. Also, such findings question whether lack of sleep is a cause of obesity, mood disorders, and other physical and mental illnesses which have become so common in recent decades. Scientists have documented that people’s energy often falls in the midafternoon. Some have suggested that it’s because we’ve managed to suppress a natural desire for a nap.</p>
+  
+  <p>However, the new study provides evidence that this is unlikely, and that napping was actually rare in hunter-gatherer societies. The researchers estimated that naps may have occurred on up to 7 percent of winter days and 22 percent of summer days. They noted that their devices were only good at detecting longer naps, so it is possible that some of the study subjects took naps that were short, perhaps 15 minutes or less.</p>
+  
+  <p>Another fascinating finding from the study had to do with the circadian rhythms, our daily activity cycles related to sunlight. Instead of going to sleep right at dusk, tribespeople were staying awake an average of between 2.5 and 4.4 hours after sunset. All three tribes had fires going, but the light itself was much lower than you might get from a light bulb. They did, however, have a tendency to wake up anywhere between an hour before and an hour after sunrise.</p>
+  
+  <p>Siegel and his co-authors investigated this further by looking into the significance of temperature. They found that it also played a big role, though it was somewhat less important than light in influencing sleep patterns. They wrote that “sleep in both the winter and summer usually occurred during the period of cooling and that waking times usually occurred near the height of the daily warming trend.”</p>
+  
+  <p>The tribespeople that were studied are different from people living in modern conditions in a number of respects. Importantly, almost none of them were troubled by sleeplessness. In interviews with the researchers conducted through interpreters, only 1.5 to 2.5 percent of the study subjects said they had severe difficulties sleeping more than once a year. This figure is far lower than the 10 to 30 percent recorded in many industrialized countries today. Siegel suggested that “mimicking aspects of the natural environment” may therefore help treat some sleep disorders.</p>
+  
+  <p>The tribespeople are also much healthier. Not a single one is overweight, indicating their overall higher levels of physical fitness. They also tended to have healthier hearts. Thus comes a critical question. If we can’t blame our health problems on our lack of sleep, could it be that the reason we feel so unrested is because of poor health?</p>
+  
+  <p>&nbsp;</p>
+  <p>&nbsp;</p>
+  <p>&nbsp;</p>
+</section>
+
+<div id="divider" title="Drag to resize"></div>
+
+<section class="pane" id="right">
+  <h3>Questions</h3>
+  
+  <!-- Questions 1-4: True/False/Not Given -->
+  <div class="group">
+    <h4>Questions 1–4</h4>
+    <p>Do the following statements agree with the information given in Reading Passage 1?</p>
+    <p>In boxes 1–4 on your answer sheet, write</p>
+    <ul>
+      <li>TRUE if the statement agrees with the information</li>
+      <li>FALSE if the statement contradicts the information</li>
+      <li>NOT GIVEN if there is no information on this</li>
+    </ul>
+    
+    <a id="q1-anchor"></a>
+    <div id="q1-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+      <p>1 Scientists studied hunter-gatherer societies because their sleep patterns are assumed to be similar to those of humans more than 10,000 years ago.</p>
+      <div style="display:flex; flex-wrap:wrap; gap:10px; margin:4px 0;">
+        <label style="margin:0;"><input name="q1" type="radio" value="TRUE"> TRUE</label>
+        <label style="margin:0;"><input name="q1" type="radio" value="FALSE"> FALSE</label>
+        <label style="margin:0;"><input name="q1" type="radio" value="NOT GIVEN"> NOT GIVEN</label>
+      </div>
+    </div>
+    
+    <a id="q2-anchor"></a>
+    <div id="q2-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+      <p>2 The medical devices used in the research were specially designed for humid conditions.</p>
+      <div style="display:flex; flex-wrap:wrap; gap:10px; margin:4px 0;">
+        <label style="margin:0;"><input name="q2" type="radio" value="TRUE"> TRUE</label>
+        <label style="margin:0;"><input name="q2" type="radio" value="FALSE"> FALSE</label>
+        <label style="margin:0;"><input name="q2" type="radio" value="NOT GIVEN"> NOT GIVEN</label>
+      </div>
+    </div>
+    
+    <a id="q3-anchor"></a>
+    <div id="q3-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+      <p>3 Researchers found that tribepeople stayed longer in bed than inhabitants of industrialised regions.</p>
+      <div style="display:flex; flex-wrap:wrap; gap:10px; margin:4px 0;">
+        <label style="margin:0;"><input name="q3" type="radio" value="TRUE"> TRUE</label>
+        <label style="margin:0;"><input name="q3" type="radio" value="FALSE"> FALSE</label>
+        <label style="margin:0;"><input name="q3" type="radio" value="NOT GIVEN"> NOT GIVEN</label>
+      </div>
+    </div>
+    
+    <a id="q4-anchor"></a>
+    <div id="q4-section" style="padding:8px 0;border-top:1px dashed var(--line);">
+      <p>4 Jerome Siegel believes that environment and culture have little effect on sleep patterns.</p>
+      <div style="display:flex; flex-wrap:wrap; gap:10px; margin:4px 0;">
+        <label style="margin:0;"><input name="q4" type="radio" value="TRUE"> TRUE</label>
+        <label style="margin:0;"><input name="q4" type="radio" value="FALSE"> FALSE</label>
+        <label style="margin:0;"><input name="q4" type="radio" value="NOT GIVEN"> NOT GIVEN</label>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Questions 5-13: Fill in the blanks -->
+  <div class="group">
+    <h4>Questions 5–13</h4>
+    <p>Complete the notes below.</p>
+    <p>Choose ONE WORD ONLY from the passage for each answer.</p>
+    <p>Write your answers in boxes 5–13 on your answer sheet.</p>
+    <h4>New Evidence on Sleep Patterns</h4>
+    
+    <p><strong>New ideas about napping</strong></p>
+    <ul>
+      <li>Scientists have recorded an afternoon drop in <input type="text" name="q5" class="fill-input" id="q5-input"> </li>
+      <li>Studies of hunter-gatherer societies show that napping was rare and occurred more often during the <input type="text" name="q6" class="fill-input" id="q6-input"> </li>
+      <li>The devices may not have detected <input type="text" name="q7" class="fill-input" id="q7-input"> naps</li>
+    </ul>
+    
+    <p><strong>Daily activity cycles</strong></p>
+    <ul>
+      <li>The tribespeople went to sleep several hours after sunset</li>
+      <li>Even with <input type="text" name="q8" class="fill-input" id="q8-input"> there was little light</li>
+      <li>Tribespeople usually woke up around <input type="text" name="q9" class="fill-input" id="q9-input"> </li>
+      <li>Scientists found that <input type="text" name="q10" class="fill-input" id="q10-input"> had almost as much influence on sleep patterns as light</li>
+    </ul>
+    
+    <p><strong>Differences between tribespeople and people in industrialised regions</strong></p>
+    <ul>
+      <li><input type="text" name="q11" class="fill-input" id="q11-input"> is something that very few of the tribespeople suffered from</li>
+      <li>The environment of tribespeople may have been more suitable for sleep</li>
+      <li>Tribespeople had better fitness than industrialised populations and were not <input type="text" name="q12" class="fill-input" id="q12-input"> </li>
+      <li>Tribespeople also had stronger <input type="text" name="q13" class="fill-input" id="q13-input"> </li>
+    </ul>
+    
+    <!-- Question anchors for navigation -->
+    <a id="q5-anchor" style="visibility:hidden;">5</a>
+    <a id="q6-anchor" style="visibility:hidden;">6</a>
+    <a id="q7-anchor" style="visibility:hidden;">7</a>
+    <a id="q8-anchor" style="visibility:hidden;">8</a>
+    <a id="q9-anchor" style="visibility:hidden;">9</a>
+    <a id="q10-anchor" style="visibility:hidden;">10</a>
+    <a id="q11-anchor" style="visibility:hidden;">11</a>
+    <a id="q12-anchor" style="visibility:hidden;">12</a>
+    <a id="q13-anchor" style="visibility:hidden;">13</a>
+  </div>
+  
+  <div style="display:flex;gap:8px;margin-bottom:10px;">
+    <button class="primary" onclick="grade()">Submit</button>
+    <button onclick="resetForm()">Reset</button>
+    <button onclick="toggleNotes()">Notes</button>
+  </div>
+  
+  <div id="results"></div>
+  
+  <details class="answerbox" id="answerBox">
+    <summary>Show answers (click to toggle) <span class="badge">hidden</span></summary>
+    <div id="answerContent">
+      <ol>
+        <li>1 → TRUE (Paragraph 2: "these pre-industrial societies are thought to sleep the way humans did more than 10,000 years ago")</li>
+        <li>2 → NOT GIVEN (Paragraph 2 mentions humid locations but no info on devices being specially designed for this)</li>
+        <li>3 → NOT GIVEN (Paragraph 3 compares sleep efficiency, not time in bed, between tribes and industrial populations)</li>
+        <li>4 → TRUE (Paragraph 4: "evidence suggests sleep habits may not be environmental or cultural, but central to the physical makeup of humans")</li>
+        <li>5 → energy (Paragraph 4: "people’s energy often falls in the midafternoon")</li>
+        <li>6 → summer (Paragraph 5: "naps may have occurred on up to 7 percent of winter days and 22 percent of summer days")</li>
+        <li>7 → short (Paragraph 5: "devices were only good at detecting longer naps, so it is possible that some of the study subjects took naps that were short")</li>
+        <li>8 → fires (Paragraph 6: "All three tribes had fires going, but the light itself was much lower")</li>
+        <li>9 → sunrise (Paragraph 6: "wake up anywhere between an hour before and an hour after sunrise")</li>
+        <li>10 → temperature (Paragraph 7: "looking into the significance of temperature. They found that it also played a big role, though it was somewhat less important than light")</li>
+        <li>11 → sleeplessness (Paragraph 8: "almost none of them were troubled by sleeplessness")</li>
+        <li>12 → overweight (Paragraph 9: "Not a single one is overweight")</li>
+        <li>13 → hearts (Paragraph 9: "They also tended to have healthier hearts")</li>
+      </ol>
+    </div>
+  </details>
+</section>
+</div>
+
+<!-- Selection Toolbar -->
+<div aria-label="Selection tools" id="selbar" role="toolbar">
+  <button id="btnHL">Highlight</button>
+  <button id="btnUH">Remove Highlight</button>
+  <button id="btnNote">Add to Notes</button>
+</div>
+
+<!-- Notes Panel -->
+<div id="notes">
+  <header>
+    <strong>Notes</strong>
+    <div>
+      <button id="btnCopy">Copy Notes</button>
+      <button id="btnClose">Close</button>
+    </div>
+  </header>
+  <textarea id="noteArea" placeholder="Type your notes here..."></textarea>
+</div>
+
+<!-- Toast Notification -->
+<div id="toast"></div>
+
+<script>
+// Timer (with stop on submit)
+let _t = 0; 
+const _timerEl = document.getElementById('timer');
+let timerInterval = setInterval(function(){ 
+  _t++; 
+  const m = String(Math.floor(_t/60)).padStart(2,'0'); 
+  const s = String(_t%60).padStart(2,'0'); 
+  _timerEl.textContent = m + ':' + s; 
+}, 1000);
+
+// Settings: Font Size Control
+const settingsBtn = document.getElementById('settingsBtn');
+const settingsPanel = document.getElementById('settingsPanel');
+const fontSizeOptions = document.querySelectorAll('.font-size-option');
+const root = document.documentElement;
+
+// Toggle settings panel
+settingsBtn.addEventListener('click', function(e) {
+  e.stopPropagation();
+  settingsPanel.style.display = settingsPanel.style.display === 'block' ? 'none' : 'block';
+});
+
+// Close settings panel when clicking outside
+document.addEventListener('click', function(e) {
+  if (!settingsPanel.contains(e.target) && e.target !== settingsBtn) {
+    settingsPanel.style.display = 'none';
+  }
+});
+
+// Change font size
+fontSizeOptions.forEach(option => {
+  option.addEventListener('click', function() {
+    // Remove active class from all options
+    fontSizeOptions.forEach(opt => opt.classList.remove('active'));
+    // Add active class to selected option
+    this.classList.add('active');
+    // Update root font size
+    const size = this.getAttribute('data-size');
+    root.style.setProperty('--font-size', size);
+    // Close panel after selection
+    settingsPanel.style.display = 'none';
+  });
+});
+
+// Drag Divider (Resize Panes)
+const divider = document.getElementById('divider');
+const leftPane = document.getElementById('left');
+const rightPane = document.getElementById('right');
+let dragging = false;
+
+function startDrag(e) { 
+  dragging = true; 
+  document.body.style.cursor = 'ew-resize'; 
+  if (e.preventDefault) e.preventDefault(); 
+}
+
+function endDrag() { 
+  dragging = false; 
+  document.body.style.cursor = ''; 
+}
+
+function onMove(clientX) {
+  const container = document.querySelector('.shell').getBoundingClientRect();
+  let x = clientX - container.left;
+  // Set min/max widths for panes
+  x = Math.max(280, Math.min(container.width - 320, x));
+  leftPane.style.flex = `0 0 ${x}px`;
+  rightPane.style.flex = '1 1 auto';
+}
+
+// Mouse events for divider
+divider.addEventListener('mousedown', startDrag);
+window.addEventListener('mousemove', (e) => { if (dragging) onMove(e.clientX); });
+window.addEventListener('mouseup', endDrag);
+
+// Touch events for mobile support
+divider.addEventListener('touchstart', (e) => { startDrag(e.touches[0]); }, { passive: false });
+window.addEventListener('touchmove', (e) => { if (dragging) onMove(e.touches[0].clientX); }, { passive: false });
+window.addEventListener('touchend', endDrag);
+
+// Text Highlight Functionality
+const selbar = document.getElementById('selbar');
+const btnHL = document.getElementById('btnHL');
+const btnUH = document.getElementById('btnUH');
+const btnNote = document.getElementById('btnNote');
+let lastRange = null;
+let currentHlNode = null;
+let keepToolbar = false;
+
+// Position highlight toolbar
+function positionSelbarForRect(rect) {
+  selbar.style.display = 'flex';
+  requestAnimationFrame(() => {
+    let top = window.scrollY + rect.top - selbar.offsetHeight - 8;
+    const leftPos = window.scrollX + rect.left + rect.width/2 - selbar.offsetWidth/2;
+    // Adjust top if toolbar goes off screen
+    if (top < 0) top = window.scrollY + rect.bottom + 8;
+    selbar.style.top = `${top}px`;
+    selbar.style.left = `${Math.max(8, leftPos)}px`;
+  });
+}
+
+// Update toolbar position based on selection
+function updateSelbar() {
+  const selection = window.getSelection();
+  if (!selection || selection.rangeCount === 0 || selection.isCollapsed) { 
+    selbar.style.display = 'none'; 
+    currentHlNode = null; 
+    return; 
+  }
+  const range = selection.getRangeAt(0);
+  lastRange = range.cloneRange();
+  currentHlNode = null;
+  positionSelbarForRect(range.getBoundingClientRect());
+}
+
+// Listen for selection changes
+document.getElementById('left').addEventListener('mouseup', updateSelbar);
+document.getElementById('right').addEventListener('mouseup', updateSelbar);
+document.addEventListener('selectionchange', () => {
+  const selection = window.getSelection();
+  if (!selection || selection.rangeCount === 0 || selection.isCollapsed) {
+    if (!keepToolbar && !currentHlNode) selbar.style.display = 'none';
+  }
+});
+
+// Update toolbar on scroll
+document.addEventListener('scroll', () => {
+  if (selbar.style.display === 'flex') updateSelbar();
+});
+
+// Keep toolbar open when clicking highlighted text
+document.addEventListener('mousedown', (e) => {
+  keepToolbar = e.target.classList && e.target.classList.contains('hl');
+}, true);
+
+// Handle click on highlighted text
+document.addEventListener('click', (e) => {
+  if (e.target.classList && e.target.classList.contains('hl')) {
+    currentHlNode = e.target;
+    lastRange = null;
+    positionSelbarForRect(e.target.getBoundingClientRect());
+    const selection = window.getSelection();
+    if (selection) selection.removeAllRanges();
+    setTimeout(() => { keepToolbar = false; }, 0);
+  }
+}, true);
+
+// Add highlight
+function doHighlight() {
+  if (currentHlNode) return;
+  if (!lastRange || lastRange.collapsed) return;
+  
+  const span = document.createElement('span');
+  span.className = 'hl';
+  
+  try {
+    lastRange.surroundContents(span);
+  } catch (e) {
+    // Fallback for partial text nodes
+    const wrap = document.createElement('span');
+    wrap.className = 'hl';
+    wrap.appendChild(lastRange.cloneContents());
+    lastRange.deleteContents();
+    lastRange.insertNode(wrap);
+  }
+  
+  selbar.style.display = 'none';
+  showToast('Text highlighted');
+}
+
+// Remove highlight
+function removeHighlight() {
+  if (currentHlNode) {
+    // Unwrap highlighted text
+    const parent = currentHlNode.parentNode;
+    while (currentHlNode.firstChild) {
+      parent.insertBefore(currentHlNode.firstChild, currentHlNode);
+    }
+    parent.removeChild(currentHlNode);
+    parent.normalize();
+    currentHlNode = null;
+    selbar.style.display = 'none';
+    showToast('Highlight removed');
+    return;
+  }
+  
+  if (!lastRange) return;
+  
+  // Remove highlights in selection range
+  const selRect = lastRange.getBoundingClientRect();
+  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_ELEMENT);
+  const toRemove = [];
+  
+  while (walker.nextNode()) {
+    const node = walker.currentNode;
+    if (node.classList && node.classList.contains('hl')) {
+      const rect = node.getBoundingClientRect();
+      // Check if highlight overlaps with selection
+      if (!(rect.right < selRect.left || rect.left > selRect.right || rect.bottom < selRect.top || rect.top > selRect.bottom)) {
+        toRemove.push(node);
+      }
+    }
+  }
+  
+  // Unwrap all selected highlights
+  toRemove.forEach(el => {
+    const parent = el.parentNode;
+    while (el.firstChild) parent.insertBefore(el.firstChild, el);
+    parent.removeChild(el);
+    parent.normalize();
+  });
+  
+  selbar.style.display = 'none';
+  showToast('Highlights removed');
+}
+
+// Highlight button events
+btnHL.addEventListener('click', doHighlight);
+btnUH.addEventListener('click', removeHighlight);
+
+// Notes Functionality
+const notesPanel = document.getElementById('notes');
+const noteArea = document.getElementById('noteArea');
+const btnCopy = document.getElementById('btnCopy');
+const btnClose = document.getElementById('btnClose');
+
+// Toggle notes panel
+function toggleNotes() {
+  notesPanel.style.display = notesPanel.style.display === 'flex' ? 'none' : 'flex';
+  if (notesPanel.style.display === 'flex') noteArea.focus();
+}
+
+// Close notes
+btnClose.addEventListener('click', toggleNotes);
+
+// Copy notes to clipboard
+btnCopy.addEventListener('click', async () => {
+  await navigator.clipboard.writeText(noteArea.value || '');
+  showToast('Notes copied to clipboard');
+});
+
+// Add selected text to notes
+btnNote.addEventListener('click', () => {
+  let text = '';
+  if (currentHlNode) {
+    text = currentHlNode.textContent.trim();
+  } else if (lastRange) {
+    const frag = lastRange.cloneContents();
+    text = frag.textContent.trim();
+  }
+  
+  toggleNotes();
+  if (text) {
+    noteArea.value = noteArea.value ? `${noteArea.value}\n> ${text}\n` : `> ${text}\n`;
+    noteArea.scrollTop = noteArea.scrollHeight;
+  }
+  
+  selbar.style.display = 'none';
+});
+
+// Toast Notification
+const toastEl = document.getElementById('toast');
+function showToast(message) {
+  toastEl.textContent = message;
+  toastEl.style.display = 'block';
+  setTimeout(() => { toastEl.style.display = 'none'; }, 1500);
+}
+
+// Grading & Answer Checking
+const answers = {
+  "q1": "TRUE", 
+  "q2": "NOT GIVEN", 
+  "q3": "NOT GIVEN", 
+  "q4": "TRUE",
+  "q5": "energy", 
+  "q6": "summer", 
+  "q7": "short", 
+  "q8": "fires", 
+  "q9": "sunrise", 
+  "q10": "temperature", 
+  "q11": "sleeplessness", 
+  "q12": "overweight", 
+  "q13": "hearts"
+};
+
+function grade() {
+  // Stop timer first
+  clearInterval(timerInterval);
+  
+  let total = 13;
+  let correct = 0;
+  const results = [];
+  
+  // Check Questions 1-4 (True/False/Not Given)
+  for (let i = 1; i <= 4; i++) {
+    const name = `q${i}`;
+    const selected = document.querySelector(`input[name="${name}"]:checked`);
+    const userAnswer = selected ? selected.value : "No answer";
+    const isCorrect = userAnswer === answers[name];
+    
+    if (isCorrect) correct++;
+    results.push(`${name.toUpperCase()}: ${userAnswer} ${isCorrect ? '✅' : '❌'} (Correct: ${answers[name]})`);
+  }
+  
+  // Check Questions 5-13 (Fill in the blanks)
+  for (let i = 5; i <= 13; i++) {
+    const name = `q${i}`;
+    const input = document.querySelector(`input[name="${name}"]`);
+    const userAnswer = input ? input.value.trim().toLowerCase() : "No answer";
+    const correctAnswer = answers[name].toLowerCase();
+    const isCorrect = userAnswer === correctAnswer;
+    
+    if (isCorrect) correct++;
+    results.push(`${name.toUpperCase()}: ${userAnswer || 'No answer'} ${isCorrect ? '✅' : '❌'} (Correct: ${answers[name]})`);
+  }
+  
+  // Calculate accuracy
+  const accuracy = Math.round((correct / total) * 100);
+  
+  // Display results
+  const resultsEl = document.getElementById('results');
+  resultsEl.innerHTML = `
+    <p><strong>Score: ${correct}/${total} (Accuracy: ${accuracy}%)</strong></p>
+    <pre>${results.join('\n')}</pre>
+  `;
+  
+  // Show answer box
+  const answerBox = document.getElementById('answerBox');
+  answerBox.open = true;
+  document.querySelector('#answerBox .badge').textContent = 'shown';
+  
+  // Mark answered questions in navigation
+  updateAnsweredNav();
+}
+
+// Reset form
+function resetForm() {
+  // Reset radio buttons
+  document.querySelectorAll('input[type="radio"]').forEach(el => el.checked = false);
+  // Reset text inputs
+  document.querySelectorAll('input[type="text"]').forEach(el => el.value = '');
+  // Clear results and answer box
+  document.getElementById('results').innerHTML = '';
+  document.getElementById('answerBox').open = false;
+  document.querySelector('#answerBox .badge').textContent = 'hidden';
+  // Reset highlighted text
+  document.querySelectorAll('.hl').forEach(el => {
+    const parent = el.parentNode;
+    while (el.firstChild) parent.insertBefore(el.firstChild, el);
+    parent.removeChild(el);
+    parent.normalize();
+  });
+  // Reset notes
+  document.getElementById('noteArea').value = '';
+  // Reset navigation
+  document.querySelectorAll('.q-item').forEach(item => item.classList.remove('answered'));
+  // Restart timer
+  clearInterval(timerInterval);
+  _t = 0;
+  _timerEl.textContent = '00:00';
+  timerInterval = setInterval(() => {
+    _t++;
+    const m = String(Math.floor(_t/60)).padStart(2,'0');
+    const s = String(_t%60).padStart(2,'0');
+    _timerEl.textContent = `${m}:${s}`;
+  }, 1000);
+}
+
+// Scroll to question anchor
+function scrollToElement(id) {
+  const el = document.getElementById(id);
+  if (el) {
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  // Highlight navigation item temporarily
+  const navs = document.querySelectorAll('.practice-nav .q-item');
+  navs.forEach(n => n.classList.remove('active'));
+  const btn = document.getElementById(id.replace('-anchor', '-nav'));
+  if (btn) {
+    btn.classList.add('active');
+    setTimeout(() => btn.classList.remove('active'), 800);
+  }
+}
+
+// Update answered status in navigation
+function updateAnsweredNav() {
+  for (let i = 1; i <= 13; i++) {
+    const navItem = document.getElementById(`q${i}-nav`);
+    const name = `q${i}`;
+    let isAnswered = false;
+    
+    if (i <= 4) {
+      // Check radio buttons
+      isAnswered = !!document.querySelector(`input[name="${name}"]:checked`);
+    } else {
+      // Check text inputs
+      const input = document.querySelector(`input[name="${name}"]`);
+      isAnswered = !!input && input.value.trim() !== '';
+    }
+    
+    if (isAnswered) {
+      navItem.classList.add('answered');
+    } else {
+      navItem.classList.remove('answered');
+    }
+  }
+}
+
+// Initial setup for answered nav
+(function() {
+  // Listen for input changes to update nav
+  for (let i = 1; i <= 4; i++) {
+    document.querySelectorAll(`input[name="q${i}"]`).forEach(input => {
+      input.addEventListener('change', updateAnsweredNav);
+    });
+  }
+  
+  for (let i = 5; i <= 13; i++) {
+    document.querySelector(`input[name="q${i}"]`).addEventListener('input', updateAnsweredNav);
+  }
+  
+  // Initial check
+  updateAnsweredNav();
+})();
+</script>
+</body>
+</html>
