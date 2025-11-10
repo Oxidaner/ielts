@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>P3 – Saving languages</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  :root { 
+    --line: #e5e7eb; --bg: #f6f7fb; --panel: #fff; --accent: #3b82f6; 
+    --muted: #6b7280; --shadow: 0 6px 20px rgba(0,0,0,.12); 
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body { 
+    margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; 
+    background: var(--bg); padding-bottom: 70px; color: #111827;
+  }
+  .shell { display: flex; height: 100vh; width: 100%; }
+  .pane { background: var(--panel); overflow: auto; padding: 20px; }
+  #left { flex: 0 0 50%; min-width: 280px; }
+  #right { flex: 1 1 auto; min-width: 320px; background: #fbfbff; border-left: 1px solid var(--line); }
+  #divider { flex: 0 0 8px; background: linear-gradient(90deg, #e5e7eb, #d1d5db); cursor: ew-resize; position: relative; z-index: 5; user-select: none; }
+  h2, h3, h4 { margin: 0 0 10px; }
+  #left p, #right p, #right li { margin: 0 0 12px; line-height: 1.6; }
+  .group { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 12px; margin-bottom: 14px; }
+  .q-block { margin-bottom: 16px; }
+  .options { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+  .options label { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+  .q-match-item { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 12px; }
+  .q-match-item .q-text { flex-grow: 1; }
+  .dropzone { 
+    border: 2px dashed #cbd5e1; background: #f8fafc; border-radius: 10px; 
+    min-height: 42px; padding: 6px; display: flex; align-items: center; justify-content: center; 
+    flex-shrink: 0; flex-basis: 60px;
+    transition: background-color 0.2s, outline 0.2s; 
+  }
+  .dropzone-wide { flex-basis: 220px; }
+  .dropzone.over { outline: 2px solid var(--accent); background: #eff6ff; }
+  .dropzone .card { box-shadow: none; cursor: default; white-space: normal; text-align: left; font-size: 0.9em; }
+  .option-pool { background:#f9fafb; border: 1px solid var(--line); border-radius: 8px; padding: 12px; display:flex; flex-wrap:wrap; gap:8px; margin-top: 12px; min-height: 48px; }
+  .card { background:#fff; border:1px solid #e5e7eb; border-radius:8px; padding:8px 12px; display:inline-flex; align-items:center; cursor:grab; box-shadow:0 2px 4px rgba(0,0,0,.05); user-select:none; transition: box-shadow 0.2s; }
+  .card:active { cursor: grabbing; box-shadow: var(--shadow); }
+  .card.ghost { opacity: 0.4; }
+  button { padding: 8px 12px; border: 1px solid var(--line); background: #fff; border-radius: 6px; cursor: pointer; transition: all 0.2s; font-size: 14px; }
+  button:hover { background: #f8fafc; border-color: #cbd5e1; }
+  button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  button.primary:hover { background: #2563eb; }
+  .practice-nav { background: #fff; padding: 12px 20px; display: flex; align-items: center; gap: 16px; box-shadow: 0 -2px 5px rgba(0,0,0,.05); flex-wrap: wrap; position: fixed; left: 0; right: 0; bottom: 0; border-top: 1px solid var(--line); z-index: 4000; }
+  .practice-nav .title { font-weight: 600; color: var(--muted); }
+  .practice-nav .questions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .practice-nav .q-item { padding: 6px 10px; border: 1px solid var(--line); border-radius: 6px; background: #fff; cursor: pointer; font-size: 14px; transition: all 0.2s; min-width: 36px; text-align: center; }
+  .practice-nav .q-item:hover { background: #f1f5f9; border-color: var(--accent); }
+  .practice-nav .q-item.answered { background: #e0e7ff; border-color: var(--accent); color: var(--accent); font-weight: 500; }
+  .practice-nav .controls { display: flex; gap: 12px; margin-left: auto; align-items: center; }
+  #timer { background: #fff; color: var(--muted); border: 1px solid var(--line); border-radius: 6px; padding: 6px 12px; cursor: pointer; font-family: 'Courier New', monospace; transition: all 0.2s; min-width: 70px; text-align: center; font-size: 14px; font-weight: bold; }
+  #timer:hover { background: #f1f5f9; border-color: var(--accent); }
+  #timer.paused { color: #ef4444; border-color: #fecaca; background: #fef2f2; }
+  .theme-toggle { background: #fff; color: var(--muted); border: 1px solid var(--line); border-radius: 6px; width: 32px; height: 32px; font-size: 16px; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; }
+  #selbar { position: absolute; display: none; z-index: 2000; background: #111; color: #fff; border-radius: 8px; padding: 6px; box-shadow: var(--shadow); font-size: 13px; gap: 6px; align-items: center; }
+  #selbar button { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,.25); padding: 4px 8px; border-radius: 6px; cursor: pointer; }
+  #notes { position: fixed; right: 12px; bottom: 85px; width: 320px; height: 42vh; background: #fff; border: 1px solid var(--line); border-radius: 12px; display: none; flex-direction: column; z-index: 1500; box-shadow: var(--shadow); }
+  #notes header { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+  #notes textarea { flex: 1; border: 0; padding: 10px; resize: none; font-size: 14px; line-height: 1.5; background-color: inherit; color: inherit; }
+  #toast { position: fixed; bottom: 85px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: #fff; padding: 8px 16px; border-radius: 4px; display: none; z-index: 3000; font-size: 14px; }
+  #results { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 12px; margin: 16px 0; }
+  #results p { margin: 0 0 8px; }
+  #results pre { font-family: monospace; white-space: pre-wrap; margin: 0; }
+  .badge { background: #eef2ff; color: #4338ca; padding: 2px 8px; border-radius: 12px; font-size: 0.8em; font-weight: 500; }
+  details.answerbox { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 12px; margin-top: 10px; }
+  details.answerbox summary { cursor: pointer; font-weight: 600; list-style: none; display: flex; align-items: center; justify-content: space-between; }
+  details.answerbox summary::-webkit-details-marker { display: none; }
+  #answerContent { margin-top: 10px; }
+  #answerContent ol { margin: 0; padding-left: 20px; }
+  .hl { background: #fff3a3; }
+  body.dark { --bg: #0f172a; --panel: #1e293b; --line: #334155; --muted: #94a3b8; color: #e2e8f0; }
+  body.dark .pane, body.dark #right { background: var(--panel); }
+  body.dark #right { background: #131c2d; }
+  body.dark button, body.dark .theme-toggle { background: #334155; color: #e2e8f0; border-color: #475569; }
+  body.dark .group, body.dark #results, body.dark details.answerbox, body.dark #notes { background: #1e293b; border-color: #334155; }
+  body.dark .practice-nav { background: #1e293b; border-top-color: #334155; }
+  body.dark .q-item { background: #334155; color: #e2e8f0; border-color: #475569; }
+  body.dark .q-item.answered { background: #1e40af; border-color: var(--accent); color: #93c5fd; }
+  body.dark #timer.paused { background: #402323; color: #f87171; border-color: #7f1d1d; }
+  body.dark .hl { background: #b45309; }
+  body.dark .option-pool { background:#0f172a; border-color: var(--line); }
+  body.dark .card { background: #334155; border-color: #475569; }
+  body.dark .dropzone { border-color: #475569; background: #131c2d; }
+  body.dark .dropzone.over { background: #1e293b; }
+  body.dark .badge { background: #312e81; color: #a5b4fc; }
+  @media (max-width: 768px) {
+    .shell { flex-direction: column; height: auto; }
+    #left, #right { min-height: 50vh; }
+    #divider { display: none; }
+    #notes { width: calc(100vw - 24px); right: 12px; left: 12px; }
+    .q-match-item { flex-direction: column; align-items: stretch; }
+    .dropzone { flex-basis: 42px; width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<!-- 1. Bottom Navigation Bar -->
+<div class="practice-nav">
+  <div class="title">Questions</div>
+  <div class="questions">
+    <div class="q-item" id="q27-nav" onclick="scrollToElement('q27-anchor')">27</div>
+    <div class="q-item" id="q28-nav" onclick="scrollToElement('q27-anchor')">28</div>
+    <div class="q-item" id="q29-nav" onclick="scrollToElement('q27-anchor')">29</div>
+    <div class="q-item" id="q30-nav" onclick="scrollToElement('q27-anchor')">30</div>
+    <div class="q-item" id="q31-nav" onclick="scrollToElement('q27-anchor')">31</div>
+    <div class="q-item" id="q32-nav" onclick="scrollToElement('q27-anchor')">32</div>
+    <div class="q-item" id="q33-nav" onclick="scrollToElement('q27-anchor')">33</div>
+    <div class="q-item" id="q34-nav" onclick="scrollToElement('q34-anchor')">34</div>
+    <div class="q-item" id="q35-nav" onclick="scrollToElement('q34-anchor')">35</div>
+    <div class="q-item" id="q36-nav" onclick="scrollToElement('q34-anchor')">36</div>
+    <div class="q-item" id="q37-nav" onclick="scrollToElement('q34-anchor')">37</div>
+    <div class="q-item" id="q38-nav" onclick="scrollToElement('q34-anchor')">38</div>
+    <div class="q-item" id="q39-nav" onclick="scrollToElement('q39-anchor')">39</div>
+    <div class="q-item" id="q40-nav" onclick="scrollToElement('q39-anchor')">40</div>
+  </div>
+  <div class="controls">
+    <span id="timer" onclick="toggleTimer()">00:00</span>
+    <button class="theme-toggle" onclick="toggleDarkMode()" title="Toggle dark/light mode">☀️</button>
+  </div>
+</div>
+
+<!-- 2. Main Content Shell -->
+<div class="shell">
+  <!-- Left Pane: Reading Passage -->
+  <section class="pane" id="left">
+    <h2>READING PASSAGE 3</h2>
+    <p>You should spend about 20 minutes on Questions 27–40, which are based on Reading Passage 3 below.</p>
+    
+    <h3>Saving languages</h3>
+    <p><em>The campaign to keep minority languages alive</em></p>
+  
+    <h4>A</h4>
+    <p>Ten years ago, Michael Krauss, a professor at the University of Alaska, shocked his colleagues in the discipline of linguistics with his prediction that half the 6,000 or so languages spoken in the world would disappear within a century. Krauss founded the Alaskan Native Language Center to preserve as much as possible of the 20 tongues still known to the state's indigenous people. Only two of those languages were being taught to children, and the rest were rapidly falling from use. Other linguists are making similar predictions. A survey in Australia found that 70 of the surviving 90 Aboriginal languages were no longer used regularly by all age groups. The same is true for all but 20 of the other 175 North American languages in the US.</p>
+    
+    <h4>B</h4>
+    <p>Outwardly, the consolidation of human language might seem like a good trend that could ease ethnic tensions and aid global commerce. Linguists don't deny those benefits, and they acknowledge that small communities often choose to switch to the majority language because they believe it will boost their social or economic status.</p>
+    
+    <h4>C</h4>
+    <p>Many experts in the field nonetheless mourn the loss of rare languages, for several reasons. Some of the most basic questions in linguistics have to do with the limits of human speech, still far from fully explored. Many researchers would like to know which elements of grammar and vocabulary—if any—are universal. An English researcher, Nicholas Ostler, offers an example: 'Ica, spoken in northern Colombia, seems to have nothing comparable to a personal pronoun system—I, we, you, etc. Otherwise, I would have thought that personal pronouns were a linguistic universal.' Other scientists try to reconstruct ancient migration patterns by comparing borrowed words in otherwise unrelated languages. In each of these cases, the wider the range of languages you study, the more likely you are to get the right answers.</p>
+
+    <h4>D</h4>
+    <p>'I think the value is mostly in human terms,' says James Matisoff, a specialist in rare Asian languages at the University of California. ‘Language is the most important element in the culture of a community. When it dies, you lose the special knowledge of that culture and a unique window on the world. But despite the constant talk about saving endangered languages over the past ten years, the field of descriptive linguistics has accomplished little in this respect. You would think that there would be some organised response to this situation, some attempt to determine which languages can be saved and which should be documented before they disappear,' says Sarah G. Thomason, of the University of Michigan. ‘But there isn't any such effort.'</p>
+
+    <h4>E</h4>
+    <p>However, there are some signs of progress. The Volkswagen Foundation, a German charity, has created a multimedia archive in the Netherlands that can house recordings, grammars, dictionaries and other data. Contributions from the Ford Foundation have helped a master-apprentice programme, in which fluent speakers receive $3,000 to teach a younger relative their native tongue through shared activities. So far, about 75 teams have completed the programme. ‘It's too early to call this language revitalisation,' admits Leanne Hinton of Berkeley. ‘In California, the death rate of elderly speakers will always be greater than the recruitment rate of young speakers. But if nothing else, we prolong the survival of the language.' This will give linguists more time to record these tongues before they vanish.</p>
+
+    <h4>F</h4>
+    <p>Complicating matters, dozens of institutions around the world are setting up digital libraries on endangered languages. This could create chaos, because the projects use non-standardised data formats, terminology and even names of languages. Gary F. Simons, of the Dallas-based research group SIL International, has been working to bring some order to this by building an ‘open languages data community'—a kind of digital card catalogue. This system will allow researchers to check their theories against a vast array of data.</p>
+
+    <h4>G</h4>
+    <p>However, even if a language has been fully documented, all that remains once it vanishes from use is a fossil skeleton. Linguists may be able to sketch an outline of the language and fix its place on the evolutionary tree, but little more. As yet, there is no discipline of conservation linguistics. Almost every strategy to keep people speaking a language has succeeded in some places but failed in others. One factor that always seems to occur in the death of a language, according to Hans-Jurgen Sasse of the University of Cologne in Germany, is that speakers start regarding their own language as inferior to the majority language. Children pick up on the attitude, and prefer to speak the dominant language. This is how Cornish and some dialects of Scottish Gaelic slipped into extinction.</p>
+
+    <h4>H</h4>
+    <p>'Ultimately, the answer to the problem of language extinction is multilingualism,' argues James Matisoff. ‘Even uneducated people can speak a number of languages if they start as children.' Many people in the world are at least bilingual, and in some places it is common to speak three or four languages. But in addition to the fact that children may reject minority languages, there is also the concern that speakers of a majority language may react badly to speakers of minority languages. The first step in saving dying languages may be to persuade the world's majorities to allow the minorities among them to speak with their own voices.</p>
+    
+    <p>&nbsp;</p> <!-- Final padding -->
+  </section>
+
+  <!-- Draggable Divider -->
+  <div id="divider" title="Drag to resize"></div>
+
+  <!-- Right Pane: Questions and Controls -->
+  <section class="pane" id="right">
+    <h3>Questions</h3>
+    
+    <div class="group">
+      <a id="q27-anchor"></a>
+      <h4>Questions 27–33</h4>
+      <p>Choose the correct heading for paragraphs A–C and E–H from the list of headings below.</p>
+      <div class="q-match-item"><span class="q-text"><strong>27</strong> Paragraph A</span><span class="dropzone" data-target="q27"></span></div>
+      <div class="q-match-item"><span class="q-text"><strong>28</strong> Paragraph B</span><span class="dropzone" data-target="q28"></span></div>
+      <div class="q-match-item"><span class="q-text"><strong>29</strong> Paragraph C</span><span class="dropzone" data-target="q29"></span></div>
+      <div class="q-match-item"><span class="q-text"><em>Paragraph D (Example)</em></span><span><em>vi</em></span></div>
+      <div class="q-match-item"><span class="q-text"><strong>30</strong> Paragraph E</span><span class="dropzone" data-target="q30"></span></div>
+      <div class="q-match-item"><span class="q-text"><strong>31</strong> Paragraph F</span><span class="dropzone" data-target="q31"></span></div>
+      <div class="q-match-item"><span class="q-text"><strong>32</strong> Paragraph G</span><span class="dropzone" data-target="q32"></span></div>
+      <div class="q-match-item"><span class="q-text"><strong>33</strong> Paragraph H</span><span class="dropzone" data-target="q33"></span></div>
+      <div class="option-pool" id="pool-headings">
+        <div class="card" draggable="true" data-value="i">i The conservation role of majority language speakers</div>
+        <div class="card" draggable="true" data-value="ii">ii Some advantages of changing languages</div>
+        <div class="card" draggable="true" data-value="iii">iii The loss rate of European languages</div>
+        <div class="card" draggable="true" data-value="iv">iv Positive gains of conservation programmes</div>
+        <div class="card" draggable="true" data-value="v">v The economic value of minority languages</div>
+        <div class="card" draggable="true" data-value="vii">vii Improving the consistency of research data</div>
+        <div class="card" draggable="true" data-value="viii">viii The potential failure of language conservation</div>
+        <div class="card" draggable="true" data-value="ix">ix The value of minority languages to language researchers</div>
+        <div class="card" draggable="true" data-value="x">x The current position of minority languages</div>
+      </div>
+    </div>
+    
+    <div class="group">
+      <a id="q34-anchor"></a>
+      <h4>Questions 34–38</h4>
+      <p>Match each opinion with the correct person. <em>NB You may use any letter more than once.</em></p>
+      <div class="q-match-item"><span class="q-text"><strong>34</strong> In the long run, the California scheme will not have enough tutors.</span><span class="dropzone" data-target="q34"></span></div>
+      <div class="q-match-item"><span class="q-text"><strong>35</strong> Decisions need to be made about priorities in language rescue.</span><span class="dropzone" data-target="q35"></span></div>
+      <div class="q-match-item"><span class="q-text"><strong>36</strong> Languages currently in use face extinction in the foreseeable future.</span><span class="dropzone" data-target="q36"></span></div>
+      <div class="q-match-item"><span class="q-text"><strong>37</strong> There is a solution to the problem of languages dying out.</span><span class="dropzone" data-target="q37"></span></div>
+      <div class="q-match-item"><span class="q-text"><strong>38</strong> A language may be dying when its speakers begin to value it less.</span><span class="dropzone" data-target="q38"></span></div>
+      <div class="option-pool" id="pool-people">
+        <div class="card" draggable="true" data-value="A" data-clone="true">A Michael Krauss</div>
+        <div class="card" draggable="true" data-value="B" data-clone="true">B Nicholas Ostler</div>
+        <div class="card" draggable="true" data-value="C" data-clone="true">C James Matisoff</div>
+        <div class="card" draggable="true" data-value="D" data-clone="true">D Sarah G Thomason</div>
+        <div class="card" draggable="true" data-value="E" data-clone="true">E Leanne Hinton</div>
+        <div class="card" draggable="true" data-value="F" data-clone="true">F Gary F Simons</div>
+        <div class="card" draggable="true" data-value="G" data-clone="true">G Hans-Jurgen Sasse</div>
+      </div>
+    </div>
+
+    <div class="group">
+      <a id="q39-anchor"></a>
+      <h4>Questions 39 and 40</h4>
+      <p>Choose the correct letter, A, B, C or D.</p>
+      <div class="q-block"><p><strong>39</strong> The Alaskan Language Center was set up to</p><div class="options"><label><input type="radio" name="q39" value="A"> A teach indigenous languages to children.</label><label><input type="radio" name="q39" value="B"> B revive indigenous languages which have fallen from use.</label><label><input type="radio" name="q39" value="C"> C prevent further loss of indigenous languages.</label><label><input type="radio" name="q39" value="D"> D predict the rate of loss of indigenous languages.</label></div></div>
+      <div class="q-block"><p><strong>40</strong> According to the writer, majority language speakers</p><div class="options"><label><input type="radio" name="q40" value="A"> A usually speak more than one language.</label><label><input type="radio" name="q40" value="B"> B generally have a high level of education.</label><label><input type="radio" name="q40" value="C"> C should make an effort to learn a minority language.</label><label><input type="radio" name="q40" value="D"> D should be more tolerant of minority languages.</label></div></div>
+    </div>
+
+    <!-- Controls and Results -->
+    <div style="display:flex;gap:8px;margin-bottom:10px;">
+      <button class="primary" onclick="grade()">Submit</button>
+      <button onclick="resetForm()">Reset</button>
+      <button onclick="toggleNotes()">Notes</button>
+    </div>
+    <div id="results"></div>
+    <details class="answerbox" id="answerBox">
+      <summary>Show answers (click to toggle) <span class="badge">hidden</span></summary>
+      <div id="answerContent"></div>
+    </details>
+  </section>
+</div>
+
+<!-- 3. UI Helper Elements -->
+<div aria-label="Selection tools" id="selbar" role="toolbar">
+  <button id="btnHL">Highlight</button>
+  <button id="btnUH">Remove</button>
+  <button id="btnNote">Note</button>
+</div>
+<div id="notes">
+  <header><strong>Notes</strong><div><button id="btnCopy">Copy</button><button id="btnClose">Close</button></div></header>
+  <textarea id="noteArea" placeholder="Type your notes here..."></textarea>
+</div>
+<div id="toast"></div>
+
+<script>
+// --- MASTER JAVASCRIPT TEMPLATE ---
+
+// 1. STATE & ANSWERS
+const answers = {
+    q27: "x", q28: "ii", q29: "ix", q30: "iv", q31: "vii", q32: "viii", q33: "i",
+    q34: "e", q35: "d", q36: "a", q37: "c", q38: "g",
+    q39: "c", q40: "d"
+};
+
+// 2. UI & INTERACTIVITY
+let timerSeconds = 0, isTimerPaused = false;
+const timerEl = document.getElementById('timer');
+
+function toggleTimer() { isTimerPaused = !isTimerPaused; timerEl.classList.toggle('paused', isTimerPaused); showToast(isTimerPaused ? 'Timer paused' : 'Timer resumed'); }
+setInterval(() => { if (!isTimerPaused) { timerSeconds++; const m = String(Math.floor(timerSeconds / 60)).padStart(2, '0'); const s = String(timerSeconds % 60).padStart(2, '0'); timerEl.textContent = `${m}:${s}`; } }, 1000);
+function toggleDarkMode() { document.body.classList.toggle('dark'); const isDark = document.body.classList.contains('dark'); localStorage.setItem('darkMode', isDark ? 'enabled' : 'disabled'); document.querySelector('.theme-toggle').textContent = isDark ? '🌙' : '☀️'; }
+function scrollToElement(id) { document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+function showToast(msg) { const toastEl = document.getElementById('toast'); toastEl.textContent = msg; toastEl.style.display = 'block'; setTimeout(() => { toastEl.style.display = 'none'; }, 1500); }
+
+// 3. HIGHLIGHT AND NOTES FUNCTIONALITY
+const selbar = document.getElementById('selbar');
+let lastRange = null;
+function handleTextSelection() { setTimeout(() => { const sel = window.getSelection(); if (sel.toString().trim().length > 0) { lastRange = sel.getRangeAt(0).cloneRange(); const rect = lastRange.getBoundingClientRect(); selbar.style.top = `${window.scrollY + rect.top - selbar.offsetHeight - 5}px`; selbar.style.left = `${window.scrollX + rect.left + rect.width / 2 - selbar.offsetWidth / 2}px`; selbar.style.display = 'flex'; } else { selbar.style.display = 'none'; } }, 10); }
+['left', 'right'].forEach(id => document.getElementById(id).addEventListener('mouseup', handleTextSelection));
+document.addEventListener('mousedown', (e) => { if (!selbar.contains(e.target)) selbar.style.display = 'none'; });
+document.getElementById('btnHL').addEventListener('click', () => { if (lastRange) { const span = document.createElement('span'); span.className = 'hl'; try { lastRange.surroundContents(span); } catch(e) { console.error(e); } selbar.style.display = 'none'; window.getSelection().removeAllRanges(); } });
+document.getElementById('btnUH').addEventListener('click', () => { if (lastRange) { let container = lastRange.commonAncestorContainer; if (container.nodeType !== 1) container = container.parentElement; const highlights = container.querySelectorAll('.hl'); highlights.forEach(hl => { if (window.getSelection().containsNode(hl, true)) { const parent = hl.parentNode; while (hl.firstChild) parent.insertBefore(hl.firstChild, hl); parent.removeChild(hl); parent.normalize(); } }); selbar.style.display = 'none'; window.getSelection().removeAllRanges(); } });
+document.getElementById('btnNote').addEventListener('click', () => { const text = window.getSelection().toString().trim(); if (text) { const noteArea = document.getElementById('noteArea'); noteArea.value += (noteArea.value ? '\n\n' : '') + `> ${text}`; toggleNotes(); noteArea.scrollTop = noteArea.scrollHeight; } selbar.style.display = 'none'; });
+function toggleNotes() { const notePad = document.getElementById('notes'); notePad.style.display = notePad.style.display === 'flex' ? 'none' : 'flex'; }
+document.getElementById('btnClose').addEventListener('click', toggleNotes);
+document.getElementById('btnCopy').addEventListener('click', () => { navigator.clipboard.writeText(document.getElementById('noteArea').value); showToast('Notes copied'); });
+
+// 4. DRAG AND DROP LOGIC
+document.querySelectorAll('.card').forEach(card => {
+    card.addEventListener('dragstart', e => { e.dataTransfer.setData('text/plain', e.target.id); setTimeout(() => e.target.classList.add('ghost'), 0); });
+    card.addEventListener('dragend', e => e.target.classList.remove('ghost'));
+});
+document.querySelectorAll('.dropzone').forEach(zone => {
+    zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('over'); });
+    zone.addEventListener('dragleave', () => zone.classList.remove('over'));
+    zone.addEventListener('drop', e => {
+        e.preventDefault(); zone.classList.remove('over');
+        const cardId = e.dataTransfer.getData('text/plain');
+        const draggedCard = document.getElementById(cardId);
+        if (!draggedCard) return;
+        const cardToDrop = draggedCard.dataset.clone === 'true' ? draggedCard.cloneNode(true) : draggedCard;
+        cardToDrop.classList.remove('ghost');
+        if (zone.children.length > 0) {
+            const existingCard = zone.children[0];
+            if (existingCard.dataset.clone !== 'true') {
+                const itsOriginPool = document.getElementById(existingCard.dataset.originPool);
+                if (itsOriginPool) itsOriginPool.appendChild(existingCard);
+            }
+        }
+        zone.innerHTML = '';
+        zone.appendChild(cardToDrop);
+        updateAnswerStatus();
+    });
+});
+
+// 5. GRADING & STATE MANAGEMENT
+function grade() {
+    let total = 0, correct = 0, lines = [];
+    const push = (q, ok, user, correctAns) => { total++; if(ok) correct++; const displayAns = String(correctAns).toUpperCase(); lines.push(`${q.toUpperCase().replace('Q','')}: ${user || 'None'} ${ok ? '✅' : `❌ (Ans: ${displayAns})`}`); };
+    Object.keys(answers).forEach(qKey => {
+        const correctAns = answers[qKey];
+        let userAnswer = null;
+        const radio = document.querySelector(`input[name="${qKey}"]:checked`);
+        const dropzone = document.querySelector(`.dropzone[data-target="${qKey}"]`);
+        if (radio) userAnswer = radio.value;
+        else if (dropzone) userAnswer = dropzone.querySelector('.card')?.dataset.value || null;
+        const isCorrect = userAnswer !== null && userAnswer.toLowerCase() === String(correctAns).toLowerCase();
+        push(qKey, isCorrect, userAnswer, correctAns);
+    });
+    const acc = total ? Math.round(100 * correct / total) : 0;
+    document.getElementById('results').innerHTML = `<p><strong>Score:</strong> ${correct}/${total} <span class="badge">Accuracy ${acc}%</span></p><pre>${lines.join('\n')}</pre>`;
+    document.getElementById('answerContent').innerHTML = `<ol start="27">${Object.entries(answers).map(([key, val]) => `<li><strong>${key.replace('q','')}:</strong> ${String(val).toUpperCase()}</li>`).join('')}</ol>`;
+    document.querySelector('#answerBox .badge').textContent = 'tap to view';
+    document.getElementById('answerBox').open = true;
+}
+
+function resetForm() {
+    document.querySelectorAll('input[type="radio"]').forEach(radio => radio.checked = false);
+    document.querySelectorAll('.dropzone').forEach(zone => {
+        if (zone.children.length > 0) {
+            const card = zone.children[0];
+            if (card.dataset.clone !== 'true') {
+                const originPool = document.getElementById(card.dataset.originPool);
+                if (originPool) originPool.appendChild(card);
+            }
+        }
+        zone.innerHTML = '';
+    });
+    document.getElementById('results').innerHTML = '';
+    document.getElementById('answerContent').innerHTML = '';
+    document.querySelector('#answerBox .badge').textContent = 'hidden';
+    document.getElementById('answerBox').open = false;
+    updateAnswerStatus();
+    showToast('Form has been reset');
+}
+
+function updateAnswerStatus() {
+    document.querySelectorAll('.q-item').forEach(item => {
+        const qNum = item.id.replace('-nav', '');
+        let answered = false;
+        const radio = document.querySelector(`input[name="${qNum}"]:checked`);
+        const dropzone = document.querySelector(`.dropzone[data-target="${qNum}"]`);
+        if (radio) answered = true;
+        else if (dropzone) answered = !!dropzone.querySelector('.card');
+        item.classList.toggle('answered', answered);
+    });
+}
+
+// 6. INITIALIZATION
+document.addEventListener('DOMContentLoaded', () => {
+    if (localStorage.getItem('darkMode') === 'enabled') {
+        toggleDarkMode();
+        document.querySelector('.theme-toggle').textContent = '🌙';
+    }
+    document.querySelectorAll('input[type="radio"]').forEach(el => el.addEventListener('change', updateAnswerStatus));
+    document.querySelectorAll('.card').forEach((card, index) => {
+        if (!card.id) card.id = `card-${index}`;
+        if (card.parentElement.classList.contains('option-pool')) {
+            card.dataset.originPool = card.parentElement.id;
+            card.parentElement.addEventListener('dragover', e => e.preventDefault());
+            card.parentElement.addEventListener('drop', e => {
+                e.preventDefault();
+                const cardId = e.dataTransfer.getData('text/plain');
+                const dragged = document.getElementById(cardId);
+                if (dragged && dragged.parentElement.classList.contains('dropzone')) {
+                    dragged.parentElement.innerHTML = '';
+                    if (dragged.dataset.clone !== 'true') e.currentTarget.appendChild(dragged);
+                    updateAnswerStatus();
+                }
+            });
+        }
+    });
+});
+</script>
+
+<!-- Practice page enhancer integration -->
+<script>
+  if (!window.practicePageEnhancer) {
+    const script = document.createElement('script');
+    script.src = '../../js/practice-page-enhancer.js';
+    script.onload = () => console.log('Enhancer loaded.');
+    script.onerror = () => { console.error('Enhancer failed to load'); loadInlineEnhancer(); };
+    document.head.appendChild(script);
+  }
+  function loadInlineEnhancer() { if (window.practicePageEnhancer) return; window.practicePageEnhancer = { initialize: function () { this.setupCommunication(); this.setupAnswerListeners(); this.interceptSubmit(); }, setupCommunication: function () { this.parentWindow = window.opener || window.parent; window.addEventListener('message', (e) => { if (e.data?.type === 'INIT_SESSION') { this.sessionId = e.data.data.sessionId; this.sendMessage('SESSION_READY', { pageType: this.detectPageType(), url: window.location.href }); } }); }, detectPageType: () => { const t = document.title || ''; if (t.includes('P1')) return 'P1'; if (t.includes('P2')) return 'P2'; if (t.includes('P3')) return 'P3'; return 'unknown'; }, setupAnswerListeners: function () { this.answers = {}; this.startTime = Date.now(); document.addEventListener('change', (e) => { if (e.target.name) this.answers[e.target.name] = e.target.value; }); const observer = new MutationObserver(mutations => { mutations.forEach(mutation => { if (mutation.type === 'childList' && mutation.target.classList.contains('dropzone')) { const zone = mutation.target; const qName = zone.dataset.target; const card = zone.querySelector('.card'); this.answers[qName] = card ? card.dataset.value : ''; } }); }); document.querySelectorAll('.dropzone').forEach(zone => observer.observe(zone, { childList: true })); }, interceptSubmit: function () { if (typeof window.grade === 'function') { const originalGrade = window.grade; window.grade = () => { originalGrade(); setTimeout(() => this.handleSubmit(), 200); }; } }, handleSubmit: function () { const results = { sessionId: this.sessionId, startTime: this.startTime, endTime: Date.now(), duration: Math.round((Date.now() - this.startTime) / 1000), answers: this.answers, scoreInfo: this.extractScore(), pageType: this.detectPageType(), url: window.location.href }; this.sendMessage('PRACTICE_COMPLETE', results); }, extractScore: () => { const el = document.getElementById('results'); if (!el) return null; const text = el.textContent || ''; const scoreMatch = text.match(/Score:\s*(\d+)\/(\d+)/i); if (scoreMatch) { const correct = parseInt(scoreMatch[1]), total = parseInt(scoreMatch[2]); return { correct, total, accuracy: total > 0 ? correct / total : 0, percentage: Math.round((correct / total) * 100), source: 'inline_extraction' }; } return null; }, sendMessage: function (type, data) { if (this.parentWindow) this.parentWindow.postMessage({ type, data, source: 'practice_page' }, '*'); } }; if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => window.practicePageEnhancer.initialize()); else window.practicePageEnhancer.initialize(); }
+</script>
+
+</body>
+</html>
