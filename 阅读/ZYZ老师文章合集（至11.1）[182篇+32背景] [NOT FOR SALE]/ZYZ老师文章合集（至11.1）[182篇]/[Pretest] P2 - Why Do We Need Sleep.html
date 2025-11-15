@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>P2 – Why Do We Need Sleep?</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  :root { 
+    --line: #e5e7eb; --bg: #f6f7fb; --panel: #fff; --accent: #3b82f6; 
+    --muted: #6b7280; --shadow: 0 6px 20px rgba(0,0,0,.12); 
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body { 
+    margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; 
+    background: var(--bg); padding-bottom: 70px; color: #111827;
+  }
+  .shell { display: flex; height: 100vh; width: 100%; }
+  .pane { background: var(--panel); overflow: auto; padding: 20px; }
+  #left { flex: 0 0 50%; min-width: 280px; }
+  #right { flex: 1 1 auto; min-width: 320px; background: #fbfbff; border-left: 1px solid var(--line); }
+  #divider { flex: 0 0 8px; background: linear-gradient(90deg, #e5e7eb, #d1d5db); cursor: ew-resize; position: relative; z-index: 5; user-select: none; }
+  h2, h3, h4 { margin: 0 0 10px; }
+  #left p, #right p, #right li { margin: 0 0 12px; line-height: 1.6; }
+  .group { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 12px; margin-bottom: 14px; }
+  .q-block { margin-bottom: 16px; }
+  .options { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+  .options label { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+  .q-match-item { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 12px; }
+  .q-match-item .q-text { flex-grow: 1; }
+  .dropzone { 
+    border: 2px dashed #cbd5e1; background: #f8fafc; border-radius: 10px; 
+    min-height: 42px; padding: 6px; display: flex; align-items: center; justify-content: center; 
+    flex-shrink: 0; flex-basis: 60px;
+    transition: background-color 0.2s, outline 0.2s; 
+  }
+  .dropzone.over { outline: 2px solid var(--accent); background: #eff6ff; }
+  .dropzone .card { box-shadow: none; cursor: default; }
+  .option-pool { background:#f9fafb; border: 1px solid var(--line); border-radius: 8px; padding: 12px; display:flex; flex-wrap:wrap; gap:8px; margin-top: 12px; min-height: 48px; }
+  .card { background:#fff; border:1px solid #e5e7eb; border-radius:8px; padding:8px 12px; display:inline-flex; align-items:center; cursor:grab; box-shadow:0 2px 4px rgba(0,0,0,.05); user-select:none; transition: box-shadow 0.2s; }
+  .card:active { cursor: grabbing; box-shadow: var(--shadow); }
+  .card.ghost { opacity: 0.4; }
+  .blank { border:none; border-bottom:1px solid #9ca3af; padding:4px 2px; font-size:1em; background:transparent; width: 120px; }
+  .blank:focus { outline:none; border-bottom:2px solid var(--accent); }
+  button { padding: 8px 12px; border: 1px solid var(--line); background: #fff; border-radius: 6px; cursor: pointer; transition: all 0.2s; font-size: 14px; }
+  button:hover { background: #f8fafc; border-color: #cbd5e1; }
+  button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  button.primary:hover { background: #2563eb; }
+  .practice-nav { background: #fff; padding: 12px 20px; display: flex; align-items: center; gap: 16px; box-shadow: 0 -2px 5px rgba(0,0,0,.05); flex-wrap: wrap; position: fixed; left: 0; right: 0; bottom: 0; border-top: 1px solid var(--line); z-index: 4000; }
+  .practice-nav .title { font-weight: 600; color: var(--muted); }
+  .practice-nav .questions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .practice-nav .q-item { padding: 6px 10px; border: 1px solid var(--line); border-radius: 6px; background: #fff; cursor: pointer; font-size: 14px; transition: all 0.2s; min-width: 36px; text-align: center; }
+  .practice-nav .q-item:hover { background: #f1f5f9; border-color: var(--accent); }
+  .practice-nav .q-item.answered { background: #e0e7ff; border-color: var(--accent); color: var(--accent); font-weight: 500; }
+  .practice-nav .controls { display: flex; gap: 12px; margin-left: auto; align-items: center; }
+  #timer { background: #fff; color: var(--muted); border: 1px solid var(--line); border-radius: 6px; padding: 6px 12px; cursor: pointer; font-family: 'Courier New', monospace; transition: all 0.2s; min-width: 70px; text-align: center; font-size: 14px; font-weight: bold; }
+  #timer:hover { background: #f1f5f9; border-color: var(--accent); }
+  #timer.paused { color: #ef4444; border-color: #fecaca; background: #fef2f2; }
+  .theme-toggle { background: #fff; color: var(--muted); border: 1px solid var(--line); border-radius: 6px; width: 32px; height: 32px; font-size: 16px; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; }
+  #selbar { position: absolute; display: none; z-index: 2000; background: #111; color: #fff; border-radius: 8px; padding: 6px; box-shadow: var(--shadow); font-size: 13px; gap: 6px; align-items: center; }
+  #selbar button { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,.25); padding: 4px 8px; border-radius: 6px; cursor: pointer; }
+  #notes { position: fixed; right: 12px; bottom: 85px; width: 320px; height: 42vh; background: #fff; border: 1px solid var(--line); border-radius: 12px; display: none; flex-direction: column; z-index: 1500; box-shadow: var(--shadow); }
+  #notes header { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+  #notes textarea { flex: 1; border: 0; padding: 10px; resize: none; font-size: 14px; line-height: 1.5; background-color: inherit; color: inherit; }
+  #toast { position: fixed; bottom: 85px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: #fff; padding: 8px 16px; border-radius: 4px; display: none; z-index: 3000; font-size: 14px; }
+  #results { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 12px; margin: 16px 0; }
+  #results p { margin: 0 0 8px; }
+  #results pre { font-family: monospace; white-space: pre-wrap; margin: 0; }
+  .badge { background: #eef2ff; color: #4338ca; padding: 2px 8px; border-radius: 12px; font-size: 0.8em; font-weight: 500; }
+  details.answerbox { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 12px; margin-top: 10px; }
+  details.answerbox summary { cursor: pointer; font-weight: 600; list-style: none; display: flex; align-items: center; justify-content: space-between; }
+  details.answerbox summary::-webkit-details-marker { display: none; }
+  #answerContent { margin-top: 10px; }
+  #answerContent ol { margin: 0; padding-left: 20px; }
+  .hl { background: #fff3a3; }
+  body.dark { --bg: #0f172a; --panel: #1e293b; --line: #334155; --muted: #94a3b8; color: #e2e8f0; }
+  body.dark .pane, body.dark #right { background: var(--panel); }
+  body.dark #right { background: #131c2d; }
+  body.dark button, body.dark .theme-toggle { background: #334155; color: #e2e8f0; border-color: #475569; }
+  body.dark .group, body.dark #results, body.dark details.answerbox, body.dark #notes { background: #1e293b; border-color: #334155; }
+  body.dark .practice-nav { background: #1e293b; border-top-color: #334155; }
+  body.dark .q-item { background: #334155; color: #e2e8f0; border-color: #475569; }
+  body.dark .q-item.answered { background: #1e40af; border-color: var(--accent); color: #93c5fd; }
+  body.dark #timer.paused { background: #402323; color: #f87171; border-color: #7f1d1d; }
+  body.dark .hl { background: #b45309; }
+  body.dark .option-pool { background:#0f172a; border-color: var(--line); }
+  body.dark .card { background: #334155; border-color: #475569; }
+  body.dark .dropzone { border-color: #475569; background: #131c2d; }
+  body.dark .dropzone.over { background: #1e293b; }
+  body.dark .badge { background: #312e81; color: #a5b4fc; }
+  body.dark .blank { color: #e2e8f0; border-bottom-color: #64748b; }
+  @media (max-width: 768px) {
+    .shell { flex-direction: column; height: auto; }
+    #left, #right { min-height: 50vh; }
+    #divider { display: none; }
+    #notes { width: calc(100vw - 24px); right: 12px; left: 12px; }
+    .q-match-item { flex-direction: column; align-items: stretch; }
+    .dropzone { flex-basis: 42px; width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<!-- 1. Bottom Navigation Bar -->
+<div class="practice-nav">
+  <div class="title">Questions</div>
+  <div class="questions">
+    <div class="q-item" id="q17-nav" onclick="scrollToElement('q17-anchor')">17</div>
+    <div class="q-item" id="q18-nav" onclick="scrollToElement('q17-anchor')">18</div>
+    <div class="q-item" id="q19-nav" onclick="scrollToElement('q17-anchor')">19</div>
+    <div class="q-item" id="q20-nav" onclick="scrollToElement('q17-anchor')">20</div>
+    <div class="q-item" id="q21-nav" onclick="scrollToElement('q17-anchor')">21</div>
+    <div class="q-item" id="q22-nav" onclick="scrollToElement('q17-anchor')">22</div>
+    <div class="q-item" id="q23-nav" onclick="scrollToElement('q17-anchor')">23</div>
+    <div class="q-item" id="q24-25-nav" onclick="scrollToElement('q24-anchor')">24-25</div>
+    <div class="q-item" id="q26-27-nav" onclick="scrollToElement('q26-anchor')">26-27</div>
+    <div class="q-item" id="q28-nav" onclick="scrollToElement('q28-anchor')">28</div>
+    <div class="q-item" id="q29-nav" onclick="scrollToElement('q28-anchor')">29</div>
+    <div class="q-item" id="q30-nav" onclick="scrollToElement('q28-anchor')">30</div>
+    <div class="q-item" id="q31-nav" onclick="scrollToElement('q28-anchor')">31</div>
+    <div class="q-item" id="q32-nav" onclick="scrollToElement('q28-anchor')">32</div>
+  </div>
+  <div class="controls">
+    <span id="timer" onclick="toggleTimer()">00:00</span>
+    <button class="theme-toggle" onclick="toggleDarkMode()" title="Toggle dark/light mode">☀️</button>
+  </div>
+</div>
+
+<!-- 2. Main Content Shell -->
+<div class="shell">
+  <!-- Left Pane: Reading Passage -->
+  <section class="pane" id="left">
+    <h2>READING PASSAGE 2</h2>
+    <p>You should spend about 20 minutes on Questions 17–32, which are based on Reading Passage 2 below.</p>
+    
+    <h3>Why Do We Need Sleep?</h3>
+  
+    <h4>A</h4>
+    <p>According to the United States (U.S.) Centers for Disease Control and Prevention (CDC), more than 80 million American adults are chronically sleep deprived, meaning they sleep less than the recommended minimum of seven hours a night. The resulting fatigue contributes to more than a million auto accidents each year, as well as to a significant number of medical errors. Even small adjustments in sleep can be problematic. On the Monday after a daylight-saving time change in the U.S.—when the clocks are moved ahead one hour—there is a 24 percent increase in heart attacks and a jump in fatal car crashes, compared with other Mondays.</p>
+    
+    <h4>B</h4>
+    <p>During their lifetimes, about a third of Americans will suffer from at least one of the recognized sleep disorders. They range from common sleep disorders to much rarer and stranger conditions such as sleep apnea and restless leg syndrome. For example, in exploding head syndrome, booming noises seem to reverberate in your brain as you try to sleep. Also, people with Kleine-Levin syndrome will, every few years, sleep nearly nonstop for a week or two. However, insomnia is by far the most prevalent of these problems and the main reason 4 percent of U.S. adults take sleeping pills in any given month.</p>
+    
+    <h4>C</h4>
+    <p>Evolution endowed us with sleep that is flexible in its timing and easily disturbed, so that attention can be directed to higher priorities. The brain has an automatic override system that can wake us in all stages of sleep when it perceives an emergency like the cry of a child. But the problem is that, in the modern world, our ancient innate wake-up call is constantly triggered by something that is non-life-threatening, like worrying before an exam or the unexpected sound of a car alarm. Before the Industrial Revolution, which brought us alarm clocks and fixed work schedules, we could often counteract a sleep deficit by simply sleeping in. That is no longer possible.</p>
+
+    <h4>D</h4>
+    <p>The first segment of the brain that begins to fail when we don't get enough sleep is the prefrontal cortex, the center of decision-making and problem-solving. Dr Chiara Cirelli, a neuroscientist in the U.S., suggests that, ‘Every cognitive function to some extent seems to be affected by sleep loss,' and she comments that people are often more irritable, moody, and irrational. For instance, sleep-deprived suspects held by the police will often confess to anything in exchange for rest. Other research has also found that people who regularly sleep less than six hours a night have an elevated risk of developing depression, as well as other mental and physical illnesses. In fact, lack of sleep has been directly tied to obesity: without enough sleep, the stomach and other organs overproduce ghrelin, the hunger hormone, causing us to eat more. However, proving a cause-and-effect relationship in this case is challenging because subjecting humans to the necessary experiments is unethical.</p>
+
+    <h4>E</h4>
+    <p>NREM (Non-Rapid Eye Movement) makes up the first of two distinct and repetitive phases of a night's sleep. As we fall into NREM sleep, our brain stays active and begins an editing process-deciding which memories to keep and which ones to ignore. The first of NREM's four stages is called the shallow end of sleep and is characterized by a distinctive regular pattern of brain activity, as shown on an EEG (electroencephalogram) device—a machine that measures electrical impulses. In stage two, the EEG measures electric sparks that strike the cerebral cortex (grey matter covering the outer layer of the brain) in regular half-second intervals. Researchers believe that this electrical activity helps the cortex preserve and store recently acquired information. Stages three and four have been described as a deep, coma-like sleep that is as essential to our brain as food is to our body. In stage three, big, rolling waves of brain activity as measured on an EEG are present less than half the time; in stage four, more than half the time. It's in this deep sleep that our cells produce most growth hormone, which is needed throughout life to service bones and muscles.</p>
+
+    <h4>F</h4>
+    <p>REM (Rapid Eye Movement) sleep was at first believed to be only a variation of a stage in NREM sleep, and not particularly significant. However, once scientists documented the distinctive eye movements in REM, and found that virtually all dreaming takes place during this period, REM sleep was recognized as the second major phase of sleep. Today, scientists believe that the content of our approximately two hours of dreams each night in REM sleep is important in the processing of new memories. Some sleep theorists argue that REM sleep is when we are our most intelligent, insightful, creative, and free. It's when we truly come alive. ‘REM sleep may be the thing that makes us the most human, both for what it does for the brain and body, and for the sheer experience of it,' says Professor Michael Perlis.</p>
+
+    <h4>G</h4>
+    <p>The problem of sleep loss is not easily solved—whether by power naps or pharmaceuticals. Dr Jeffrey Ellenbogen, a sleep scientist at Johns Hopkins University in the U.S., argues, ‘It's tempting to manipulate sleep with drugs or devices, but we don't yet understand sleep enough to risk artificially manipulating the parts.' Dr Ellenbogen and other experts argue against shortcuts, especially the notion that we can mostly do without sleep. In fact, Dr Steven Lockley, of Brigham and Women's Hospital in Boston, suggests that sleep may be more essential to us than food.</p>
+    
+    <p>&nbsp;</p> <!-- Final padding -->
+  </section>
+
+  <!-- Draggable Divider -->
+  <div id="divider" title="Drag to resize"></div>
+
+  <!-- Right Pane: Questions and Controls -->
+  <section class="pane" id="right">
+    <h3>Questions</h3>
+    
+    <div class="group">
+      <a id="q17-anchor"></a>
+      <h4>Questions 17–23</h4>
+      <p>Which paragraph contains the following information? <em>NB You may use any letter more than once.</em></p>
+      <div class="q-match-item"><span class="q-text"><strong>17</strong> an example of how sleeplessness can influence a person accused of a crime</span><span class="dropzone" data-target="q17"></span></div>
+      <div class="q-match-item"><span class="q-text"><strong>18</strong> a description of recordings of different types of brain activity during sleep</span><span class="dropzone" data-target="q18"></span></div>
+      <div class="q-match-item"><span class="q-text"><strong>19</strong> a description of how present-day society interrupts sleep</span><span class="dropzone" data-target="q19"></span></div>
+      <div class="q-match-item"><span class="q-text"><strong>20</strong> information about the relationship between being overweight and sleep</span><span class="dropzone" data-target="q20"></span></div>
+      <div class="q-match-item"><span class="q-text"><strong>21</strong> a suggestion that medication is an ineffective solution for sleeping problems</span><span class="dropzone" data-target="q21"></span></div>
+      <div class="q-match-item"><span class="q-text"><strong>22</strong> a discovery that changed ideas about how sleep is understood</span><span class="dropzone" data-target="q22"></span></div>
+      <div class="q-match-item"><span class="q-text"><strong>23</strong> examples of the life-threatening consequences of inadequate sleep</span><span class="dropzone" data-target="q23"></span></div>
+      <div class="option-pool" id="pool-paras">
+        <div class="card" draggable="true" data-value="A" data-clone="true">A</div><div class="card" draggable="true" data-value="B" data-clone="true">B</div><div class="card" draggable="true" data-value="C" data-clone="true">C</div><div class="card" draggable="true" data-value="D" data-clone="true">D</div><div class="card" draggable="true" data-value="E" data-clone="true">E</div><div class="card" draggable="true" data-value="F" data-clone="true">F</div><div class="card" draggable="true" data-value="G" data-clone="true">G</div>
+      </div>
+    </div>
+    
+    <div class="group">
+      <a id="q24-anchor"></a>
+      <h4>Questions 24 and 25</h4>
+      <p>Choose <strong>TWO</strong> letters, A–E. Which <strong>TWO</strong> of these statements describe characteristics of NREM sleep?</p>
+      <div class="options">
+        <label><input type="checkbox" name="q24-25" value="A"> A NREM sleep is important for maintaining brain function.</label>
+        <label><input type="checkbox" name="q24-25" value="B"> B NREM sleep consists of two distinct parts.</label>
+        <label><input type="checkbox" name="q24-25" value="C"> C The brain remains passive throughout NREM sleep.</label>
+        <label><input type="checkbox" name="q24-25" value="D"> D Each stage of NREM sleep has a unique EEG pattern.</label>
+        <label><input type="checkbox" name="q24-25" value="E"> E Hormones are released continuously throughout NREM sleep.</label>
+      </div>
+    </div>
+
+    <div class="group">
+      <a id="q26-anchor"></a>
+      <h4>Questions 26 and 27</h4>
+      <p>Choose <strong>TWO</strong> letters, A–E. Which <strong>TWO</strong> of these statements describe the characteristics of REM sleep?</p>
+      <div class="options">
+        <label><input type="checkbox" name="q26-27" value="A"> A The REM stage is the longest phase of sleep.</label>
+        <label><input type="checkbox" name="q26-27" value="B"> B REM sleep can be identified by an unusual physical feature.</label>
+        <label><input type="checkbox" name="q26-27" value="C"> C REM sleep is important for removing unpleasant memories.</label>
+        <label><input type="checkbox" name="q26-27" value="D"> D REM sleep is another part of NREM sleep.</label>
+        <label><input type="checkbox" name="q26-27" value="E"> E Some scientists consider REM sleep to be a source of human innovation.</label>
+      </div>
+    </div>
+
+    <div class="group">
+        <a id="q28-anchor"></a>
+        <h4>Questions 28–32</h4>
+        <p>Complete the sentences below. Choose <strong>ONE WORD ONLY</strong> from the passage for each answer.</p>
+        <p><strong>28</strong> According to the CDC, lack of sleep leads to <input class="blank" name="q28">, which is often a factor in car crashes.</p>
+        <p><strong>29</strong> The most common sleep disorder in the U.S. is <input class="blank" name="q29">.</p>
+        <p><strong>30</strong> The brain responds to any type of <input class="blank" name="q30"> by activating a built-in alarm.</p>
+        <p><strong>31</strong> Researchers claim that routinely sleep-deprived people are more likely to be obese and suffer from illnesses like <input class="blank" name="q31">.</p>
+        <p><strong>32</strong> The processing of new memories is crucially linked to our <input class="blank" name="q32"> during sleep.</p>
+    </div>
+
+    <!-- Controls and Results -->
+    <div style="display:flex;gap:8px;margin-bottom:10px;">
+      <button class="primary" onclick="grade()">Submit</button>
+      <button onclick="resetForm()">Reset</button>
+      <button onclick="toggleNotes()">Notes</button>
+    </div>
+    <div id="results"></div>
+    <details class="answerbox" id="answerBox">
+      <summary>Show answers (click to toggle) <span class="badge">hidden</span></summary>
+      <div id="answerContent"></div>
+    </details>
+  </section>
+</div>
+
+<!-- 3. UI Helper Elements -->
+<div aria-label="Selection tools" id="selbar" role="toolbar">
+  <button id="btnHL">Highlight</button>
+  <button id="btnUH">Remove</button>
+  <button id="btnNote">Note</button>
+</div>
+<div id="notes">
+  <header><strong>Notes</strong><div><button id="btnCopy">Copy</button><button id="btnClose">Close</button></div></header>
+  <textarea id="noteArea" placeholder="Type your notes here..."></textarea>
+</div>
+<div id="toast"></div>
+
+<script>
+// --- MASTER JAVASCRIPT TEMPLATE ---
+
+// 1. STATE & ANSWERS
+const answers = {
+    q17: "d", q18: "e", q19: "c", q20: "d", q21: "g", q22: "f", q23: "a",
+    "q24-25": ["a", "d"],
+    "q26-27": ["b", "e"],
+    q28: "fatigue", q29: "insomnia", q30: "emergency", q31: "depression", q32: "dreams"
+};
+
+// 2. UI & INTERACTIVITY
+let timerSeconds = 0, isTimerPaused = false;
+const timerEl = document.getElementById('timer');
+
+function toggleTimer() { isTimerPaused = !isTimerPaused; timerEl.classList.toggle('paused', isTimerPaused); showToast(isTimerPaused ? 'Timer paused' : 'Timer resumed'); }
+setInterval(() => { if (!isTimerPaused) { timerSeconds++; const m = String(Math.floor(timerSeconds / 60)).padStart(2, '0'); const s = String(timerSeconds % 60).padStart(2, '0'); timerEl.textContent = `${m}:${s}`; } }, 1000);
+function toggleDarkMode() { document.body.classList.toggle('dark'); const isDark = document.body.classList.contains('dark'); localStorage.setItem('darkMode', isDark ? 'enabled' : 'disabled'); document.querySelector('.theme-toggle').textContent = isDark ? '🌙' : '☀️'; }
+function scrollToElement(id) { document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+function showToast(msg) { const toastEl = document.getElementById('toast'); toastEl.textContent = msg; toastEl.style.display = 'block'; setTimeout(() => { toastEl.style.display = 'none'; }, 1500); }
+
+// 3. HIGHLIGHT AND NOTES FUNCTIONALITY
+const selbar = document.getElementById('selbar');
+let lastRange = null;
+function handleTextSelection() { setTimeout(() => { const sel = window.getSelection(); if (sel.toString().trim().length > 0) { lastRange = sel.getRangeAt(0).cloneRange(); const rect = lastRange.getBoundingClientRect(); selbar.style.top = `${window.scrollY + rect.top - selbar.offsetHeight - 5}px`; selbar.style.left = `${window.scrollX + rect.left + rect.width / 2 - selbar.offsetWidth / 2}px`; selbar.style.display = 'flex'; } else { selbar.style.display = 'none'; } }, 10); }
+['left', 'right'].forEach(id => document.getElementById(id).addEventListener('mouseup', handleTextSelection));
+document.addEventListener('mousedown', (e) => { if (!selbar.contains(e.target)) selbar.style.display = 'none'; });
+document.getElementById('btnHL').addEventListener('click', () => { if (lastRange) { const span = document.createElement('span'); span.className = 'hl'; try { lastRange.surroundContents(span); } catch(e) { console.error(e); } selbar.style.display = 'none'; window.getSelection().removeAllRanges(); } });
+document.getElementById('btnUH').addEventListener('click', () => { if (lastRange) { let container = lastRange.commonAncestorContainer; if (container.nodeType !== 1) container = container.parentElement; const highlights = container.querySelectorAll('.hl'); highlights.forEach(hl => { if (window.getSelection().containsNode(hl, true)) { const parent = hl.parentNode; while (hl.firstChild) parent.insertBefore(hl.firstChild, hl); parent.removeChild(hl); parent.normalize(); } }); selbar.style.display = 'none'; window.getSelection().removeAllRanges(); } });
+document.getElementById('btnNote').addEventListener('click', () => { const text = window.getSelection().toString().trim(); if (text) { const noteArea = document.getElementById('noteArea'); noteArea.value += (noteArea.value ? '\n\n' : '') + `> ${text}`; toggleNotes(); noteArea.scrollTop = noteArea.scrollHeight; } selbar.style.display = 'none'; });
+function toggleNotes() { const notePad = document.getElementById('notes'); notePad.style.display = notePad.style.display === 'flex' ? 'none' : 'flex'; }
+document.getElementById('btnClose').addEventListener('click', toggleNotes);
+document.getElementById('btnCopy').addEventListener('click', () => { navigator.clipboard.writeText(document.getElementById('noteArea').value); showToast('Notes copied'); });
+
+// 4. DRAG AND DROP LOGIC
+document.querySelectorAll('.card').forEach(card => {
+    card.addEventListener('dragstart', e => { e.dataTransfer.setData('text/plain', e.target.id); setTimeout(() => e.target.classList.add('ghost'), 0); });
+    card.addEventListener('dragend', e => e.target.classList.remove('ghost'));
+});
+document.querySelectorAll('.dropzone').forEach(zone => {
+    zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('over'); });
+    zone.addEventListener('dragleave', () => zone.classList.remove('over'));
+    zone.addEventListener('drop', e => {
+        e.preventDefault(); zone.classList.remove('over');
+        const cardId = e.dataTransfer.getData('text/plain');
+        const draggedCard = document.getElementById(cardId);
+        if (!draggedCard) return;
+        const cardToDrop = draggedCard.dataset.clone === 'true' ? draggedCard.cloneNode(true) : draggedCard;
+        cardToDrop.classList.remove('ghost');
+        if (zone.children.length > 0) {
+            const existingCard = zone.children[0];
+            if (existingCard.dataset.clone !== 'true') {
+                const itsOriginPool = document.getElementById(existingCard.dataset.originPool);
+                if (itsOriginPool) itsOriginPool.appendChild(existingCard);
+            }
+        }
+        zone.innerHTML = '';
+        zone.appendChild(cardToDrop);
+        updateAnswerStatus();
+    });
+});
+
+// 5. GRADING & STATE MANAGEMENT
+function grade() {
+    let total = 0, correct = 0, lines = [];
+    const push = (q, ok, user, correctAns) => { total++; if(ok) correct++; const displayAns = Array.isArray(correctAns) ? correctAns.join(', ').toUpperCase() : String(correctAns).toUpperCase(); lines.push(`${q.toUpperCase().replace('Q','').replace('-', '–')}: ${user || 'None'} ${ok ? '✅' : `❌ (Ans: ${displayAns})`}`); };
+    Object.keys(answers).forEach(qKey => {
+        const correctAns = answers[qKey];
+        let userAnswer = null;
+        if (Array.isArray(correctAns)) {
+            const userAnswers = Array.from(document.querySelectorAll(`input[name="${qKey}"]:checked`)).map(cb => cb.value).sort();
+            userAnswer = userAnswers.join(', ');
+            const isCorrect = userAnswers.length === correctAns.length && userAnswers.every(val => correctAns.includes(val.toLowerCase()));
+            push(qKey, isCorrect, userAnswer, correctAns);
+        } else {
+            const textInput = document.querySelector(`input[name="${qKey}"]`);
+            const dropzone = document.querySelector(`.dropzone[data-target="${qKey}"]`);
+            if (textInput) userAnswer = textInput.value.trim() || null;
+            else if (dropzone) userAnswer = dropzone.querySelector('.card')?.dataset.value || null;
+            const isCorrect = userAnswer !== null && userAnswer.toLowerCase() === String(correctAns).toLowerCase();
+            push(qKey, isCorrect, userAnswer, correctAns);
+        }
+    });
+    const acc = total ? Math.round(100 * correct / total) : 0;
+    document.getElementById('results').innerHTML = `<p><strong>Score:</strong> ${correct}/${total} <span class="badge">Accuracy ${acc}%</span></p><pre>${lines.join('\n')}</pre>`;
+    document.getElementById('answerContent').innerHTML = `<ol start="17">${Object.entries(answers).map(([key, val]) => `<li><strong>${key.replace('q','').replace('-','–')}:</strong> ${Array.isArray(val) ? val.join(', ').toUpperCase() : String(val).toUpperCase()}</li>`).join('')}</ol>`;
+    document.querySelector('#answerBox .badge').textContent = 'tap to view';
+    document.getElementById('answerBox').open = true;
+}
+
+function resetForm() {
+    document.querySelectorAll('input[type="text"], input[type="checkbox"]').forEach(el => {
+        if (el.type === 'checkbox') el.checked = false;
+        else el.value = '';
+    });
+    document.querySelectorAll('.dropzone').forEach(zone => {
+        if (zone.children.length > 0) {
+            const card = zone.children[0];
+            if (card.dataset.clone !== 'true') {
+                const originPool = document.getElementById(card.dataset.originPool);
+                if (originPool) originPool.appendChild(card);
+            }
+        }
+        zone.innerHTML = '';
+    });
+    document.getElementById('results').innerHTML = '';
+    document.getElementById('answerContent').innerHTML = '';
+    document.querySelector('#answerBox .badge').textContent = 'hidden';
+    document.getElementById('answerBox').open = false;
+    updateAnswerStatus();
+    showToast('Form has been reset');
+}
+
+function updateAnswerStatus() {
+    document.querySelectorAll('.q-item').forEach(item => {
+        const qId = item.id.replace('-nav', '');
+        let answered = false;
+        if (qId.includes('-')) { // Checkbox group
+            answered = document.querySelectorAll(`input[name="${qId}"]:checked`).length > 0;
+        } else {
+            const textInput = document.querySelector(`input[name="${qId}"]`);
+            const dropzone = document.querySelector(`.dropzone[data-target="${qId}"]`);
+            if (textInput) answered = textInput.value.trim() !== '';
+            else if (dropzone) answered = !!dropzone.querySelector('.card');
+        }
+        item.classList.toggle('answered', answered);
+    });
+}
+
+// 6. INITIALIZATION
+document.addEventListener('DOMContentLoaded', () => {
+    if (localStorage.getItem('darkMode') === 'enabled') {
+        toggleDarkMode();
+        document.querySelector('.theme-toggle').textContent = '🌙';
+    }
+    document.querySelectorAll('input[type="text"], input[type="checkbox"]').forEach(el => {
+        el.addEventListener('input', updateAnswerStatus);
+        el.addEventListener('change', updateAnswerStatus);
+    });
+    document.querySelectorAll('.card').forEach((card, index) => {
+        if (!card.id) card.id = `card-${index}`;
+        if (card.parentElement.classList.contains('option-pool')) {
+            card.dataset.originPool = card.parentElement.id;
+            card.parentElement.addEventListener('dragover', e => e.preventDefault());
+            card.parentElement.addEventListener('drop', e => {
+                e.preventDefault();
+                const cardId = e.dataTransfer.getData('text/plain');
+                const dragged = document.getElementById(cardId);
+                if (dragged && dragged.parentElement.classList.contains('dropzone')) {
+                    dragged.parentElement.innerHTML = '';
+                    if (dragged.dataset.clone !== 'true') e.currentTarget.appendChild(dragged);
+                    updateAnswerStatus();
+                }
+            });
+        }
+    });
+});
+</script>
+
+<!-- Practice page enhancer integration -->
+<script>
+  if (!window.practicePageEnhancer) {
+    const script = document.createElement('script');
+    script.src = '../../js/practice-page-enhancer.js';
+    script.onload = () => console.log('Enhancer loaded.');
+    script.onerror = () => { console.error('Enhancer failed to load'); loadInlineEnhancer(); };
+    document.head.appendChild(script);
+  }
+  function loadInlineEnhancer() { if (window.practicePageEnhancer) return; window.practicePageEnhancer = { initialize: function () { this.setupCommunication(); this.setupAnswerListeners(); this.interceptSubmit(); }, setupCommunication: function () { this.parentWindow = window.opener || window.parent; window.addEventListener('message', (e) => { if (e.data?.type === 'INIT_SESSION') { this.sessionId = e.data.data.sessionId; this.sendMessage('SESSION_READY', { pageType: this.detectPageType(), url: window.location.href }); } }); }, detectPageType: () => { const t = document.title || ''; if (t.includes('P1')) return 'P1'; if (t.includes('P2')) return 'P2'; if (t.includes('P3')) return 'P3'; return 'unknown'; }, setupAnswerListeners: function () { this.answers = {}; this.startTime = Date.now(); document.addEventListener('input', (e) => { if (e.target.name) this.answers[e.target.name] = e.target.value; }); document.addEventListener('change', (e) => { if (e.target.name) { if(e.target.type === 'checkbox') { this.answers[e.target.name] = Array.from(document.querySelectorAll(`input[name="${e.target.name}"]:checked`)).map(cb => cb.value); } else { this.answers[e.target.name] = e.target.value; } } }); const observer = new MutationObserver(mutations => { mutations.forEach(mutation => { if (mutation.type === 'childList' && mutation.target.classList.contains('dropzone')) { const zone = mutation.target; const qName = zone.dataset.target; const card = zone.querySelector('.card'); this.answers[qName] = card ? card.dataset.value : ''; } }); }); document.querySelectorAll('.dropzone').forEach(zone => observer.observe(zone, { childList: true })); }, interceptSubmit: function () { if (typeof window.grade === 'function') { const originalGrade = window.grade; window.grade = () => { originalGrade(); setTimeout(() => this.handleSubmit(), 200); }; } }, handleSubmit: function () { const results = { sessionId: this.sessionId, startTime: this.startTime, endTime: Date.now(), duration: Math.round((Date.now() - this.startTime) / 1000), answers: this.answers, scoreInfo: this.extractScore(), pageType: this.detectPageType(), url: window.location.href }; this.sendMessage('PRACTICE_COMPLETE', results); }, extractScore: () => { const el = document.getElementById('results'); if (!el) return null; const text = el.textContent || ''; const scoreMatch = text.match(/Score:\s*(\d+)\/(\d+)/i); if (scoreMatch) { const correct = parseInt(scoreMatch[1]), total = parseInt(scoreMatch[2]); return { correct, total, accuracy: total > 0 ? correct / total : 0, percentage: Math.round((correct / total) * 100), source: 'inline_extraction' }; } return null; }, sendMessage: function (type, data) { if (this.parentWindow) this.parentWindow.postMessage({ type, data, source: 'practice_page' }, '*'); } }; if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => window.practicePageEnhancer.initialize()); else window.practicePageEnhancer.initialize(); }
+</script>
+
+</body>
+</html>
